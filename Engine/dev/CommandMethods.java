@@ -8,7 +8,9 @@ import java.util.List;
 import audio.AudioHandler;
 import core.Application;
 import gl.Camera;
+import gl.Render;
 import gl.Window;
+import map.architecture.ArchitectureHandler;
 import scene.PlayableScene;
 import scene.entity.hostile.TestHostileEntity;
 import scene.entity.utility.PlayerEntity;
@@ -41,6 +43,11 @@ public class CommandMethods {
 	}
 	
 	public static void map(String map) {
+		if (!ArchitectureHandler.isValidMap(map)) {
+			Console.log("No such map: " + map);
+			return;
+		}
+		AudioHandler.stopAll();
 		PlayableScene.currentMap = map;
 		Application.changeScene(SingleArcScene.class);
 	}
@@ -132,6 +139,14 @@ public class CommandMethods {
 			player.pos.z -= Float.parseFloat(_z.substring(1));
 		} else {
 			player.pos.z += Float.parseFloat(_z);
+		}
+	}
+	
+	public static void shadow_quality(int quality) {
+		Render.shadowQuality = quality;
+		if (Application.scene instanceof PlayableScene) {
+			PlayableScene s = (PlayableScene)Application.scene;
+			s.getArcHandler().getArchitecture().getLightmap().setFiltering(Render.shadowQuality);
 		}
 	}
 	

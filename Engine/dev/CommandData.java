@@ -7,6 +7,7 @@ import core.Application;
 import gl.Camera;
 import gl.Window;
 import io.Controls;
+import map.architecture.ArchitectureHandler;
 import scene.entity.utility.PhysicsEntity;
 import scene.entity.utility.PlayerHandler;
 import ui.UI;
@@ -17,7 +18,7 @@ enum CommandData {
 	exit(false),
 	noclip(true),
 	spawn_monster(true),
-	map(false, "name"),
+	map(false, ArchitectureHandler.validMaps),
 	volume(false),
 	run(false),
 	bind(Controls.class, false, "key", "action"),
@@ -31,6 +32,7 @@ enum CommandData {
 	hurt(false, "damage", "part"),
 	heal(false, "hp", "part"),
 	has_walker(false),
+	shadow_quality(false, "0-3"),
 	
 	// Getters
 	version("VERSION", Application.class, GETTER, false),

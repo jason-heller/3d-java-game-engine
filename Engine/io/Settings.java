@@ -13,11 +13,11 @@ import java.util.Map;
 import audio.AudioHandler;
 import dev.Debug;
 import gl.Camera;
+import gl.Render;
 import gl.Window;
 import gl.particle.ParticleHandler;
 import gl.shadow.ShadowBox;
 import gl.shadow.ShadowRender;
-import map.ground.Terrain;
 import scene.menu.MainMenuUI;
 
 public class Settings {
@@ -53,9 +53,11 @@ public class Settings {
 		AudioHandler.musicVolume = getFloat("mus_volume");
 		Camera.mouseSensitivity = getFloat("mouse_sensitivity");
 		ParticleHandler.maxParticles = getInt("max_particles");
-		ShadowRender.pcfCount = getInt("shadow_quality");
+		
+		Render.shadowQuality = getInt("shadow_quality");
 		ShadowBox.shadowDistance = getFloat("shadow_dist");
 		ShadowRender.shadowMapSize = getInt("shadow_fbo_size");
+		
 		MainMenuUI.disableIntroSplash = getBool("no_splash");
 		MainMenuUI.onIntroSplash = MainMenuUI.disableIntroSplash;
 		Debug.allowConsole = getBool("dev_enable_console");
@@ -94,7 +96,7 @@ public class Settings {
 		addEntry("mus_volume", AudioHandler.musicVolume);
 		addEntry("mouse_sensitivity", Camera.mouseSensitivity);
 		addEntry("max_particles", ParticleHandler.maxParticles);
-		addEntry("shadow_quality", ShadowRender.pcfCount);
+		addEntry("shadow_quality", Render.shadowQuality);
 		addEntry("shadow_dist", ShadowBox.shadowDistance);
 		addEntry("shadow_fbo_size", ShadowRender.shadowMapSize);
 		addEntry("no_splash", MainMenuUI.disableIntroSplash);
@@ -103,24 +105,10 @@ public class Settings {
 	}
 
 	public static void init() {
-		/*addEntry("version", "0.1");
-		addEntry("display_width", 1920);
-		addEntry("display_height", 1080);
-		addEntry("fullscreen", false);
-		addEntry("border", false);
-		addEntry("fov", 90);
-		addEntry("target_fps", 120);
-		addEntry("volume", 0.5f);
-		addEntry("sfx_volume", 1.0f);
-		addEntry("mus_volume", 1.0f);
-		addEntry("mouse_sensitivity", .5f);
-		addEntry("max_particles", 99);
-		addEntry("entity_dist", 5);
-		addEntry("shadow_quality", 2);
-		addEntry("shadow_dist", 16);
-		addEntry("shadow_fbo_size", 2048);
-		addEntry("no_splash", false);
-		addEntry("dev_enable_console", false);*/
+		File settingsFolder = new File(FileUtils.SETTINGS_FOLDER);
+		if (!settingsFolder.exists()) {
+			settingsFolder.mkdir();
+		}
 		grabData();
 
 		if (configFile.exists()) {

@@ -47,12 +47,12 @@ public class GuiButton extends GuiElement {
 		if (!tempDisable && hasFocus && Input.getMouseX() > x && Input.getMouseX() < x + width && Input.getMouseY() > y
 				&& Input.getMouseY() < y + lineHeight) {
 			selected = true;
-			if (Input.isPressed(Input.KEY_LMB) && listener != null) {
+			if (Input.isPressed("use_left") && listener != null) {
 				listener.onClick(option.getText(), 0);
 			}
 		}
 
-		option.setPosition(x, y);;
+		option.setPosition(x, y);
 		if (selected) {
 			UI.drawString("#s" + option.getText(), x, y, false);
 		} else {

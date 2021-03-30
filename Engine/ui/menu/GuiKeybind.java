@@ -54,7 +54,7 @@ public class GuiKeybind extends GuiElement {
 		if (!tempDisable && hasFocus && Input.getMouseX() > x + width
 				&& Input.getMouseX() < x + x + width + textWidth + 32 && Input.getMouseY() > y
 				&& Input.getMouseY() < y + height) {
-			if (!edit && Input.isPressed(Input.KEY_LMB)) {
+			if (!edit && Input.isPressed("use_left")) {
 
 				edit = true;
 				if (listener != null) {

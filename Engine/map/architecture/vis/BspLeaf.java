@@ -107,8 +107,8 @@ public class BspLeaf {
 					
 					mdlTxtrs[t++] = ((texVecs[0][0] * vert.x + texVecs[0][1] * vert.y + texVecs[0][2] * vert.z) + texVecs[0][3]);
 					mdlTxtrs[t++] = ((texVecs[1][0] * vert.x + texVecs[1][1] * vert.y + texVecs[1][2] * vert.z) + texVecs[1][3]);
-					ls = ((lm[0][0] * vert.x + lm[0][1] * vert.y + lm[0][2] * vert.z)/* + lm[0][3]*/ - face.lmMins[0]) / (face.lmSizes[0] + 1);
-					lt = ((lm[1][0] * vert.x + lm[1][1] * vert.y + lm[1][2] * vert.z)/* + lm[1][3]*/ - face.lmMins[1]) / (face.lmSizes[1] + 1);
+					ls = ((lm[0][0] * vert.x + lm[0][1] * vert.y + lm[0][2] * vert.z) + lm[0][3] - face.lmMins[0]) / (face.lmSizes[0] + 1);
+					lt = ((lm[1][0] * vert.x + lm[1][1] * vert.y + lm[1][2] * vert.z) + lm[1][3] - face.lmMins[1]) / (face.lmSizes[1] + 1);
 					ls = (ls * face.lightmapScaleX) + face.lightmapOffsetX;
 					lt = (lt * face.lightmapScaleY) + face.lightmapOffsetY;
 
@@ -122,8 +122,8 @@ public class BspLeaf {
 
 					mdlTxtrs[t++] = ((texVecs[0][0] * vert.x + texVecs[0][1] * vert.y + texVecs[0][2] * vert.z) + texVecs[0][3]);
 					mdlTxtrs[t++] = ((texVecs[1][0] * vert.x + texVecs[1][1] * vert.y + texVecs[1][2] * vert.z) + texVecs[1][3]);
-					ls = ((lm[0][0] * vert.x + lm[0][1] * vert.y + lm[0][2] * vert.z)/* + lm[0][3]*/ - face.lmMins[0]) / (face.lmSizes[0] + 1);
-					lt = ((lm[1][0] * vert.x + lm[1][1] * vert.y + lm[1][2] * vert.z)/* + lm[1][3]*/ - face.lmMins[1]) / (face.lmSizes[1] + 1);
+					ls = ((lm[0][0] * vert.x + lm[0][1] * vert.y + lm[0][2] * vert.z) + lm[0][3] - face.lmMins[0]) / (face.lmSizes[0] + 1);
+					lt = ((lm[1][0] * vert.x + lm[1][1] * vert.y + lm[1][2] * vert.z) + lm[1][3] - face.lmMins[1]) / (face.lmSizes[1] + 1);
 					ls = (ls * face.lightmapScaleX) + face.lightmapOffsetX;
 					lt = (lt * face.lightmapScaleY) + face.lightmapOffsetY;
 					mdlTxtrs[t++] = ls;
@@ -135,8 +135,8 @@ public class BspLeaf {
 					mdlVerts[v++] = vert.z;
 					mdlTxtrs[t++] = ((texVecs[0][0] * vert.x + texVecs[0][1] * vert.y + texVecs[0][2] * vert.z) + texVecs[0][3]);
 					mdlTxtrs[t++] = ((texVecs[1][0] * vert.x + texVecs[1][1] * vert.y + texVecs[1][2] * vert.z) + texVecs[1][3]);
-					ls = ((lm[0][0] * vert.x + lm[0][1] * vert.y + lm[0][2] * vert.z)/* + lm[0][3]*/ - face.lmMins[0]) / (face.lmSizes[0] + 1);
-					lt = ((lm[1][0] * vert.x + lm[1][1] * vert.y + lm[1][2] * vert.z)/* + lm[1][3]*/ - face.lmMins[1]) / (face.lmSizes[1] + 1);
+					ls = ((lm[0][0] * vert.x + lm[0][1] * vert.y + lm[0][2] * vert.z) + lm[0][3] - face.lmMins[0]) / (face.lmSizes[0] + 1);
+					lt = ((lm[1][0] * vert.x + lm[1][1] * vert.y + lm[1][2] * vert.z) + lm[1][3] - face.lmMins[1]) / (face.lmSizes[1] + 1);
 					ls = (ls * face.lightmapScaleX) + face.lightmapOffsetX;
 					lt = (lt * face.lightmapScaleY) + face.lightmapOffsetY;
 					mdlTxtrs[t++] = ls;

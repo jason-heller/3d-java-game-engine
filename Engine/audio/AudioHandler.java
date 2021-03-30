@@ -255,4 +255,10 @@ public class AudioHandler {
 		}
 	}
 
+	public static void stopAll() {
+		for(int i = 0; i < MAX_SOURCES; i++) {
+			sources[i].stop();
+		}
+	}
+
 }

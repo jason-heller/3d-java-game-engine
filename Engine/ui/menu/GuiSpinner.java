@@ -66,7 +66,7 @@ public class GuiSpinner extends GuiElement {
 		if (!tempDisable && hasFocus && Input.getMouseX() > x + textWidth
 				&& Input.getMouseX() < x + width + textWidth + 32 && Input.getMouseY() > y
 				&& Input.getMouseY() < y + height) {
-			if (Input.isPressed(Input.KEY_LMB)) {
+			if (Input.isPressed("use_left")) {
 				if (Input.getMouseX() < x + textWidth + width / 2f) {
 					index--;
 					if (index < 0) {

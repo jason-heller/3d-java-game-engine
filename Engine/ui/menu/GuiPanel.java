@@ -84,12 +84,12 @@ public class GuiPanel extends GuiElement {
 			int scrollbarX = x + width;
 			
 			int mx = Input.getMouseX(), my = Input.getMouseY();
-			if (Input.isPressed(Input.KEY_LMB) && mx >= scrollbarX - scrollbarWidth && mx < scrollbarX && my > y - 4
+			if (Input.isPressed("use_left") && mx >= scrollbarX - scrollbarWidth && mx < scrollbarX && my > y - 4
 					&& my < y-4 + height) {
 				grabbed = true;
 			}
 			
-			if (grabbed && !Input.isDown(Input.KEY_LMB)) {
+			if (grabbed && !Input.isDown("use_left")) {
 				grabbed = false;
 			}
 			

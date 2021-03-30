@@ -373,7 +373,7 @@ public class Console {
 			}
 
 			final int wheel = -Input.getMouseDWheel();
-			final int speed = Input.isDown(Keyboard.KEY_LCONTROL) ? 8 : 1;
+			final int speed = Input.isDown("sneak") ? 8 : 1;
 
 			if (wheel < 0) {
 				lineViewInd = Math.max(lineViewInd - speed, 0);

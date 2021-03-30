@@ -53,7 +53,7 @@ public class GuiTextbox extends GuiElement {
 
 		if (!tempDisable && hasFocus && Input.getMouseX() > x + TEXTBOX_XSHIFT && Input.getMouseX() < x + width
 				&& Input.getMouseY() > y && Input.getMouseY() < y + height) {
-			if (Input.isPressed(Input.KEY_LMB)) {
+			if (Input.isPressed("use_left")) {
 
 				edit = !edit;
 
@@ -61,7 +61,7 @@ public class GuiTextbox extends GuiElement {
 					listener.onClick(value, 0);
 				}
 			}
-		} else if (Input.isPressed(Input.KEY_LMB)) {
+		} else if (Input.isPressed("use_left")) {
 			edit = false;
 		}
 

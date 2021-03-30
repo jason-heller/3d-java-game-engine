@@ -4,10 +4,12 @@ import org.lwjgl.opengl.DisplayMode;
 
 import core.Application;
 import gl.Camera;
+import gl.Render;
 import gl.Window;
 import gl.particle.ParticleHandler;
 import gl.shadow.ShadowBox;
 import gl.shadow.ShadowRender;
+import scene.PlayableScene;
 import ui.menu.GuiDropdown;
 import ui.menu.GuiLabel;
 import ui.menu.GuiPanel;
@@ -152,32 +154,34 @@ public class GraphicsPanel extends GuiPanel {
 		});
 		add(shadowDistance);
 
-		shadowQuality = new GuiSpinner(x + 32, y, "Quality", ShadowRender.shadowQuality, "No Shadows", "Very Low", "Low", "Medium", "High");
+		shadowQuality = new GuiSpinner(x + 32, y, "Quality", Render.shadowQuality, "Very Low", "Low", "Medium", "High");
 		shadowQuality.addListener(new MenuListener() {
 			@Override
 			public void onClick(String option, int index) {
 				ShadowRender.shadowQuality = index;
 				switch(index) {
 				case 0:
-					ShadowRender.shadowMapSize = 0;
+					Render.shadowQuality = 0;
 					break;
 				case 1:
-					ShadowRender.pcfCount = 0;
+					Render.shadowQuality = 1;
 					break;
 				case 2:
-					ShadowRender.pcfCount = 1;
+					Render.shadowQuality = 2;
 					break;
 				case 3:
-					ShadowRender.pcfCount = 2;
-					break;
-				case 4:
-					ShadowRender.pcfCount = 3;
+					Render.shadowQuality = 3;
 					break;
 				}
 				
 				if (index != 0) {
 					ShadowRender.shadowMapSize = 1024 * ((((int)ShadowBox.shadowDistance)/16) + 1); 
 					ShadowRender.updateParams();
+				}
+				
+				if (Application.scene instanceof PlayableScene) {
+					PlayableScene s = (PlayableScene)Application.scene;
+					s.getArcHandler().getArchitecture().getLightmap().setFiltering(Render.shadowQuality);
 				}
 			}
 		});

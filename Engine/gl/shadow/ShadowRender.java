@@ -21,7 +21,6 @@ import gl.fbo.FrameBuffer;
 public class ShadowRender {
 
 	public static int shadowMapSize = 2048;
-	public static int pcfCount = 2;
 	public static int shadowQuality = 2;
 
 	private static FrameBuffer shadowFbo;

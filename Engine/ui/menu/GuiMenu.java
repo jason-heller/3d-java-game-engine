@@ -75,7 +75,7 @@ public class GuiMenu extends GuiElement {
 					&& Input.getMouseY() > y + dy
 					&& Input.getMouseY() < y + dy + lineHeight) {
 				selectedOption = index;
-				if (Input.isPressed(Input.KEY_LMB) && listener != null) {
+				if (Input.isPressed("use_left") && listener != null) {
 					listener.onClick(option, index);
 					AudioHandler.play("click");
 				}

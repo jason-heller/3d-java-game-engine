@@ -10,16 +10,15 @@ import gl.Window;
 import io.Controls;
 import io.Input;
 import io.Settings;
+import map.architecture.ArchitectureHandler;
 import scene.MainMenu;
 import scene.Scene;
-import scene.entity.EntityHandler;
 import ui.UI;
 
 public class Application {
 	
-	public static final String TITLE = "Engine Test";
-	public static final String VERSION = "Version 0.2.1a";
-	// Alpha Version 4, Minor 1, revision/patch 0
+	public static final String TITLE = "Granny Horror Game";
+	public static final String VERSION = "Version 0.2.3pa"; // Alpha Version, Minor, revision/patch
 	
 	public static Scene scene;
 	private static Class<?> nextScene;

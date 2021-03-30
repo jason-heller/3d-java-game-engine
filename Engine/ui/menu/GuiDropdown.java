@@ -74,7 +74,7 @@ public class GuiDropdown extends GuiElement {
 						&& Input.getMouseY() > y + (1 + index) * lineHeight
 						&& Input.getMouseY() < y + (1 + index) * lineHeight + lineHeight) {
 					selectedOption = index;
-					if (Input.isPressed(Input.KEY_LMB) && listener != null) {
+					if (Input.isPressed("use_left") && listener != null) {
 						listener.onClick(option, index);
 					}
 				}
@@ -87,7 +87,7 @@ public class GuiDropdown extends GuiElement {
 				index++;
 			}
 		}
-		if (!tempDisable && hasFocus && Input.isPressed(Input.KEY_LMB) && Input.getMouseX() > x
+		if (!tempDisable && hasFocus && Input.isPressed("use_left") && Input.getMouseX() > x
 				&& Input.getMouseX() < x + width && Input.getMouseY() > y && Input.getMouseY() < y + lineHeight) {
 			isOpen = !isOpen;
 		}

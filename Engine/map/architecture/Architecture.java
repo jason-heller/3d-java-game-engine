@@ -293,4 +293,8 @@ public class Architecture {
 	public String[] getReferencedTexNames() {
 		return mapSpecTexRefs;
 	}
+
+	public Lightmap getLightmap() {
+		return lightmap;
+	}
 }

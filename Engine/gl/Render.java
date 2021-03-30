@@ -21,6 +21,7 @@ public class Render {
 	//private static FrameBuffer screenMultisampled;
 	public static FrameBuffer screen;
 	private static GenericShader genericShader;
+	public static int shadowQuality;
 	
 	public static void cleanUp() {
 		genericShader.cleanUp();

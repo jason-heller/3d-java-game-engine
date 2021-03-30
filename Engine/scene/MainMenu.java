@@ -1,6 +1,7 @@
 package scene;
 
 import gl.Camera;
+import map.architecture.ArchitectureHandler;
 import scene.menu.MainMenuUI;
 
 public class MainMenu implements Scene {
@@ -10,6 +11,7 @@ public class MainMenu implements Scene {
 	
 	public MainMenu() {
 		ui = new MainMenuUI(this);
+		ArchitectureHandler.pollValidMaps();		// Poll anytime the menu is opened
 	}
 	
 	@Override

@@ -6,10 +6,10 @@ import java.nio.ByteBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GL30;
 
 import core.Resources;
 import dev.Console;
+import gl.Render;
 import gl.res.Texture;
 import gl.res.TextureUtils;
 import map.architecture.components.ArcFace;
@@ -19,6 +19,8 @@ public class Lightmap {
 	private Texture texture;
 	private static LMNode rootNode;
 	private static final int SIZE = 1024;
+	
+	public static int[] filteringQualities = new int[] {GL11.GL_NEAREST, GL11.GL_LINEAR};
 	
 	public Lightmap() {
 		//lightmap = new ArrayList<Integer>();
@@ -34,12 +36,11 @@ public class Lightmap {
 
        // buf.flip();
         texture = TextureUtils.createTexture(rgba, (byte)0, SIZE, SIZE);
-        texture.bind(0);
+        //texture.bind(0);
         Resources.addTexture("lightmap", texture);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);//_MIPMAP_LINEAR
-        //GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-        //GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+        setFiltering(Render.shadowQuality);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
         
         //GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
         // Set the last few pixels to white (for non-lightmapped faces)
@@ -58,6 +59,13 @@ public class Lightmap {
     	GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, SIZE-2, SIZE-2, 2, 2, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buf);
 	}
 	
+	public void setFiltering(int filter) {
+		 texture.bind(0);
+		int f = filteringQualities[Math.min(Render.shadowQuality, 1)];
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, f);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, f);//_MIPMAP_LINEAR
+	}
+
 	public void create(byte[] lighting, ArcFace[] faces) {
 
 		for (ArcFace face : faces) {

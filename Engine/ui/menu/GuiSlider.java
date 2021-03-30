@@ -72,11 +72,11 @@ public class GuiSlider extends GuiElement {
 		if (hasFocus || Input.getMouseX() > x + txtWidth && Input.getMouseX() < x + width + txtWidth
 				&& Input.getMouseY() > y && Input.getMouseY() < y + height) {
 			
-			if (Input.isPressed(Input.KEY_LMB)) {
+			if (Input.isPressed("use_left")) {
 				hasFocus = true;
 			}
 			
-			if (Input.isDown(Input.KEY_LMB) && hasFocus) {
+			if (Input.isDown("use_left") && hasFocus) {
 				value = minValue + (Input.getMouseX() - ((float) x + txtWidth)) / width * (maxValue - minValue);
 				value = offset + (float) (Math.floor(value / increment) * increment);
 				value = Math.min(Math.max(minValue, value), maxValue);
@@ -89,7 +89,7 @@ public class GuiSlider extends GuiElement {
 			}
 		}
 
-		if (hasFocus && Input.isReleased(Input.KEY_LMB)) {
+		if (hasFocus && Input.isReleased("use_left")) {
 			hasFocus = false;
 			if (listener != null) {
 				listener.onRelease(value);

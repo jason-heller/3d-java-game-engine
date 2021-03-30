@@ -46,7 +46,7 @@ public class ArcLoader {
 	
 	public static Architecture load(Scene scene, String mapFileName, Vector3f offset, boolean doRender) {
 		DataInputStream in = null;
-		String fileName = "src/res/maps/" + mapFileName + ".arc";
+		String fileName = "maps/" + mapFileName + ".arc";
 
 		Architecture arc = new Architecture(scene);
 		Bsp bsp = new Bsp();
@@ -364,11 +364,11 @@ public class ArcLoader {
 				texData[i].lmVecs[0][0] = in.readFloat();
 				texData[i].lmVecs[0][1] = in.readFloat();
 				texData[i].lmVecs[0][2] = in.readFloat();
-				texData[i].lmVecs[0][3] = in.readFloat();
+				texData[i].lmVecs[0][3] = in.readFloat() / 6f;
 				texData[i].lmVecs[1][0] = in.readFloat();
 				texData[i].lmVecs[1][1] = in.readFloat();
 				texData[i].lmVecs[1][2] = in.readFloat();
-				texData[i].lmVecs[1][3] = in.readFloat();
+				texData[i].lmVecs[1][3] = in.readFloat() / 6f;
 			}
 
 			// Texture list
