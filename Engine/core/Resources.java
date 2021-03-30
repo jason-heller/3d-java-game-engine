@@ -21,6 +21,7 @@ import gl.res.TextureUtils;
 import gr.zdimensions.jsquish.Squish;
 import io.AniFileLoader;
 import io.ModFileLoader;
+import map.ground.TerrainUtils;
 
 public class Resources {
 	public static final Model QUAD2D = ModelUtils.quad2DModel();
@@ -177,7 +178,7 @@ public class Resources {
 	}
 
 	public static Texture addTexture(String key, byte material, byte[] decompressedData, int width, int height) {
-		final Texture tex = TextureUtils.createTexture(decompressedData, width, height);
+		final Texture tex = TextureUtils.createTexture(decompressedData, material, width, height);
 		return addTexture(key, tex);
 	}
 
@@ -191,7 +192,7 @@ public class Resources {
 
 	public static Texture addTexture(String key, FrameBuffer fbo, boolean isDepthTexBuffer) {
 		return textureMap.put(key, new Texture(isDepthTexBuffer ? fbo.getDepthBufferTexture() : fbo.getTextureBuffer(),
-				fbo.getWidth(), false, 1));
+				fbo.getWidth(), fbo.getHeight(), false, 1));
 	}
 
 	public static Texture addTexture(String key, String path) {
@@ -223,8 +224,16 @@ public class Resources {
 		return tex;
 	}
 
-	public static Texture addCubemap(String key, String... paths) {
+	public static Texture addCubemapz(String key, String... paths) {
 		byte[][] data = TextureUtils.getRawTextureData(paths);
+		int wid = (int) Math.sqrt(data[0].length / 3);
+		final Texture tex = TextureUtils.createTexture(data, wid, wid);
+		textureMap.put(key, tex);
+		return tex;
+	}
+	
+	public static Texture addCubemap(String key, String path) {
+		byte[][] data = TextureUtils.getRawCubemapTexData(path);
 		int wid = (int) Math.sqrt(data[0].length / 3);
 		final Texture tex = TextureUtils.createTexture(data, wid, wid);
 		textureMap.put(key, tex);
@@ -287,7 +296,9 @@ public class Resources {
 		return texture == null ? Resources.getTexture("default") : texture;
 	}
 
-	public static void removeTextureReference(String key) {
+	public static void removeTexture(String key) {
+		if (key.equals("default"))
+			return;
 		textureMap.get(key).delete();
 		textureMap.remove(key);
 	}
@@ -308,5 +319,19 @@ public class Resources {
 		for (int sound : soundMap.values()) {
 			AL10.alDeleteBuffers(sound);
 		}
+	}
+
+	public static float[][][] addHeightmapByTexture(String path) {
+		float[][][] data = TextureUtils.getRawTextureData("res/" + path);
+		return data;
+	}
+	
+	public static int[][] addHeightmap(String path) {
+		int[][] data = TerrainUtils.readHeightFile(path);
+		return data;
+	}
+
+	public static void removeModel(String key) {
+		modelMap.remove(key).cleanUp();
 	}
 }

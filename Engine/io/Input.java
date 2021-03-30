@@ -7,7 +7,6 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
-import dev.Console;
 import gl.Window;
 import ui.UI;
 
@@ -23,7 +22,7 @@ public enum Input {
 	private static float mouseDX, mouseDY;
 	private static int mouseDWheel;
 
-	private static float backSpaceTimer = 0;
+	private static long backSpaceTimer = 0;
 	
 	public final static int KEY_WHEEL_UP = 10100;
 	public final static int KEY_WHEEL_DOWN = 10200;
@@ -231,15 +230,16 @@ public enum Input {
 			}
 		}
 
+		long curTime = System.currentTimeMillis();
 		if (INPUT.keys[0] == Keyboard.KEY_BACK) {
-			backSpaceTimer += Window.deltaTime;
+			//backSpaceTimer += Window.deltaTime;
 
-			if (backSpaceTimer > .45f) {
+			if (curTime - backSpaceTimer >= 500) {
 				output[0] = '\b';
-				backSpaceTimer = .41f;
+				backSpaceTimer += 32;
 			}
 		} else {
-			backSpaceTimer = 0f;
+			backSpaceTimer = curTime;
 		}
 
 		return output;

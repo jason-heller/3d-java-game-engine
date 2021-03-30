@@ -6,9 +6,7 @@ import java.util.List;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL15;
 
-import dev.Console;
 import gl.res.Model;
-import gl.res.PropModel;
 import gl.res.Vbo;
 
 class Attribute {
@@ -225,39 +223,5 @@ public class ModelBuilder {
 		}
 
 		indexRel += jump;
-	}
-
-	/*
-	 * public void addQuad(Vector3f p1, Vector3f p2, Vector3f p3, Vector3f p4,
-	 * Vector3f tex) {
-	 * 
-	 * Vector3f normal = Vector3f.cross(Vector3f.sub(p3, p1), Vector3f.sub(p2, p1));
-	 * normal.normalize().negate();
-	 * 
-	 * addVertex(p1); addVertex(p2); addVertex(p3); addVertex(p4);
-	 * 
-	 * addTextureCoord(tex.x + tex.z, tex.y); addTextureCoord(tex.x, tex.y);
-	 * addTextureCoord(tex.x, tex.y + tex.z); addTextureCoord(tex.x + tex.z, tex.y +
-	 * tex.z);
-	 * 
-	 * addNormal(normal); addNormal(normal); addNormal(normal); addNormal(normal);
-	 * 
-	 * addRelativeIndices(4, 0, 1, 3, 3, 1, 2); }
-	 * 
-	 * public void addTileableModel(float rx, float ry, float rz, float scale,
-	 * TileableModel tiledModel) { int len = tiledModel.getVertices(0).length / 3;
-	 * float[] vertices = tiledModel.getVertices(0); float[] uvs =
-	 * tiledModel.getUvs(0); float[] normals = tiledModel.getNormals(0);
-	 * 
-	 * for (int i = 0; i < len; i++) { addVertex(rx + vertices[i * 3]*scale, ry +
-	 * vertices[i * 3 + 1]*scale, rz + vertices[i * 3 + 2]*scale);
-	 * addTextureCoord(uvs[i * 2], uvs[i * 2 + 1]); addNormal(normals[i * 3],
-	 * normals[i * 3 + 1], normals[i * 3 + 2]); addColor(1, 1, 1, 0); }
-	 * 
-	 * int[] indices = tiledModel.getIndices(0); addRelativeIndices(len, indices); }
-	 */
-
-	public void addTileableModel(float rx, float ry, float rz, float scale, PropModel tiledModel, byte flags) {
-		// TODO finish this
 	}
 }

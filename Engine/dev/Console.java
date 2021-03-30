@@ -10,14 +10,14 @@ import org.lwjgl.input.Keyboard;
 
 import core.Application;
 import io.Input;
-import scene.overworld.inventory.Item;
 import ui.Font;
 import ui.Image;
 import ui.UI;
 import util.Colors;
+import util.StrUtils;
 
 public class Console {
-	private static final int VISIBLE_LINES = 32, MAX_LINES = 200;
+	private static final int VISIBLE_LINES = 24, MAX_LINES = 200;
 	private static int lineCopyInd = -1;
 
 	private static int x = 20, y = 20;
@@ -39,13 +39,14 @@ public class Console {
 	private static int dragX = 0, lastX = 0;
 	private static int dragY = 0, lastY = 0;
 
-	private static final float FONT_SIZE = .15f;
-	private static final int FONT_HEIGHT = (int) (20 * (FONT_SIZE / .3f));
+	private static final float FONT_SIZE = .2f;
+	private static final int FONT_HEIGHT = (int) (22 * (FONT_SIZE / .3f));
 
 	private static boolean playerWasAlreadyDisabled = false;
 
 	private static final Vector3f BACKGROUND_COLOR = Colors.BLACK;
 	private static final Vector3f BORDER_COLOR = Colors.GUI_BORDER_COLOR;
+	private static final int MAX_PREDICTIONS = 12;
 
 	private static int lineViewInd = 0;
 
@@ -99,7 +100,7 @@ public class Console {
 		final String[] lines = text.toString().split("\n");
 		for (final String line : lines) {
 			log.add(line);
-
+			
 			if (log.size() > MAX_LINES) {
 				log.remove(0);
 			}
@@ -124,7 +125,7 @@ public class Console {
 			if (command.getName().indexOf(input.split(" ")[0]) == 0) {
 				predictions.add(command.getName() + " " + command.getArgs());
 
-				if (predictions.size() > 8) {
+				if (predictions.size() > MAX_PREDICTIONS) {
 					return;
 				}
 			}
@@ -172,51 +173,14 @@ public class Console {
 		}
 
 		// Get args
-		String read = "";
-		final List<String> getArgs = new ArrayList<String>();
-		boolean insideQuotes = false;
-		for (int i = 0; i < string.length(); i++) {
-			final char c = string.charAt(i);
-
-			if (c == '\"') {
-				insideQuotes = !insideQuotes;
-
-				if (!insideQuotes) {
-					getArgs.add(read);
-					read = "";
-				}
-			}
-
-			else if (c == ' ' && !insideQuotes) {
-				if (read.length() > 0) {
-					getArgs.add(read);
-				}
-				read = "";
-			}
-
-			else {
-				read += c;
-			}
-		}
-
-		if (read.length() > 0) {
-			getArgs.add(read);
-		}
-
-		String[] strs = new String[getArgs.size()];
-		strs = getArgs.toArray(strs);
+		String[] strs = StrUtils.parseCommand(string);
 
 		if (strs == null || strs.length == 0) {
 			return;
 		}
 
 		final String command = strs[0];
-		final String[] args = new String[strs.length - 1];
-		if (strs.length > 1) {
-			for (int i = 1; i < strs.length; i++) {
-				args[i - 1] = strs[i];
-			}
-		}
+		final String[] args = StrUtils.argsOnly(strs);
 
 		// Now check if you typed a command
 		final Command cmd = CommandData.getCommand(command);
@@ -289,7 +253,7 @@ public class Console {
 				} else {
 					while (lineCopyInd < 0 && log.size() != 0) {
 						input = log.get(log.size() + lineCopyInd);
-						if (input.charAt(0) == ']' && input.length() > 1) {
+						if (input.length() > 0 && input.charAt(0) == ']' && input.length() > 1) {
 							input = input.substring(1);
 							predict(input);
 							break;
@@ -319,7 +283,7 @@ public class Console {
 					String newInput = "";
 					while (lineCopyInd > -log.size()) {
 						newInput = log.get(log.size() + lineCopyInd);
-						if (newInput.charAt(0) == ']' && newInput.length() > 1) {
+						if (newInput.length() > 0 && newInput.charAt(0) == ']' && newInput.length() > 1) {
 							break;
 						}
 
@@ -380,7 +344,7 @@ public class Console {
 			UI.drawRect(x, y + HEADER_HEIGHT + BORDER_WIDTH + (VISIBLE_LINES + 1) * FONT_HEIGHT, predWidth,
 					predictions.size() * FONT_HEIGHT + BORDER_WIDTH, BORDER_COLOR).setDepth(-9998);
 			for (int i = 0; i < predictions.size(); i++) {
-				final int lineY = y + (VISIBLE_LINES + i + 3) * FONT_HEIGHT;
+				final int lineY = (y + (VISIBLE_LINES + i + 2) * FONT_HEIGHT) + 5;
 
 				final String color = lineCopyInd == i ? "#w" : "#s";
 
@@ -391,11 +355,7 @@ public class Console {
 			final String blinker = System.currentTimeMillis() % 750 > 375 ? "|" : "";
 			
 			String[] inputSpace = input.split(" ");
-			
-			if ((input.indexOf("give") == 0 || input.indexOf("fill") == 0) && inputSpace.length >= 1  && inputSpace.length < 3) {
-				predictEnum(inputSpace.length == 2 ? inputSpace[1] : "", Item.names());
-			}
-			
+
 			UI.drawString(Font.consoleFont, ">" + input + blinker, x + BORDER_WIDTH * 2,
 					y + BORDER_WIDTH + (VISIBLE_LINES + 1) * FONT_HEIGHT, FONT_SIZE, 1280, false).setDepth(-99999);
 		}
@@ -432,7 +392,7 @@ public class Console {
 			y = lastY + Input.getMouseY() - dragY;
 		}
 
-		if (Input.isPressed(Keyboard.KEY_GRAVE)) {
+		if (Input.isPressed(Keyboard.KEY_GRAVE) && Debug.allowConsole) {
 			toggle();
 		}
 		

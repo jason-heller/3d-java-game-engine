@@ -91,7 +91,10 @@ public class FileUtils {
 	}
 
 	public static Vector3f readVec3(DataInputStream in) throws IOException {
-		return new Vector3f(in.readFloat(), in.readFloat(), in.readFloat());
+		float x = in.readFloat();
+		float y = in.readFloat();
+		float z = in.readFloat();
+		return new Vector3f(x, y, z);
 	}
 
 	public static void startReading() {

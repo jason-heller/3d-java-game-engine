@@ -5,14 +5,15 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 
 import core.Resources;
 import gl.Window;
 import gl.res.Model;
+import gl.ui.UIShader;
 import scene.Scene;
-import ui.render.UIShader;
 import util.MathUtil;
 
 public class UI {
@@ -247,12 +248,19 @@ public class UI {
 			} else {
 				// GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_COLOR);
 				final Text text = (Text) component;
+				float dx = text.offsetX / 1280f;
+				float dy = text.offsetY / 720f;
 				GL11.glBindTexture(GL11.GL_TEXTURE_2D, text.getFont().getTexture().id);
 				for (int i = 0; i < text.getLetters().length; i++) {
 					final Image image = text.getLetters()[i];
+					
+					Vector4f transform = new Vector4f(image.getTransform());
+					transform.x += dx;
+					transform.y += dy;
+					
 					shader.color.loadVec3(image.getColor());
 					shader.opacity.loadFloat(text.getOpacity());
-					shader.translation.loadVec4(image.getTransform());
+					shader.translation.loadVec4(transform);
 					shader.offset.loadVec4(image.getUvOffset());
 					shader.centered.loadBoolean(image.isCentered());
 					shader.rotation.loadFloat(image.getRotation());

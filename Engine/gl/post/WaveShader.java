@@ -4,9 +4,7 @@ import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 
-import core.Application;
 import gl.fbo.FrameBuffer;
-import scene.overworld.Overworld;
 import shader.UniformFloat;
 import shader.UniformSampler;
 import shader.UniformVec3;
@@ -25,11 +23,7 @@ public class WaveShader extends PostShader {
 
 	@Override
 	public void loadUniforms() {
-		if (!(Application.scene instanceof Overworld)) {
-			return;
-		}
-		Overworld ow = (Overworld)Application.scene;
-		Vector3f waterColor = ow.getEnviroment().getClosestBiome().waterColor;		// God is dead, my global variables killed him
+		Vector3f waterColor = new Vector3f(0,0,1);
 		this.timer.loadFloat(PostProcessing.getPostProcessingTimer());
 		this.color.loadVec3(waterColor);
 	}

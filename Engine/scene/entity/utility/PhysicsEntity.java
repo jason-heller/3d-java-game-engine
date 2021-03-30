@@ -1,39 +1,52 @@
 package scene.entity.utility;
 
+
+import java.util.List;
+
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import core.Application;
-import geom.AABB;
-import geom.Manifold;
+import core.Resources;
+import dev.Debug;
+import geom.AxisAlignedBBox;
+import geom.CollideUtils;
+import geom.MTV;
+import geom.Plane;
 import gl.Window;
-import map.Chunk;
-import map.Material;
-import map.Terrain;
-import map.prop.Props;
-import map.prop.StaticProp;
-import map.prop.StaticPropProperties;
-import map.tile.Tile;
-import scene.Scene;
+import gl.line.LineRender;
+import gl.res.Texture;
+import map.architecture.Architecture;
+import map.architecture.ArchitectureHandler;
+import map.architecture.Material;
+import map.architecture.components.ArcClip;
+import map.architecture.components.ArcEdge;
+import map.architecture.components.ArcFace;
+import map.architecture.components.ArcTriggerClip;
+import map.architecture.vis.Bsp;
+import map.architecture.vis.BspLeaf;
+import map.ground.TerrainSampler;
+import scene.PlayableScene;
 import scene.entity.Entity;
 import scene.overworld.Overworld;
+import util.Colors;
 
 public abstract class PhysicsEntity extends Entity {
 	
 	private static final float DEFAULT_FRICTION = 3f;
-
-	private static final float ALLOWABLE_STEP = .1f;
 	
 	protected boolean grounded = false;
 	public boolean previouslyGrounded = false;
-	private boolean sliding = false;
+	protected boolean sliding = false;
 	protected boolean submerged = false;
 
 	private boolean fullySubmerged = false;
 	private boolean climbing = false;
 	
-	private static float gravity = 17f;
-	private static float maxGravity = -40f;
+	public static float gravity = 25f;
+	public static float maxGravity = -200f;
+	
+	protected Material materialStandingOn = Material.ROCK;
 	
 	public float maxSpeed = 25f, maxAirSpeed = 5f, maxWaterSpeed = 1f;
 	public float friction = DEFAULT_FRICTION;
@@ -41,25 +54,35 @@ public abstract class PhysicsEntity extends Entity {
 
 	public boolean visible = true;
 	
-	private Material stoodOnMaterial = Material.NONE;
+	private boolean collideWithTerrain;
 
-	public PhysicsEntity(String model, String diffuse) {
-		super(model, diffuse);
-		aabb = new AABB(new Vector3f(), new Vector3f());
+	protected static final float SLIDE_ANGLE = .9f;
+	protected static final float EPSILON = 0.01f;
+
+	protected AxisAlignedBBox bbox;
+	public Vector3f vel = new Vector3f();
+	
+	private ArchitectureHandler arcHandler;
+	
+	public PhysicsEntity(String name, Vector3f bounds) {
+		super(name);
+		bbox = new AxisAlignedBBox(pos, bounds);
+		collideWithTerrain = (Application.scene instanceof Overworld);
+		arcHandler = ((PlayableScene)Application.scene).getArcHandler();
 	}
 
 	public void accelerate(Vector3f dir, float amount) {
 		if (climbing) {
-			velocity.y += amount * Window.deltaTime;
+			vel.y += amount * Window.deltaTime;
 
-			velocity.x += dir.x * amount * Window.deltaTime;
-			velocity.z += dir.z * amount * Window.deltaTime;
+			vel.x += dir.x * amount * Window.deltaTime;
+			vel.z += dir.z * amount * Window.deltaTime;
 		} else {
-			final float projVel = Vector3f.dot(velocity, dir); // Vector projection of Current velocity onto accelDir.
-			float accelVel = amount * Window.deltaTime; // Accelerated velocity in direction of movment
+			final float projVel = Vector3f.dot(vel, dir); // Vector projection of Current vel onto accelDir.
+			float accelVel = amount * Window.deltaTime; // Accelerated vel in direction of movment
 
-			// If necessary, truncate the accelerated velocity so the vector projection does
-			// not exceed max_velocity
+			// If necessary, truncate the accelerated vel so the vector projection does
+			// not exceed max_vel
 			final float speedCap;
 			if (submerged) {
 				speedCap = maxWaterSpeed;
@@ -73,317 +96,9 @@ public abstract class PhysicsEntity extends Entity {
 				accelVel = speedCap - projVel;
 			}
 
-			velocity.x += dir.x * accelVel;
-			velocity.y += dir.y * accelVel;
-			velocity.z += dir.z * accelVel;
-		}
-	}
-
-	private void collide(Terrain terrain) {
-		stoodOnMaterial = Material.NONE;
-		Chunk chunk = terrain.getChunkAt(position.x, position.z);
-		
-		if (chunk == null) return;
-		
-		final float relx = position.x - chunk.realX;
-		final float relz = position.z - chunk.realZ;
-		int tx = ((int) Math.floor(relx / Chunk.POLYGON_SIZE));
-		int tz = ((int) Math.floor(relz / Chunk.POLYGON_SIZE));
-				
-		//if (tx < 0 || tz < 0 || tx >= Chunk.VERTEX_COUNT || tz >= Chunk.VERTEX_COUNT) return;
-		
-		submerged = false;
-		fullySubmerged = false;
-		final float waterHeight = chunk.getWaterHeight(tx, tz);
-		if (waterHeight != Float.MIN_VALUE && waterHeight > position.y + .2f) {
-			submerged = true;
-			
-			if (waterHeight > position.y + aabb.getBounds().y*2) {
-				fullySubmerged = true;
-			}
-		}
-		
-		tx = (tx*2)+1;
-		tz = (tz*2)+1;
-		// TODO: Spaghetti code ahead, refactor
-		
-		// Top
-		testWall(chunk, tx, tz - 1, tx + 1, tz - 1, 2);
-		// Bottom
-		testWall(chunk, tx, tz + 2, tx + 1, tz + 2, 3);
-		// Left
-		testWall(chunk, tx - 1, tz, tx - 1, tz + 1, 0);
-		// Right
-		testWall(chunk, tx + 2, tz, tx + 2, tz + 1, 1);
-		
-		tx = ((tx-1)/2);
-		tz = ((tz-1)/2);
-		
-		final float w = aabb.getBounds().x-.01f;
-		
-		Chunk tr = terrain.getChunkAt(position.x+w, position.z-w),
-				bl = terrain.getChunkAt(position.x-w, position.z-w),
-				tl = terrain.getChunkAt(position.x-w, position.z+w),
-				br = terrain.getChunkAt(position.x+w, position.z+w);
-		
-		if (tr == null || tl == null || br == null || bl == null) {
-			return;
-		}
-		
-		final float minHeight = Math.max(
-				tr.getPolygon(position.x+w, position.z-w).barryCentric(position.x+w, position.z-w), Math.max(
-				bl.getPolygon(position.x-w, position.z-w).barryCentric(position.x-w, position.z-w), Math.max(
-				tl.getPolygon(position.x-w, position.z+w).barryCentric(position.x-w, position.z+w), 
-				br.getPolygon(position.x+w, position.z+w).barryCentric(position.x+w, position.z+w))));
-		
-		
-		if (position.y <= minHeight || position.y <= minHeight + ALLOWABLE_STEP && previouslyGrounded) {
-			position.y = minHeight;
-			grounded = true;
-			velocity.y = 0;
-		} else {
-			grounded = false;
-		}
-		
-		collideWithProps(terrain);
-		
-		collideWithBuildings(terrain);
-		
-	}
-	
-	private void collideWithProps(Terrain terrain) {
-		final float w = aabb.getBounds().x-.01f;
-		testProp(terrain, position.x+w, position.z-w);
-		testProp(terrain, position.x-w, position.z-w);
-		testProp(terrain, position.x-w, position.z+w);
-		testProp(terrain, position.x+w, position.z+w);
-		//testProp(terrain, position.x, position.z);
-	}
-	
-	private void testProp(Terrain terrain, float px, float pz) {
-		Chunk chunk = terrain.getChunkAt(px, pz);
-		
-		if (chunk == null) return;
-		
-		int tileX = (int)(px - chunk.realX);
-		int tileZ = (int)(pz - chunk.realZ);
-		
-		Props prop = chunk.getProps().getProp(tileX, tileZ);
-		if (prop != null) {
-			StaticProp staticProp = Props.get(prop);
-			
-			if (staticProp.isSolid()) {
-			
-				final StaticPropProperties tileProps = chunk.getProps().getEntityProperties(tileX, tileZ);
-				
-				final float x = chunk.realX + (tileX + .5f);
-				final float z = chunk.realZ + (tileZ + .5f);
-				
-				final StaticProp tile = Props.get(prop);
-				Vector3f bounds = tile.getBounds();
-	
-				float tileY = staticProp.isGrounded() ? chunk.heightLookup(tileX, tileZ) : chunk.getWaterHeight(tileX, tileZ);
-				
-				final float y = tileY + (tileProps.scale * bounds.y);
-	
-				final AABB aabb = new AABB(x, y, z, bounds.x * tileProps.scale, bounds.y * tileProps.scale, bounds.z * tileProps.scale);
-				this.aabbCollide(tile.getMaterial(), aabb);
-			}
-		}
-	}
-
-	private void collideWithBuildings(Terrain t) {
-		aabb.setCenter(position.x, position.y + aabb.getBounds().y, position.z);
-
-		Tile tile;
-		
-		for(float i = position.x - 1f; i <= position.x + 1f; i += 1f) {
-			for(float j = position.z - 1f; j <= position.z + 1f; j += 1f) {
-				for(float k = position.y + 2; k > position.y-1; k -= 1f) {
-					Chunk chunkPtr = t.getChunkAt(i, j);
-					if (chunkPtr == null) continue;
-					
-					float tx = (float)Math.floor(i);
-					float tz = (float)Math.floor(j);
-					float ty = (float)Math.floor(k);
-					
-					tile = chunkPtr.getBuilding().getTileAt(tx - chunkPtr.realX, ty, tz - chunkPtr.realZ);
-					
-					if (tile != null) {
-						testTile(tile, position.x, position.y, position.z,
-								tx, ty, tz, (k == position.y));
-					}
-				}
-			}
-		}
-	}
-	
-	protected void addTile(Tile[] tiles, Tile tileAt) {
-		if (tileAt == null) return;
-		for(int i = 0; i < 4; i++) {
-			if (tiles[i] == tileAt) {
-				return;
-			}
-			
-			if (tiles[i] == null) {
-				tiles[i] = tileAt;
-				return;
-			}
-		}
-	}
-
-	private void testTile(Tile tile, float px ,float py , float pz, float tx, float ty, float tz, boolean stick) {
-		byte walls = tile.getWalls();
-		AABB tileBounds = new AABB(0,0,0,0,0,0);
-
-		if (walls != 0) {
-			if (tile.isSolid(2) && (walls & 4) != 0) {
-				tileBounds.setMinMax(tx, ty-.05f, tz, tx+1, ty+.05f, tz+1);
-				aabbCollide(tile.getMaterial(2), tileBounds);
-			}
-			
-			if (tile.isSolid(0) && (walls & 1) != 0) {
-				tileBounds.setMinMax(tx, ty, tz-.05f, tx+1, ty+1, tz+.05f);
-				aabbCollide(tile.getMaterial(0), tileBounds);
-			}
-			
-			if (tile.isSolid(1) && (walls & 2) != 0) {
-				tileBounds.setMinMax(tx+.95f, ty, tz, tx+1.05f, ty+1, tz+1);
-				aabbCollide(tile.getMaterial(1), tileBounds);
-			}
-		}
-		
-		if ((walls & 120) != 0) {
-			float dx = position.x - tx;//((position.x % 1f) + 2) % 1f;
-			float dz = position.z - tz;//((position.z % 1f) + 2) % 1f;
-			
-			if (dx < 0 || dz < 0 || dx > 1|| dz > 1) {
-				float f = aabb.getBounds().x;
-				tileBounds.setMinMax(tx+f, ty+f, tz+f, tx+(1-f), ty+(1-f), tz+(1-f));
-				aabbCollide(tile.getMaterial(3), tileBounds);
-				return;
-			}
-			
-			float yNew = 0;
-
-			if (tile.isSolid(3) && (walls & 64) != 0 && (position.y <= ty + (1 - dx) || previouslyGrounded)) {
-				yNew = ty + (1f - dx);
-			}
-			
-			if (tile.isSolid(4) && (walls & 32) != 0 && (position.y <= ty + dx || previouslyGrounded)) {
-				yNew = ty + dx;
-			}
-			
-			if (tile.isSolid(5) && (walls & 8) != 0 && (position.y <= ty + (1 - dz) || previouslyGrounded)) {
-				yNew = ty + (1f - dz);
-			}
-			
-			if (tile.isSolid(6) && (walls & 16) != 0 && (position.y <= ty + dz || previouslyGrounded)) {
-				yNew = ty + dz;
-			}
-			
-			if (Math.abs(position.y - yNew) < .5) {
-				velocity.y = 0;
-				grounded = true;
-				position.y = yNew;
-			} else {
-				float f = aabb.getBounds().x;
-				tileBounds.setMinMax(tx+f, ty+f, tz+f, tx+(1-f), ty+(1-f), tz+(1-f));
-				aabbCollide(tile.getMaterial(6), tileBounds);
-			}
-		}
-	}
-	
-	private void aabbCollide(Material material, AABB other) {
-		Manifold manifold = aabb.collide(other);
-		
-		if (manifold != null) {
-			Vector3f axis = manifold.getAxis();
-			float aabbTop = (other.getY() + other.getBounds().y);
-			float dy = aabbTop - position.y;
-			if (grounded && dy < ALLOWABLE_STEP && dy > 0) {
-				position.y = aabbTop;
-				aabb.setCenter(position.x, position.y + aabb.getBounds().y, position.z);
-				return;
-			}
-			
-			position.add(Vector3f.mul(axis, manifold.getDepth()));
-			aabb.setCenter(position.x, position.y + aabb.getBounds().y, position.z);
-			
-			if (axis.y == 1f) {
-				grounded = true;
-				stoodOnMaterial = material;
-			}
-			
-			if (axis.x != 0) velocity.x = 0;
-			if (axis.y != 0) velocity.y = 0;
-			if (axis.z != 0) velocity.z = 0;
-		}
-	}
-	
-	private void testWall(Chunk chunk, int rx1, int rz1, int rx2, int rz2, int n) {
-		if (rx1 < 0 || rz1 < 0 || rx2 >= Chunk.VERTEX_COUNT || rz2 >= Chunk.VERTEX_COUNT) return;
-		
-		float y1 = chunk.heightmap[rx1][rz1];
-		float y2 = chunk.heightmap[rx2][rz2];
-	
-		float x1 = ((rx1/2) * Chunk.POLYGON_SIZE) + chunk.realX;
-		//int x2 = ((rx2/2) * Chunk.POLYGON_SIZE) + (chunk.x * Chunk.CHUNK_SIZE);
-		float z1 = ((rz1/2) * Chunk.POLYGON_SIZE) + chunk.realZ;
-		//int z2 = ((rz2/2) * Chunk.POLYGON_SIZE) + (chunk.z * Chunk.CHUNK_SIZE);
-		switch(n) {
-		case 0:
-			if (y1 == chunk.heightmap[rx1+1][rz1] && y2 == chunk.heightmap[rx2+1][rz2])
-				return;
-			
-			if (y1 + ((y2 - y1) * ((position.z % Chunk.POLYGON_SIZE) / Chunk.POLYGON_SIZE)) <= position.y
-					+ ALLOWABLE_STEP) {
-				return;
-			}
-			if (position.x - aabb.getBounds().x < x1) {
-				position.x = x1 + aabb.getBounds().x;
-				velocity.x = 0;
-			}
-			break;
-		case 1:
-			if (y1 == chunk.heightmap[rx1-1][rz1] && y2 == chunk.heightmap[rx2-1][rz2])
-				return;
-			
-			if (y1 + ((y2 - y1) * ((position.z % Chunk.POLYGON_SIZE) / Chunk.POLYGON_SIZE)) <= position.y
-					+ ALLOWABLE_STEP) {
-				return;
-			}
-			if (position.x + aabb.getBounds().x > x1) {
-				position.x = x1 - aabb.getBounds().x;
-				velocity.x = 0;
-			}
-			break;
-		case 2:
-			if (y1 == chunk.heightmap[rx1][rz2+1] && y2 == chunk.heightmap[rx2][rz2+1])
-				return;
-			
-			if (y1 + ((y2 - y1) * ((position.x % Chunk.POLYGON_SIZE) / Chunk.POLYGON_SIZE)) <= position.y
-					+ ALLOWABLE_STEP) {
-				return;
-			}
-			if (position.z - aabb.getBounds().x < z1) {
-				position.z = z1 + aabb.getBounds().x;
-				velocity.z = 0;
-			}
-			break;
-		case 3:
-			if (y1 == chunk.heightmap[rx1][rz2-1] && y2 == chunk.heightmap[rx2][rz2- 1])
-				return;
-			
-			if (y1 + ((y2 - y1) * ((position.z % Chunk.POLYGON_SIZE) / Chunk.POLYGON_SIZE)) <= position.y
-					+ ALLOWABLE_STEP) {
-				return;
-			}
-			if (position.z + aabb.getBounds().x > z1) {
-				position.z = z1 - aabb.getBounds().x;
-				velocity.z = 0;
-			}
-			break;
+			vel.x += dir.x * accelVel;
+			vel.y += dir.y * accelVel;
+			vel.z += dir.z * accelVel;
 		}
 	}
 
@@ -409,16 +124,16 @@ public abstract class PhysicsEntity extends Entity {
 
 	public void jump(float height) {
 		if (climbing) {
-			velocity.x = -velocity.x;
-			velocity.z = -velocity.z;
-			velocity.y = height;
+			vel.x = -vel.x;
+			vel.z = -vel.z;
+			vel.y = height;
 			climbing = false;
 			grounded = false;
 			sliding = false;
 
 			//previouslyGrounded = false;
 		} else {
-			velocity.y = height;
+			vel.y = height;
 			grounded = false;
 			sliding = false;
 			//previouslyGrounded = false;
@@ -426,23 +141,26 @@ public abstract class PhysicsEntity extends Entity {
 	}
 
 	@Override
-	public void update(Scene scene) {
-		aabb.setCenter(position.x, position.y + aabb.getBounds().y, position.z);
+	public void update(PlayableScene scene) {
+		if (Debug.showHitboxes) {
+			LineRender.drawBox(bbox.getCenter(), bbox.getBounds(), Colors.YELLOW);
+		}
 		
+		//aabb.setCenter(pos.x, pos.y, pos.z);
 		if (!submerged && !climbing) {
-			velocity.y = Math.max(velocity.y - gravity * Window.deltaTime, maxGravity);
+			vel.y = Math.max(vel.y - gravity * Window.deltaTime, maxGravity);
 		}
 
 		if (!climbing) {
-			position.x += velocity.x * Window.deltaTime;
-			position.z += velocity.z * Window.deltaTime;
+			pos.x += vel.x * Window.deltaTime;
+			pos.z += vel.z * Window.deltaTime;
 		}
 
-		position.y += velocity.y * Window.deltaTime;
+		pos.y += vel.y * Window.deltaTime;
 
 		// Friction
 		if (!sliding && previouslyGrounded || submerged) {
-			final float speed = velocity.length();
+			final float speed = vel.length();
 			if (speed != 0) {
 				float drop = speed * friction * Window.deltaTime;
 				if (submerged) {
@@ -450,67 +168,251 @@ public abstract class PhysicsEntity extends Entity {
 					grounded = false;
 				}
 				final float offset = Math.max(speed - drop, 0) / speed;
-				velocity.mul(offset); // Scale the velocity based on friction.
+				vel.mul(offset); // Scale the vel based on friction.
 			}
 		} else if (climbing) {
-			final float speed = Math.abs(velocity.y);
+			final float speed = Math.abs(vel.y);
 			if (speed != 0) {
 				final float drop = speed * friction * Window.deltaTime;
 				final float offset = Math.max(speed - drop, 0) / speed;
-				velocity.y *= offset;
-				velocity.x = Math.signum(velocity.x) * velocity.y;
-				velocity.z = Math.signum(velocity.z) * velocity.y;
+				vel.y *= offset;
+				vel.x = Math.signum(vel.x) * vel.y;
+				vel.z = Math.signum(vel.z) * vel.y;
 			}
 		}
 
 		else if (airFriction != 0f && !sliding && !submerged) {
-			final float speed = new Vector2f(velocity.x, velocity.z).length();
+			final float speed = new Vector2f(vel.x, vel.z).length();
 			if (speed != 0f) {
 				final float drop = speed * airFriction * Window.deltaTime;
 				final float offset = Math.max(speed - drop, 0) / speed;
-				velocity.set(velocity.x * offset, velocity.y, velocity.z * offset); // Scale the velocity based on
+				vel.set(vel.x * offset, vel.y, vel.z * offset); // Scale the vel based on
 																					// friction.
 			}
 		}
 
 		previouslyGrounded = grounded;
 
-		collide(((Overworld) Application.scene).getEnviroment().getTerrain());
+		if (collideWithTerrain)
+			terrainCollide();
+		else
+			grounded = false;
+		
+		climbing = false;
+		
+		Architecture architecture = arcHandler.getArchitecture();
+		Bsp bsp = architecture.bsp;
+		Vector3f max = Vector3f.add(bbox.getCenter(), bbox.getBounds());
+		Vector3f min = Vector3f.sub(bbox.getCenter(), bbox.getBounds());
+		
+		List<BspLeaf> leaves = bsp.walk(max, min);
+		List<ArcFace> faces = bsp.getFaces(leaves);
+		
+		mapGeometryCollide(bsp, faces);
+		mapClipCollide(architecture, leaves);
+		
 		super.update(scene);
 	}
-	
-	@Override
-	public void tick(Scene scene) {
-		super.tick(scene);
+
+	private void mapClipCollide(Architecture arc, List<BspLeaf> leaves) {
+		Bsp bsp = arc.bsp;
+		for(BspLeaf leaf : bsp.leaves) {
+			for(short clipId : leaf.clips) {
+				ArcClip clip = bsp.clips[clipId];
+				
+				if (arc.getActiveTrigger(this) == clip)
+					continue;
+				
+				Plane[] planes = new Plane[clip.numPlanes];
+				for(int i = 0; i < clip.numPlanes; i++) {
+					planes[i] = bsp.planes[clip.firstPlane + i];
+				}
+				
+				MTV mtv = bbox.collide(clip.bbox);
+				//MTV mtv = CollideUtils.convexHullBoxCollide(planes, bbox);
+				if (mtv != null) {
+					boolean doCollide = clip.interact(this, true);
+					if (clip instanceof ArcTriggerClip) {
+						arc.setTriggerActive(this, (ArcTriggerClip) clip);
+					}
+					
+					if (doCollide) {
+						collide(mtv);
+					}
+				}
+			}
+		}
+	}
+
+	private void terrainCollide() {
+		float terrainY = TerrainSampler.barycentric(pos.x, pos.z);
+		
+		if (pos.y <= terrainY) {
+			pos.y = terrainY;
+			grounded = true;
+		} else {
+			grounded = false;
+		}
 	}
 	
-	@Override
-	public void hurt(int  damage, Entity attacker, float invulnerabiltiyTime) {
-		if (invulnerabilityTimer == 0 && isHurtable()) {
-			hp -=  damage;
-			invulnerabilityTimer = invulnerabiltiyTime;
-			if (attacker != null) {
-				this.jump(6f);
-				this.accelerate(Vector3f.sub(attacker.position, position).negate(), 150f);
+	private void mapGeometryCollide(Bsp bsp, List<ArcFace> faces) {
+		if (previouslyGrounded  && !grounded) {
+			floorStickGeomCol(bsp, faces);
+			mapGeometryCollide(bsp, faces, 1);
+			return;
+		}
+		
+		mapGeometryCollide(bsp, faces, 0);
+	}
+	
+	private void mapGeometryCollide(Bsp bsp, List<ArcFace> faces, int iterations) {
+		MTV nearest = null;
+		ArcFace nearestFace = null;
+
+		for(ArcFace face : faces) {
+			
+			Plane plane = bsp.planes[face.planeId];
+			Vector3f normal = plane.normal;
+			
+			MTV mtv = CollideUtils.bspFaceBoxCollide(bsp.vertices, bsp.edges, bsp.surfEdges, face, normal, bbox);
+			
+			if (Debug.viewCollide && mtv != null) {
+				for(int i = face.firstEdge; i < face.numEdges + face.firstEdge; i++) {
+					ArcEdge edge = bsp.edges[Math.abs(bsp.surfEdges[i])];
+					LineRender.drawLine(bsp.vertices[edge.start], bsp.vertices[edge.end], new Vector3f(0,0,1f));
+				}
+			}
+			
+			if (mtv != null && (nearest == null || nearest.compareTo(mtv) >= 0)) {
+				nearest = mtv;
+				nearestFace = face;
 			}
 		}
 		
-		if (hp <= 0) {
-			die();
+		if (nearest != null) {
+			MTV mtv = nearest;
+			
+			collide(mtv/*, bsp.planes[nearestFace.planeId]*/);
+			faces.remove(nearestFace);
+			
+		} else {
+			return;
 		}
 		
+		if (iterations != 7) {	// Only allow up to 8 iterations
+			mapGeometryCollide(bsp, faces, iterations + 1);
+		}
+	}
+
+	private void floorStickGeomCol(Bsp bsp, List<ArcFace> faces) {
+		MTV nearest = null;
+		ArcFace nearestFace = null;
+
+		for(ArcFace face : faces) {
+			Plane plane = bsp.planes[face.planeId];
+			Vector3f normal = plane.normal;
+			if (normal.y < 0.75f)
+				continue;
+			
+			MTV mtv = CollideUtils.bspFaceBoxCollide(bsp.vertices, bsp.edges, bsp.surfEdges, face, normal, bbox);
+			
+			if (Debug.viewCollide && mtv != null) {
+				for(int i = face.firstEdge; i < face.numEdges + face.firstEdge; i++) {
+					ArcEdge edge = bsp.edges[Math.abs(bsp.surfEdges[i])];
+					LineRender.drawLine(bsp.vertices[edge.start], bsp.vertices[edge.end], new Vector3f(0,0,1f));
+				}
+			}
+			
+			if (mtv != null && (nearest == null || nearest.compareTo(mtv) >= 0)) {
+				nearest = mtv;
+				nearestFace = face;
+				Architecture arc = arcHandler.getArchitecture();
+
+				int id = arc.getTexData()[face.texId].textureId;
+				if (id != -1) {
+					String texName = arc.getMapTextureRefs()[id];
+					Texture tex = Resources.getTexture(texName);
+					
+					materialStandingOn = tex.getMaterial();
+				}
+			}
+		}
+		
+		if (nearest != null) {
+			MTV mtv = nearest;
+			collideWithFloor(mtv);
+			
+			faces.remove(nearestFace);
+		} else
+			return;
 	}
 	
-	@Override
-	public void destroy() {
-		super.destroy();
+	private void collide(MTV mtv) {
+		if (mtv.getPlane().normal.y > .5f) {
+			collideWithFloor(mtv);
+			/*Vector3f tempVel = new Vector3f(vel);
+			vel.y = 0f;
+			pos.add(mtv.getMTV());
+			vel.x = tempVel.x;
+			vel.z = tempVel.z;*/
+			return;
+		}
+		
+		if (mtv.getDepth() > 0.01f) {
+			Plane plane = mtv.getPlane();
+			Vector3f projVel = plane.projectPoint(Vector3f.add(pos, vel));
+			Vector3f projPos = plane.projectPoint(pos);
+			vel.set(Vector3f.sub(projVel, projPos));
+		}
+		
+		pos.add(mtv.getMTV());
+	}
+
+	protected void collideWithFloor(MTV mtv) {
+		grounded = true;
+		
+		// Easy out
+		if (mtv.getAxis().y == 1f) {
+			pos.y += mtv.getMTV().y;
+			vel.y = 0f;
+			return;
+		}
+		
+		vel.y = mtv.getAxis().y < .99f ? -6f: 0f;
+		
+		Plane plane = mtv.getPlane();
+		float depth = Float.NEGATIVE_INFINITY;
+		
+		final Vector3f[] points = new Vector3f[] {
+				new Vector3f(bbox.getBounds().x, -bbox.getBounds().y, bbox.getBounds().z),
+				new Vector3f(bbox.getBounds().x, -bbox.getBounds().y, -bbox.getBounds().z),
+				new Vector3f(-bbox.getBounds().x, -bbox.getBounds().y, bbox.getBounds().z),
+				new Vector3f(-bbox.getBounds().x, -bbox.getBounds().y, -bbox.getBounds().z)
+				};
+		
+		for(int i = 0; i < 4; i++) {
+			float newDepth = plane.collide(Vector3f.add(pos, points[i]), Vector3f.Y_AXIS);
+
+			if (!  Float.isNaN(newDepth) && newDepth > depth) 
+				depth = newDepth;
+		}
+		
+		if (depth == Float.NEGATIVE_INFINITY) {
+			return;
+		}
+
+		pos.y += depth;
+	}
+
+	public AxisAlignedBBox getBBox() {
+		return bbox;
 	}
 	
-	public AABB getAABB() {
-		return aabb;
+	public Material getMaterialStandingOn() {
+		return materialStandingOn;
 	}
-	
-	public Material getStoodOnMaterial() {
-		return stoodOnMaterial;
+
+	public void setClimbing(boolean climbing) {
+		this.climbing = climbing;
 	}
 }

@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.lwjgl.opengl.GL11;
-
 import core.Resources;
 import gl.res.Texture;
 import io.FileUtils;
@@ -24,7 +22,7 @@ public class Font {
 	private static final int DESIRED_PADDING = 3;
 	public static final float defaultSize = .3f;
 	public static Font defaultFont = new Font("font/verdana");
-	public static Font consoleFont = defaultFont;
+	public static Font consoleFont = defaultFont;//new Font("font/vcr_osd_mono");
 
 	private final Map<Integer, Character> metaData = new HashMap<Integer, Character>();
 
@@ -48,10 +46,6 @@ public class Font {
 		return metaData.get(ascii);
 	}
 
-	public int getHeight() {
-		return paddingHeight;
-	}
-
 	public int getNumCharacters() {
 		return metaData.size();
 	}
@@ -73,10 +67,14 @@ public class Font {
 		return actualValues;
 	}
 
-	public int getWidth() {
+	/*public int getPaddingWidth() {
 		return paddingWidth;
+	}*/
+	
+	public int getPaddingHeight() {
+		return paddingHeight;
 	}
-
+	
 	private void load(String path) {
 		try {
 			// Open file

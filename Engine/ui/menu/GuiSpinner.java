@@ -3,37 +3,40 @@ package ui.menu;
 import io.Input;
 import ui.Font;
 import ui.Image;
+import ui.Text;
 import ui.UI;
 import ui.menu.listener.MenuListener;
 
 public class GuiSpinner extends GuiElement {
 	private int index;
-	private final float textWidth = 128;
+	private float textWidth = 128;
 	private MenuListener listener = null;
 
-	private final String label;
-	private final String[] options;
+	private final Text text;
+	private final Text[] options;
 
 	private final Image lArrow, rArrow;
 
 	public GuiSpinner(int x, int y, String label, int index, String... options) {
 		this.x = x;
 		this.y = y;
-		this.label = label;
-		this.options = options;
+		this.text = new Text(Font.defaultFont, label, 0, 0, Font.defaultSize, false);
+		this.options = new Text[options.length];
 		this.index = index;
-
-		int longestStrLength = 0;
-		for (final String option : options) {
-			longestStrLength = Math.max(longestStrLength, option.length());
+		
+		float longestStrLength = 0;
+		for(int i = 0; i < options.length; i++) {
+			this.options[i] = new Text(Font.consoleFont, options[i], 0, -4, Font.defaultSize, true);
+			longestStrLength = Math.max(longestStrLength, this.options[i].getWidth());
 		}
 
-		width = Font.defaultFont.getWidth() * (longestStrLength + 1) + 32;
+		width = (int) longestStrLength + 32;
+		textWidth = (int) (32 + text.getWidth());
 
-		height = 16;
+		height = (int) (text.getHeight() + 16);
 
-		lArrow = new Image("gui_arrow", x + 16 + textWidth, y + 8);
-		rArrow = new Image("gui_arrow", x + 16 + width + textWidth, y + 8);
+		lArrow = new Image("gui_arrow", x + 16 + textWidth, y + 9);
+		rArrow = new Image("gui_arrow", x + 16 + width + textWidth, y + 9);
 		lArrow.setUvOffset(0, 0, -1, 1);
 		lArrow.setDepth(9);
 		rArrow.setDepth(9);
@@ -57,7 +60,8 @@ public class GuiSpinner extends GuiElement {
 
 	@Override
 	public void update() {
-		UI.drawString(label, x, y - 6, false);
+		text.setPosition(x, y - 6);
+		UI.drawString(text);
 
 		if (!tempDisable && hasFocus && Input.getMouseX() > x + textWidth
 				&& Input.getMouseX() < x + width + textWidth + 32 && Input.getMouseY() > y
@@ -77,7 +81,7 @@ public class GuiSpinner extends GuiElement {
 				hasFocus = true;
 
 				if (listener != null) {
-					listener.onClick(options[index], index);
+					listener.onClick(options[index].getText(), index);
 				}
 			}
 		}
@@ -86,6 +90,7 @@ public class GuiSpinner extends GuiElement {
 		UI.drawImage(rArrow);
 		// gui.drawImage("gui_arrow", x,y);
 		// gui.drawImage("gui_arrow", x+16+128,y);
-		UI.drawString(options[index], x + 16 + (int) textWidth + width / 2, y, true);
+		options[index].setPosition(x + 16 + (int) textWidth + width / 2, y);
+		UI.drawString(options[index]);
 	}
 }

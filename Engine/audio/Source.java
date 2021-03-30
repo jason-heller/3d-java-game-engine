@@ -7,13 +7,15 @@ import org.lwjgl.openal.EFX10;
 
 import core.Resources;
 
-class Source {
+public class Source {
 	private final int sourceId;
 	private float vol = 1.0f;
 	private int bufferOffset = 0;
+	private boolean isMusic = false;
 
 	public Source() {
 		sourceId = AL10.alGenSources();
+
 		// defaultAttenuation();
 		AL10.alSourcef(sourceId, AL10.AL_ROLLOFF_FACTOR, 0f);
 		update();
@@ -22,11 +24,12 @@ class Source {
 	public void applyEffect(SoundEffects effect) {
 		AL11.alSource3i(sourceId, EFX10.AL_AUXILIARY_SEND_FILTER, AudioHandler.getEffects().get(effect).getSlot(), 0,
 				EFX10.AL_FILTER_NULL);
-		AL10.alSourcei(sourceId, AL11.AL_SAMPLE_OFFSET, bufferOffset);
+		//AL10.alSourcei(sourceId, AL11.AL_SAMPLE_OFFSET, bufferOffset);
 	}
 
 	public void applyFilter(SoundFilters filter) {
 		AL10.alSourcei(sourceId, EFX10.AL_DIRECT_FILTER, AudioHandler.getFilters().get(filter));
+		//AL10.alSourcei(sourceId, AL11.AL_SAMPLE_OFFSET, bufferOffset);
 	}
 
 	public void defaultAttenuation() {
@@ -53,10 +56,12 @@ class Source {
 		AL10.alSourcePause(sourceId);
 	}
 
-	public void play(int buffer) {
+	public void play(int buffer, boolean isMusic) {
+		this.isMusic = isMusic;
 		stop();
 		if (soundHasVariance(buffer)) {
 			setPitch(.8f + (float) Math.random() * .4f);
+			setGain(1f);
 			// if (soundHasAlternatives(buffer)) {
 			buffer -= (int) (Math.random() * (((buffer >> 16) & 0xf) + 1));
 			// }
@@ -65,14 +70,20 @@ class Source {
 			
 		} else {
 			setPitch(1f);
+			setGain(1f);
 			buffer -= (int) (Math.random() * (((buffer >> 16) & 0xf) + 1));
 			AL10.alSourcei(sourceId, AL10.AL_BUFFER, (buffer & 0xffff));
 			AL10.alSourcePlay(sourceId);
+			
 		}
 	}
 
 	public void play(String sound) {
-		play(Resources.getSound(sound));
+		play(Resources.getSound(sound), false);
+	}
+	
+	public void playAsMusic(String sound) {
+		play(Resources.getSound(sound), true);
 	}
 	
 	public static boolean soundHasVariance(int buffer) {
@@ -101,7 +112,7 @@ class Source {
 
 	public void setGain(float vol) {
 		this.vol = vol;
-		AL10.alSourcef(sourceId, AL10.AL_GAIN, AudioHandler.volume * vol);
+		AL10.alSourcef(sourceId, AL10.AL_GAIN, AudioHandler.volume * vol * (isMusic ? AudioHandler.musicVolume : AudioHandler.sfxVolume));
 	}
 
 	public void setLooping(boolean loop) {
@@ -135,6 +146,6 @@ class Source {
 	}
 
 	public void update() {
-		AL10.alSourcef(sourceId, AL10.AL_GAIN, AudioHandler.volume * vol);
+		AL10.alSourcef(sourceId, AL10.AL_GAIN, AudioHandler.volume * vol * (isMusic ? AudioHandler.musicVolume : AudioHandler.sfxVolume));
 	}
 }

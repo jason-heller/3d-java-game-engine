@@ -14,6 +14,7 @@ public class Text implements Component {
 	public static final byte ALIGN_BOTTOM = 3;
 	private String text;
 	private final float x, y;
+	public int offsetX, offsetY;
 	private float w;
 	private float h;
 
@@ -154,9 +155,8 @@ public class Text implements Component {
 	}
 
 	public void setText(String text, int... offsets) {
-		if (text.equals(this.getText())) {
-			return;
-		}
+		this.text = text;
+		
 		final List<Image> letterList = new ArrayList<Image>();
 		Vector3f color = Colors.WHITE;
 
@@ -164,12 +164,24 @@ public class Text implements Component {
 		float dy = y;
 
 		int offset = 0;
+		char updateColChar = ' ';
 
 		for (int i = 0; i < text.length(); i++) {
 			final char c = text.charAt(i);
+			
+			if (updateColChar != ' ') {
+				color = Colors.getColor(updateColChar, i + (int) (System.currentTimeMillis() / 60f % 1000));
+			}
+			
 			if (c == '#') {
 				if (text.length() > i + 1) {
-					color = Colors.getColor(text.charAt(i + 1), i + (int) (System.currentTimeMillis() / 60f % 1000));
+					char col = text.charAt(i + 1);
+					if (col == 'R' || col == 'M' || col == 'A')
+						updateColChar = col;
+					else 
+						updateColChar = ' ';
+					
+					color = Colors.getColor(col, i + (int) (System.currentTimeMillis() / 60f % 1000));
 				}
 				i += 1;
 			} else if (c == '\t' && offset < offsets.length) {
@@ -177,7 +189,7 @@ public class Text implements Component {
 				offset++;
 			} else if (c == '\n') {
 				dx = x;
-				dy += font.getCharacter('A').getyOffset() * textSize + 20;
+				dy += font.getCharacter('A').getyOffset() * (textSize + 1);
 			} else if (c >= 32 && c <= 126) {
 				final Character character = font.getCharacter(c);
 
@@ -218,5 +230,12 @@ public class Text implements Component {
 				letters[i].y -= h / 2f;
 			}
 		}
+	}
+
+	public void setPosition(int x, int y) {
+		//if (x != x2 && y != y2) {
+			offsetX = x;
+			offsetY = y;
+		//}
 	}
 }

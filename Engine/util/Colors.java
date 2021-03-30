@@ -8,6 +8,7 @@ public class Colors {
 
 	private static final long MARQUEE_SPEED_MS = 500;
 	private static final long MARQUEE_COLOR_SIZE = 10;
+	private static final long SPECTRUM_SPEED_MS = 3000;
 
 	public static final Vector3f RED = new Vector3f(1, 0, 0);
 	public static final Vector3f ORANGE = new Vector3f(.99f, .44f, 0);
@@ -67,6 +68,8 @@ public class Colors {
 			return BLACK;
 		case 'R':
 			return hsvToRgb(pos % 20 / 20.1f, .85f, 1f);
+		case '*':
+			return spectrum(.85f, 1f);
 		case 'M':
 			return scrollColor(pos);
 		case 'A':
@@ -80,6 +83,11 @@ public class Colors {
 		default:
 			return WHITE;
 		}
+	}
+	
+	private static Vector3f spectrum(float saturation, float value) {
+		float hue = (System.currentTimeMillis() % SPECTRUM_SPEED_MS / (float) SPECTRUM_SPEED_MS);
+		return hsvToRgb(hue, saturation, value);
 	}
 
 	public static Vector3f hsvToRgb(float hue, float saturation, float value) {

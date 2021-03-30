@@ -354,12 +354,12 @@ public class Vector3f implements Serializable, Externalizable {
 	}
 
 	public boolean isFacing(Vector3f v) {
-		return dot(v) < 0f;
+		return dot(v) > 0f;
 	}
 
 	public boolean isZero() {
-		// TODO Auto-generated method stub
-		return x == 0 && y == 0 && z == 0;
+		final float EPSILON = .0001f;
+		return (Math.abs(x) < EPSILON && Math.abs(y) < EPSILON && Math.abs(z) < EPSILON);
 	}
 
 	/**

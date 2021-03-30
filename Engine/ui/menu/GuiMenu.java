@@ -1,8 +1,10 @@
 package ui.menu;
 
 import audio.AudioHandler;
+import dev.Console;
 import io.Input;
 import ui.Font;
+import ui.Text;
 import ui.UI;
 import ui.menu.listener.MenuListener;
 
@@ -14,22 +16,22 @@ public class GuiMenu extends GuiElement {
 	
 	private int alignment = GuiComponent.VERTICAL;
 
-	private final String[] options;
+	private final Text[] texts;
 	private boolean bordered;
 
 	public GuiMenu(int x, int y, String... options) {
 		this.x = x;
 		this.y = y;
-		this.options = options;
-
-		int longestStrLength = 0;
-		for (final String option : options) {
-			longestStrLength = Math.max(longestStrLength, option.length());
+		this.texts = new Text[options.length];
+		float maxWid = 0;
+		for(int i = 0; i < options.length; i++) {
+			this.texts[i] = new Text(Font.defaultFont, options[i], x, y, Font.defaultSize, false);
+			maxWid = Math.max(maxWid, this.texts[i].getWidth());
 		}
 
-		lineHeight = Font.defaultFont.getHeight() + 20;
+		lineHeight = Font.defaultFont.getPaddingHeight() + 20;
 		height = lineHeight * options.length;
-		width = Font.defaultFont.getWidth() * (longestStrLength + 2);
+		width = (int)(maxWid) + 16;
 	}
 
 	public void addListener(MenuListener listener) {
@@ -56,14 +58,20 @@ public class GuiMenu extends GuiElement {
 		int index = 0;
 		int dx = 0;
 		int dy = 0;
-		for (final String option : options) {
+		int i = -1;
+		for (final Text text : texts) {
+			String option = text.getText();
+
 			if (alignment == GuiComponent.VERTICAL) {
 				dy = index * lineHeight;
-			} else {
-				dx = index * width;
+			} else if (i >= 0) {
+				dx += texts[i].getWidth() + 16;
 			}
-
-			if (!tempDisable && hasFocus && Input.getMouseX() > x + dx && Input.getMouseX() < x + dx + width
+			
+			i++;
+			int relWid = (int) ((alignment == GuiComponent.VERTICAL) ? width : texts[i].getWidth());
+			
+			if (!tempDisable && hasFocus && Input.getMouseX() > x + dx && Input.getMouseX() < x + dx + relWid
 					&& Input.getMouseY() > y + dy
 					&& Input.getMouseY() < y + dy + lineHeight) {
 				selectedOption = index;
@@ -90,7 +98,7 @@ public class GuiMenu extends GuiElement {
 	}
 	
 	public void setOption(int index, String option) {
-		options[index] = option;
+		texts[index].setText(option);
 	}
 
 	public void setAlignment(int alignment) {
@@ -99,9 +107,5 @@ public class GuiMenu extends GuiElement {
 
 	public void setCentered(boolean centered) {
 		this.centered = centered;
-	}
-
-	public String[] getOptions() {
-		return options;
 	}
 }

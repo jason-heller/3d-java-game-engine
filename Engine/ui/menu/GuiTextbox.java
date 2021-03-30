@@ -3,6 +3,7 @@ package ui.menu;
 import io.Input;
 import ui.Font;
 import ui.Image;
+import ui.Text;
 import ui.UI;
 import ui.menu.listener.MenuListener;
 import util.Colors;
@@ -11,7 +12,7 @@ public class GuiTextbox extends GuiElement {
 	private String value;
 	private MenuListener listener = null;
 
-	private final String label;
+	private final Text text;
 	private boolean edit = false;
 	private boolean modified = false;
 
@@ -21,7 +22,7 @@ public class GuiTextbox extends GuiElement {
 	public GuiTextbox(int x, int y, String label, String defaultInput) {
 		this.x = x;
 		this.y = y;
-		this.label = label;
+		this.text = new Text(Font.defaultFont, label, x, y - 3, Font.defaultSize, false);
 		this.value = defaultInput;
 
 		width = 192 + TEXTBOX_XSHIFT;
@@ -48,7 +49,7 @@ public class GuiTextbox extends GuiElement {
 
 	@Override
 	public void update() {
-		UI.drawString(label, x, y - 3, false);
+		UI.drawString(text);
 
 		if (!tempDisable && hasFocus && Input.getMouseX() > x + TEXTBOX_XSHIFT && Input.getMouseX() < x + width
 				&& Input.getMouseY() > y && Input.getMouseY() < y + height) {
@@ -80,7 +81,7 @@ public class GuiTextbox extends GuiElement {
 						}
 					} else {
 
-						if ((value + in).length() * (Font.defaultFont.getWidth() + 1) < width - TEXTBOX_XSHIFT) {
+						if ((value + in).length() * (text.getWidth() * 1280) < width - TEXTBOX_XSHIFT) {
 							value += in;
 						}
 					}

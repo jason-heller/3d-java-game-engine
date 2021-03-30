@@ -29,8 +29,8 @@ public class Image implements Component {
 		gfx = Resources.getTexture(texture);
 		this.x = x;
 		this.y = y;
-		this.w = gfx.size;
-		this.h = gfx.size;
+		this.w = gfx.width;
+		this.h = gfx.height;
 		color = Colors.WHITE;
 	}
 
@@ -38,8 +38,8 @@ public class Image implements Component {
 		gfx = texture;
 		this.x = x;
 		this.y = y;
-		this.w = gfx.size;
-		this.h = gfx.size;
+		this.w = gfx.width;
+		this.h = gfx.height;
 		color = Colors.WHITE;
 	}
 

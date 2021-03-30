@@ -2,15 +2,19 @@
 
 in vec3 in_position;
 out vec3 pass_uvs;
-out float pass_bgAlpha;
+out float lightAmt;
+out float lightY;
 
+uniform vec3 lightDir;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
-uniform float bgAlpha;
 
 void main(void){
-	pass_bgAlpha = bgAlpha;
+	lightAmt = dot(-lightDir,normalize(in_position));
+	lightY = lightDir.y;
+
 	gl_Position = projectionMatrix * viewMatrix * vec4(in_position, 1.0);
-	pass_uvs = in_position.xyz/32.0;
+	pass_uvs = in_position;
 
 }
+

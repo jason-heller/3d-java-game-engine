@@ -8,12 +8,8 @@ import core.Resources;
 import io.Controls;
 import io.Input;
 import io.Settings;
-import scene.entity.PlayerHandler;
+import scene.entity.utility.PlayerHandler;
 import scene.menu.pause.OptionsPanel;
-import scene.overworld.TileShapePicker;
-import scene.overworld.inventory.Inventory;
-import scene.overworld.inventory.crafting.CraftingUI;
-import scene.overworld.inventory.crafting.RecipeHandler;
 import ui.UI;
 import ui.menu.GuiMenu;
 import ui.menu.listener.MenuListener;
@@ -24,12 +20,7 @@ public class PlayableSceneUI {
 	private final GuiMenu mainMenu;
 	private final OptionsPanel options;
 	
-	private TileShapePicker picker;
-	
 	private final PlayableScene scene;
-	
-	private final RecipeHandler recipeHandler;
-	private final CraftingUI craftingUI;
 	
 	private final int CROSSHAIR_SIZE = 8;
 	private final int CROSSHAIR_THICKNESS = 1;
@@ -43,11 +34,6 @@ public class PlayableSceneUI {
 		mainMenu.setFocus(true);
 		mainMenu.setBordered(true);
 		options = new OptionsPanel(null);
-		
-		recipeHandler = new RecipeHandler();
-		craftingUI = new CraftingUI(recipeHandler);
-		
-		picker = new TileShapePicker(scene);
 		
 		Resources.addTexture("hp", "gui/hp.png");
 
@@ -64,9 +50,8 @@ public class PlayableSceneUI {
 					options.setFocus(!options.isFocused());
 					break;
 				case 2:
-					scene.returnToMenu = true;
-					scene.onSceneEnd();
 					options.setFocus(false);
+					Application.changeScene(MainMenu.class);
 					break;
 				}
 			}
@@ -79,41 +64,27 @@ public class PlayableSceneUI {
 	}
 	
 	public void update() {
-		if (scene.isLoading()) {
-			UI.drawString("Loading", 720, 360);
+		if (scene.isLoading) {
+			UI.drawRect(0, 0, 1280, 720, Colors.BLACK).setDepth(-999);
+			UI.drawString("Loading", 640, 360, true).setDepth(-1000);
 			return;
 		}
+		
 		UI.drawString(Application.VERSION, 5, 5, .25f, false);
-		
-		Inventory inventory = scene.getInventory();
-		recipeHandler.update(inventory);
-		craftingUI.update(inventory);
-		
-		picker.update();
 
-		UI.drawRect(640 - CROSSHAIR_THICKNESS, 360 - CROSSHAIR_SIZE, 2 * CROSSHAIR_THICKNESS, CROSSHAIR_SIZE,
+		UI.drawRect(639 - CROSSHAIR_THICKNESS, 359 - CROSSHAIR_SIZE, 2 * CROSSHAIR_THICKNESS + 2, 2 * CROSSHAIR_THICKNESS + 2,
+				Colors.BLACK);
+		UI.drawRect(640 - CROSSHAIR_THICKNESS, 360 - CROSSHAIR_SIZE, 2 * CROSSHAIR_THICKNESS, 2 * CROSSHAIR_THICKNESS,
 				CROSSHAIR_COLOR);
-		UI.drawRect(640 - CROSSHAIR_THICKNESS, 360, 2 * CROSSHAIR_THICKNESS, CROSSHAIR_SIZE, CROSSHAIR_COLOR);
-		UI.drawRect(640 - (CROSSHAIR_SIZE + 1), 360 - CROSSHAIR_THICKNESS, CROSSHAIR_SIZE, 2 * CROSSHAIR_THICKNESS,
-				CROSSHAIR_COLOR);
-		UI.drawRect(640, 360 - CROSSHAIR_THICKNESS, CROSSHAIR_SIZE, 2 * CROSSHAIR_THICKNESS, CROSSHAIR_COLOR);
-		
-		for(int i = 0; i < scene.getPlayer().getHp(); i++) {
-			UI.drawImage("hp", 980 + (i*28), 660, 24, 24);
-		}
-
 		if (Input.isPressed(Controls.get("pause"))) {
 			if (!paused) {
-				if (inventory.isOpen()) {
-					inventory.toggleOpen();
-				} else {
-					Input.requestMouseRelease();
-					paused = true;
-					AudioHandler.pause();
-					PlayerHandler.disable();
-				}
+				PlayerHandler.disable();
+				Input.requestMouseRelease();
+				paused = true;
+				AudioHandler.pause();
 			} else {
 				unpause();
+				PlayerHandler.enable();
 			}
 		}
 		
@@ -137,7 +108,6 @@ public class PlayableSceneUI {
 		} else {
 			paused = false;
 			AudioHandler.unpause();
-			PlayerHandler.enable();
 			//if (!Console.isVisible()) {
 				Input.requestMouseGrab();
 			//}

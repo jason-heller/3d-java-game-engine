@@ -1,79 +1,118 @@
 package scene;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.input.Mouse;
 
+import core.Resources;
 import gl.Camera;
+import gl.Render;
+import gl.TexturedModel;
 import gl.Window;
-import map.Chunk;
-import map.tile.Tile;
+import map.architecture.Architecture;
+import map.architecture.ArchitectureHandler;
 import scene.entity.EntityHandler;
-import scene.entity.PlayerEntity;
-import scene.overworld.inventory.Inventory;
-import scene.overworld.inventory.Item;
+import scene.entity.utility.PlayerEntity;
+import scene.entity.utility.PlayerHandler;
+import ui.UI;
 
 public abstract class PlayableScene implements Scene {
 
 	protected Camera camera;
-	protected Inventory inventory;
-	protected PlayerEntity player;
 	
 	protected PlayableSceneUI ui;
+	protected EntityHandler entityHandler;
 
-	protected boolean returnToMenu;
+	protected ArchitectureHandler arcHandler;
+
+	protected PlayerEntity player;
 	
-	protected byte facing;
-	protected byte wallSetting = 0;
-	protected Vector3f selectionPt, exactSelectionPt;
+	private Vector3f cameraLight;
+	
+	private TexturedModel walker;
+	
+	protected boolean isLoading = true;
+	
+	public static String currentMap;
 	
 	public PlayableScene() {
-		EntityHandler.init();
-		Item.init();
-		
 		camera = new Camera();
 		camera.setControlStyle(Camera.FIRST_PERSON);
-		camera.setPosition(new Vector3f((Chunk.CHUNK_SIZE)/2f, 0, (Chunk.CHUNK_SIZE)/2f));
 		camera.grabMouse();
+		cameraLight = new Vector3f(1,1,1);
 		
-		inventory = new Inventory();
+		ui = new PlayableSceneUI(this);
+		
+		arcHandler = new ArchitectureHandler();
+		
+		entityHandler = new EntityHandler();
+		
+		AssetPool.loadInGameAssets();
+		Resources.addObjModel("walker", "item/walker.obj");
+		walker = new TexturedModel("walker", "item1", new Matrix4f());
+		
+		
+		ui.update();
+		UI.render(this);
+		Window.update();
 	}
 
-	public PlayerEntity getPlayer() {
-		return player;
-	}
-
-	public Inventory getInventory() {
-		return inventory;
+	@Override
+	public void tick() {
+		if (ui.isPaused()) return;
 	}
 	
 	@Override
 	public void update() {
+		if (isLoading) {
+			Window.resetDeltaTime();		// HACKY
+		}
+		
+		ui.update();
+		if (ui.isPaused()) return;
+		
 		if (Mouse.isGrabbed()) {
 			Mouse.setCursorPosition(Window.getWidth()/2, Window.getHeight()/2);
 		}
 		
-		facing = Tile.getFacingByte(camera, wallSetting);
-		selectionPt = null;
-		exactSelectionPt = null;
-		
+		entityHandler.update(this);
 		camera.move();
 	}
+	
+	@Override
+	public void render() {
 
-	public void setTileShape(int wall) {
-		this.wallSetting = (byte)wall;
+		Architecture arc = arcHandler.getArchitecture();
+		Vector3f targetLight = arc.getLightAtPosition(camera.getPosition(), camera.getDirectionVector());
+		cameraLight.set(Vector3f.lerp(targetLight, cameraLight, 10f * Window.deltaTime));
+
+		arcHandler.render(camera);
+		entityHandler.render(camera, arc);
+		
+		if (PlayerHandler.hasWalker) {
+			Matrix4f m = camera.getViewModelMatrix(true);
+			walker.getMatrix().set(m);
+			Render.renderViewModel(walker, cameraLight);
+		}
 	}
 	
-	public Vector3f getSelectionPoint() {
-		return selectionPt;
+	@Override
+	public void cleanUp() {
+		AssetPool.unload();
+		walker.getModel().cleanUp(); 
+		arcHandler.cleanUp();
+		entityHandler.cleanUp();
 	}
-
-	public Vector3f getExactSelectionPoint() {
-		return exactSelectionPt;
-	}
-
-	public abstract void onSceneEnd();
 
 	public PlayableSceneUI getUi() {
 		return ui;
+	}
+	
+	public PlayerEntity getPlayer() {
+		return player;
+	}
+
+	public ArchitectureHandler getArcHandler() {
+		return arcHandler;
 	}
 }

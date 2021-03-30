@@ -2,6 +2,7 @@ package ui.menu;
 
 import io.Input;
 import ui.Font;
+import ui.Text;
 import ui.UI;
 import ui.menu.listener.MenuListener;
 
@@ -10,18 +11,16 @@ public class GuiButton extends GuiElement {
 	private boolean selected = false;
 	private MenuListener listener = null;
 
-	private final String option;
+	private final Text option;
 
 	public GuiButton(int x, int y, String option) {
 		this.x = x;
 		this.y = y;
-		this.option = option;
+		this.option = new Text(Font.defaultFont, option, 0, 0, Font.defaultSize, false);
 
-		final int longestStrLength = option.length();
-
-		lineHeight = Font.defaultFont.getHeight() + 20;
-		height = lineHeight;
-		width = Font.defaultFont.getWidth() * (longestStrLength + 1);
+		lineHeight = Font.defaultFont.getPaddingHeight() + 20;
+		height = (int) this.option.getHeight();
+		width = (int) this.option.getWidth();
 	}
 
 	public void addListener(MenuListener listener) {
@@ -49,14 +48,15 @@ public class GuiButton extends GuiElement {
 				&& Input.getMouseY() < y + lineHeight) {
 			selected = true;
 			if (Input.isPressed(Input.KEY_LMB) && listener != null) {
-				listener.onClick(option, 0);
+				listener.onClick(option.getText(), 0);
 			}
 		}
 
+		option.setPosition(x, y);;
 		if (selected) {
-			UI.drawString("#s" + option, x, y, false);
+			UI.drawString("#s" + option.getText(), x, y, false);
 		} else {
-			UI.drawString(option, x, y, false);
+			UI.drawString(option.getText(), x, y, false);
 		}
 	}
 }

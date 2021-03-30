@@ -8,11 +8,6 @@ import gl.Window;
 import gl.particle.ParticleHandler;
 import gl.shadow.ShadowBox;
 import gl.shadow.ShadowRender;
-import map.Chunk;
-import map.Enviroment;
-import map.Terrain;
-import scene.entity.EntityHandler;
-import scene.overworld.Overworld;
 import ui.menu.GuiDropdown;
 import ui.menu.GuiLabel;
 import ui.menu.GuiPanel;
@@ -24,7 +19,7 @@ import ui.menu.listener.SliderListener;
 
 public class GraphicsPanel extends GuiPanel {
 	private final GuiDropdown resolution;
-	private final GuiSlider fov, fps, particleCount, chunkRender, entityRender, shadowDistance;
+	private final GuiSlider fov, fps, particleCount, shadowDistance;
 	private final GuiSpinner fullscreen, bordered, shadowQuality;
 
 	private final DisplayMode[] resolutions;
@@ -134,49 +129,6 @@ public class GraphicsPanel extends GuiPanel {
 
 		});
 		add(particleCount);
-
-		chunkRender = new GuiSlider(x, y, "Render distance", 3, 33, Terrain.size, 2);
-		chunkRender.addListener(new SliderListener() {
-
-			@Override
-			public void onClick(float value) {
-			}
-
-			@Override
-			public void onRelease(float value) {
-				int oldSize = Terrain.size;
-				Terrain.size = (int) value;
-
-				if (Application.scene instanceof Overworld) {
-					Enviroment enviroment = ((Overworld) Application.scene).getEnviroment();
-					//enviroment.x += (oldSize - Terrain.size) / 2;
-					//enviroment.z += (oldSize - Terrain.size) / 2;
-					enviroment.reload();
-				}
-			}
-
-		});
-		add(chunkRender);
-		
-		entityRender = new GuiSlider(x, y, "Entity Range", 3, 17, EntityHandler.entityRadius, 2);
-		entityRender.addListener(new SliderListener() {
-
-			@Override
-			public void onClick(float value) {
-			}
-
-			@Override
-			public void onRelease(float value) {
-				EntityHandler.entityRadius = (int) value;
-				EntityHandler.entityRadius = Math.max(EntityHandler.entityRadius, 3);
-				
-				/*if (Application.scene instanceof GameScene) {
-					((GameScene) Application.scene).getWorld().resize(Globals.chunkRenderDist);
-				}*/
-			}
-
-		});
-		add(entityRender);
 		
 		addSeparator();
 		add(new GuiLabel(x, y, "#SShadows"));

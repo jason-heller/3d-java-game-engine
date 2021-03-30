@@ -39,24 +39,21 @@ public class Controls {
 
 	public static void defaults() {
 		controls.clear();
-		controls.put("attack", Input.KEY_LMB);
-		controls.put("use", Input.KEY_RMB);
-		controls.put("tile_style", Input.KEY_MMB);
+
 		controls.put("pause", Keyboard.KEY_ESCAPE);
-		controls.put("next_item", Input.KEY_WHEEL_UP);
-		controls.put("prev_item", Input.KEY_WHEEL_DOWN);
+		controls.put("use_left", Input.KEY_LMB);
+		controls.put("use_right", Input.KEY_RMB);
+		controls.put("interact", Keyboard.KEY_E);
 		
 		controls.put("walk_forward", Keyboard.KEY_W);
 		controls.put("walk_left", Keyboard.KEY_A);
 		controls.put("walk_backward", Keyboard.KEY_S);
 		controls.put("walk_right", Keyboard.KEY_D);
-		controls.put("jump", Keyboard.KEY_SPACE);
-		controls.put("sneak", Keyboard.KEY_LCONTROL);
-		controls.put("use_backpack", Keyboard.KEY_E);
-		
-		for(int i = 1; i <= 9; i++) {
-			controls.put("item slot "+i, Keyboard.KEY_1 + (i-1));
-		}
+		controls.put("sneak", Keyboard.KEY_LSHIFT);
+		controls.put("run", Keyboard.KEY_SPACE);
+	
+		// Unused?
+		controls.put("jump", Integer.MAX_VALUE);
 	}
 
 	public static int get(String id) {
@@ -143,6 +140,13 @@ public class Controls {
 
 	public static void unbind(String keyName) {
 		final int key = Keyboard.getKeyIndex(keyName.toUpperCase());
+		
+		/*for (final String id : controls.keySet()) {
+			if (controls.get(id).equals(key)) {
+				controls.remove(id);
+			}
+		}*/
+		
 		customBinds.remove(key);
 		save();
 	}

@@ -11,14 +11,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import audio.AudioHandler;
-import dev.Console;
+import dev.Debug;
 import gl.Camera;
 import gl.Window;
 import gl.particle.ParticleHandler;
 import gl.shadow.ShadowBox;
 import gl.shadow.ShadowRender;
-import map.Terrain;
-import scene.entity.EntityHandler;
+import map.ground.Terrain;
+import scene.menu.MainMenuUI;
 
 public class Settings {
 	public static File configFile = new File(FileUtils.SETTINGS_FOLDER + "/config.ini");
@@ -49,13 +49,17 @@ public class Settings {
 		Camera.fov = getInt("fov");
 		Window.maxFramerate = getInt("target_fps");
 		AudioHandler.volume = getFloat("volume");
+		AudioHandler.sfxVolume = getFloat("sfx_volume");
+		AudioHandler.musicVolume = getFloat("mus_volume");
 		Camera.mouseSensitivity = getFloat("mouse_sensitivity");
 		ParticleHandler.maxParticles = getInt("max_particles");
-		Terrain.size = getInt("chunk_dist");
-		EntityHandler.entityRadius = getInt("entity_dist");
 		ShadowRender.pcfCount = getInt("shadow_quality");
 		ShadowBox.shadowDistance = getFloat("shadow_dist");
 		ShadowRender.shadowMapSize = getInt("shadow_fbo_size");
+		MainMenuUI.disableIntroSplash = getBool("no_splash");
+		MainMenuUI.onIntroSplash = MainMenuUI.disableIntroSplash;
+		Debug.allowConsole = getBool("dev_enable_console");
+		Camera.swayFactor = getFloat("camera_sway_factor");
 
 		AudioHandler.changeMasterVolume();
 		// Window.setDisplayMode(Window.getWidth(), Window.getHeight(),
@@ -86,17 +90,20 @@ public class Settings {
 		addEntry("fov", Camera.fov);
 		addEntry("target_fps", Window.maxFramerate);
 		addEntry("volume", AudioHandler.volume);
+		addEntry("sfx_volume", AudioHandler.sfxVolume);
+		addEntry("mus_volume", AudioHandler.musicVolume);
 		addEntry("mouse_sensitivity", Camera.mouseSensitivity);
 		addEntry("max_particles", ParticleHandler.maxParticles);
-		addEntry("chunk_dist", Terrain.size);
-		addEntry("entity_dist", EntityHandler.entityRadius);
 		addEntry("shadow_quality", ShadowRender.pcfCount);
 		addEntry("shadow_dist", ShadowBox.shadowDistance);
 		addEntry("shadow_fbo_size", ShadowRender.shadowMapSize);
+		addEntry("no_splash", MainMenuUI.disableIntroSplash);
+		addEntry("dev_enable_console", Debug.allowConsole);
+		addEntry("camera_sway_factor", Camera.swayFactor);
 	}
 
 	public static void init() {
-		addEntry("version", "0.1");
+		/*addEntry("version", "0.1");
 		addEntry("display_width", 1920);
 		addEntry("display_height", 1080);
 		addEntry("fullscreen", false);
@@ -104,13 +111,17 @@ public class Settings {
 		addEntry("fov", 90);
 		addEntry("target_fps", 120);
 		addEntry("volume", 0.5f);
+		addEntry("sfx_volume", 1.0f);
+		addEntry("mus_volume", 1.0f);
 		addEntry("mouse_sensitivity", .5f);
 		addEntry("max_particles", 99);
-		addEntry("chunk_dist", 13);
 		addEntry("entity_dist", 5);
 		addEntry("shadow_quality", 2);
 		addEntry("shadow_dist", 16);
 		addEntry("shadow_fbo_size", 2048);
+		addEntry("no_splash", false);
+		addEntry("dev_enable_console", false);*/
+		grabData();
 
 		if (configFile.exists()) {
 			load();

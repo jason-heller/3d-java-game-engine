@@ -34,18 +34,30 @@ public class AudioHandler {
 	private static int sourcePtr = 0, sourceLoopPtr = MAX_SOURCES - MAX_LOOPING_SOURCES;
 	
 	private static float pauseDelay = 0f;
-	public static float volume = 0.5f;
+	public static float volume = 0.5f, sfxVolume = 1.0f, musicVolume = 1.0f;
 	
-	public static void play(String sound) {
-		sources[sourcePtr++].play(sound);
+	public static Source play(String sound) {
+		Source src = sources[sourcePtr++];
+		src.play(sound);
 		if (sourcePtr == MAX_SOURCES - MAX_LOOPING_SOURCES)
 			sourcePtr = 0;
+		return src;
 	}
 	
-	public static void loop(String sound) {
-		sources[sourceLoopPtr++].play(sound);
+	public static Source loop(String sound) {
+		Source src = sources[sourcePtr++];
+		src.play(sound);
 		if (sourceLoopPtr == MAX_SOURCES)
 			sourceLoopPtr = MAX_SOURCES - MAX_LOOPING_SOURCES;
+		return src;
+	}
+	
+	public static Source playMusic(String sound) {
+		Source src = sources[sourcePtr++];
+		src.playAsMusic(sound);
+		if (sourceLoopPtr == MAX_SOURCES)
+			sourceLoopPtr = MAX_SOURCES - MAX_LOOPING_SOURCES;
+		return src;
 	}
 
 	public static void changeMasterVolume() {
@@ -150,10 +162,18 @@ public class AudioHandler {
 		// Echo
 		effect = EFX10.alGenEffects();
 		slot = EFX10.alGenAuxiliaryEffectSlots();
-		getEffects().put(SoundEffects.ECHO, new SoundEffect(effect, slot));
+		effects.put(SoundEffects.ECHO, new SoundEffect(effect, slot));
 
 		EFX10.alEffecti(effect, EFX10.AL_EFFECT_TYPE, EFX10.AL_EFFECT_ECHO);
-		// EFX10.alEffectf(effect, EFX10.AL_ECHO_DELAY, 5.0f);
+		//EFX10.alEffectf(effect, EFX10.AL_ECHO_DELAY, 5.0f);
+		EFX10.alAuxiliaryEffectSloti(slot, EFX10.AL_EFFECTSLOT_EFFECT, effect);
+		
+		effect = EFX10.alGenEffects();
+		slot = EFX10.alGenAuxiliaryEffectSlots();
+		effects.put(SoundEffects.REVERB, new SoundEffect(effect, slot));
+
+		EFX10.alEffecti(effect, EFX10.AL_EFFECT_TYPE, EFX10.AL_EFFECT_REVERB);
+		EFX10.alEffectf(effect, EFX10.AL_REVERB_DECAY_TIME, 2.0f);
 		EFX10.alAuxiliaryEffectSloti(slot, EFX10.AL_EFFECTSLOT_EFFECT, effect);
 	}
 
@@ -177,8 +197,14 @@ public class AudioHandler {
 
 		// Low Pass Freq
 		filter = EFX10.alGenFilters();
-		getFilters().put(SoundFilters.LOW_PASS_FREQ, filter);
+		filters.put(SoundFilters.LOW_PASS_FREQ, filter);
 
+		EFX10.alFilteri(filter, EFX10.AL_FILTER_TYPE, EFX10.AL_FILTER_LOWPASS);
+		EFX10.alFilterf(filter, EFX10.AL_LOWPASS_GAIN, 0.5f);
+		EFX10.alFilterf(filter, EFX10.AL_LOWPASS_GAINHF, 0.5f);
+		
+		filter = EFX10.alGenFilters();
+		filters.put(SoundFilters.LOW_PASS_FILTER, filter);
 		EFX10.alFilteri(filter, EFX10.AL_FILTER_TYPE, EFX10.AL_FILTER_LOWPASS);
 		EFX10.alFilterf(filter, EFX10.AL_LOWPASS_GAIN, 0.5f);
 		EFX10.alFilterf(filter, EFX10.AL_LOWPASS_GAINHF, 0.5f);

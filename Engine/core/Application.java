@@ -2,13 +2,9 @@ package core;
 
 
 import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.glu.GLU;
 
 import audio.AudioHandler;
 import dev.Console;
-import dev.io.ObjToSefConverter;
-import dev.io.ObjToTilConverter;
 import gl.Render;
 import gl.Window;
 import io.Controls;
@@ -16,12 +12,13 @@ import io.Input;
 import io.Settings;
 import scene.MainMenu;
 import scene.Scene;
+import scene.entity.EntityHandler;
 import ui.UI;
 
 public class Application {
 	
-	public static final String TITLE = "Moonglade [working title]"; //Vendure
-	public static final String VERSION = "Version 0.4.1 Build 3";
+	public static final String TITLE = "Engine Test";
+	public static final String VERSION = "Version 0.2.1a";
 	// Alpha Version 4, Minor 1, revision/patch 0
 	
 	public static Scene scene;
@@ -29,7 +26,6 @@ public class Application {
 
 	private static float tickTimer = 0f;
 	private static boolean forceClose;
-	private static boolean inLoadingState;
 	public static boolean paused = false;
 	public static final int TICKS_PER_SECOND = 25;
 	public static final float TICKRATE = 1f / TICKS_PER_SECOND;
@@ -42,16 +38,6 @@ public class Application {
 
 	public static void close() {
 		forceClose = true;
-	}
-
-	private static void handleSceneLoad() {
-		if (!inLoadingState) {
-			// Window.update();
-			inLoadingState = true;
-		} else {
-			scene.load();
-			inLoadingState = false;
-		}
 	}
 
 	public static void main(String[] args) throws InterruptedException {
@@ -69,20 +55,10 @@ public class Application {
 		scene = new MainMenu();
 
 		for (final String arg : args) {
-			if (arg.toLowerCase().contains("prop.txt")) {
-				ObjToSefConverter.sefFileParser(arg);
-			} else if (arg.toLowerCase().contains("tile.txt")) {
-				ObjToTilConverter.tileFileParser(arg);
-			} else {
-				Console.send(arg);
-			}
+			Console.send(arg);
 		}
 
-		while ((!Display.isCloseRequested() && !forceClose) || scene.hasHolds()) {
-			if (scene.isLoading()) {
-				handleSceneLoad();
-				continue;
-			}
+		while ((!Display.isCloseRequested() && !forceClose)) {
 			
 			Window.update();
 			UI.update();
@@ -109,7 +85,7 @@ public class Application {
 					
 				}
 				Input.poll();
-				Render.render(scene);
+				Render.renderPass(scene);
 
 				Render.postRender(scene);
 			}

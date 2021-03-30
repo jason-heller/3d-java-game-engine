@@ -31,7 +31,7 @@ public class Frustum {
 				min.z = aabbMin.z;
 			}
 
-			if (plane.normal.dot(min) + plane.dist > 0f) {
+			if (plane.normal.dot(min) + plane.dist > -1f) {
 				continue;
 			}
 

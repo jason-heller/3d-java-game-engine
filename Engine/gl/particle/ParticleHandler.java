@@ -17,12 +17,11 @@ import org.lwjgl.opengl.GL11;
 import core.Resources;
 import gl.Camera;
 import gl.res.Texture;
-import map.Material;
 
 public class ParticleHandler {
 	private static Map<Texture, List<Particle>> particles = Collections
 			.synchronizedMap(new LinkedHashMap<Texture, List<Particle>>());
-	private static ParticleRenderer renderer;
+	private static ParticleRender renderer;
 	private static int particleCount = 0;
 	public static int maxParticles = 99;
 
@@ -56,7 +55,7 @@ public class ParticleHandler {
 	}
 
 	public static void init() {
-		renderer = new ParticleRenderer();
+		renderer = new ParticleRender();
 		Resources.addTexture("particles", "particles/particles.png", GL11.GL_TEXTURE_2D, true, 8);
 		Resources.addTexture("small_particles", "particles/small_particles.png", GL11.GL_TEXTURE_2D, true, 32);
 	}
@@ -123,22 +122,6 @@ public class ParticleHandler {
 
 				}
 			}
-		}
-	}
-	
-	public static void addSplash(Material matieral, Vector3f position, Vector3f direction) {
-		Texture tex = Resources.getTexture("materials");
-		Vector3f texData = new Vector3f();
-		Material.getTexCoordData(texData, matieral, (byte)0);
-		Vector3f dir;
-		for (float i = 0; i < 6; i++) {
-			dir = generateRandomUnitVectorWithinCone(direction, 5f);
-			dir.mul(.008f + (float)(Math.random()*.03f));
-			
-			Particle p = new Particle(tex, new Vector3f(position), new Vector3f(dir), .0035f, 50, 1, 1, .15f);
-			//p.setTextureUvs(texData.x, texData.y, texData.x + texData.z, texData.y + texData.z);
-			int matPos = (int)((texData.x*32) + (texData.y*32*32));
-			p.setTextureAtlasRange(matPos, matPos);
 		}
 	}
 	

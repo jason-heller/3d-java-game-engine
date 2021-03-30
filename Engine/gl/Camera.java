@@ -18,15 +18,19 @@ public class Camera {
 
 	private static float zoom, targetZoom, zoomSpeed;
 
-	public static float cameraSpeed = .5f;
+	public static float cameraSpeed = 80f, offsetY = 0, animSpeed = 0;
 
 	public static int fov = 90;
 
 	public static float mouseSensitivity = 1f;
-	public static final float FAR_PLANE = 4500f;
+	public static final float FAR_PLANE = 8000f;
 
 	public static final float NEAR_PLANE = .1f;
 	public static final byte NO_CONTROL = 0, SPECTATOR = 1, FIRST_PERSON = 2;
+	
+	private static double movementCounter = 0f;
+	
+	public static float swayFactor = 1f;
 	
 	private static Matrix4f createProjectionMatrix() {
 		final Matrix4f projectionMatrix = new Matrix4f();
@@ -59,6 +63,8 @@ public class Camera {
 	private float shakeTime = 0f, shakeIntensity = 0f;
 	private float flinchTime = 0f, flinchIntensity = 0f;
 	private Vector3f flinchDir = new Vector3f();
+	private float swayTime = 0f, swayIntensity = 0f, swaySpeed = 0f;
+	private Vector3f swayDir = new Vector3f(), swayTarget = new Vector3f();
 
 	private final Vector2f screenShake = new Vector2f();
 	private final Vector3f flinch = new Vector3f();
@@ -167,7 +173,8 @@ public class Camera {
 			final Vector3f strafe = new Vector3f(-(float) Math.sin(yawRad), 0, (float) Math.cos(yawRad))
 					.perpindicular();
 
-			final float speed = Input.isDown(Keyboard.KEY_LCONTROL) ? cameraSpeed / 4f : cameraSpeed;
+			float speed = Input.isDown(Keyboard.KEY_LCONTROL) ? cameraSpeed / 4f : cameraSpeed;
+			speed *= Window.deltaTime;
 
 			if (Input.isDown("walk_forward")) {
 				forward.mul(-speed);
@@ -196,8 +203,20 @@ public class Camera {
 	public boolean isShaking() {
 		return shakeTime == 0f;
 	}
+	
+	public boolean isSwaying() {
+		return swayTime == 0f;
+	}
 
 	public void move() {
+		//if (Input.isDown("walk_left") || Input.isDown("walk_right") || Input.isDown("walk_forward") || Input.isDown("walk_backward")) {
+			movementCounter += Window.deltaTime * animSpeed;
+			if (movementCounter >= 2.0 * Math.PI) {
+				movementCounter -= 2.0 * Math.PI;
+			}
+		//}
+		
+		prevPosition.set(position);
 		if (Math.abs(targetZoom - zoom) > .2f) {
 			zoom += zoomSpeed;
 			updateProjection();
@@ -242,10 +261,30 @@ public class Camera {
 				flinch.zero();
 			}
 		}
+		
+		if (swayTime > 0) {
+			swayTime = Math.max(swayTime - Window.deltaTime, 0f);
+			if (swayTime == 0f) {
+				swayTarget.zero();
+			} else if (Vector3f.distanceSquared(swayDir, swayTarget) < .5) {
+				float remainder = 1f;
+				float w1 = (float) (Math.random() - 0.5);
+				remainder -= w1;
+				float w2 = (float) (Math.random() - 0.5) * remainder;
+				remainder -= w2;
+				float w3 = (float) (Math.random() - 0.5) * remainder;
+
+				swayTarget.set(w1 * swayIntensity, w2 * swayIntensity, w3 * swayIntensity);
+			}
+		}
+		swayDir.x += (swayTarget.x - swayDir.x)*Window.deltaTime*swaySpeed;
+		swayDir.y += (swayTarget.y - swayDir.y)*Window.deltaTime*swaySpeed;
+		swayDir.z += (swayTarget.z - swayDir.z)*Window.deltaTime*swaySpeed;
+
 
 		if (controlStyle == NO_CONTROL && focus != null) {
 			if (lookAt == null) {
-				final Vector3f lookPos = new Vector3f(focus.position);
+				final Vector3f lookPos = new Vector3f(focus.pos);
 				lookAt = Vector3f.sub(position, lookPos).normalize();
 			}
 
@@ -293,6 +332,12 @@ public class Camera {
 		this.shakeIntensity = intensity;
 		this.shakeTime = time;
 	}
+	
+	public void sway(float time, float intensity, float speed) {
+		this.swayIntensity = intensity * swayFactor;
+		this.swayTime = time;
+		this.swaySpeed = speed;
+	}
 
 	public void ungrabMouse() {
 		Input.requestMouseRelease();
@@ -305,9 +350,9 @@ public class Camera {
 	public void updateViewMatrix() {
 		viewMatrix.identity();
 
-		viewMatrix.rotateX(pitch + screenShake.y + flinch.y);
-		viewMatrix.rotateY(yaw + screenShake.x + flinch.x);
-		viewMatrix.rotateZ(roll + flinch.z);
+		viewMatrix.rotateX(pitch + screenShake.y + flinch.y + swayDir.y);
+		viewMatrix.rotateY(yaw + screenShake.x + flinch.x + swayDir.x);
+		viewMatrix.rotateZ(roll + flinch.z + swayDir.z);
 		final Vector3f negativeCameraPos = new Vector3f(-position.x, -position.y, -position.z);
 		viewMatrix.translate(negativeCameraPos);
 
@@ -333,5 +378,19 @@ public class Camera {
 		float altFlinch = Vector2f.dot(v, new Vector2f(look.x, look.z));
 		flinchDir.set(new Vector3f(sideFlinch, forwardFlinch, altFlinch));
 	}
+	
+	public Matrix4f getViewModelMatrix(boolean ignorePitch) {
+		Matrix4f m = new Matrix4f();
+		
+		if (ignorePitch)
+			m.rotateX(getPitch());
+		m.translate(0f, -2f-offsetY, -.5f + (float)Math.sin(movementCounter) * .15f);
+		m.scale(2f);
+		m.rotateY(90);
+		
+		return m;
+	}
+
+	
 
 }

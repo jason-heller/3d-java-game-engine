@@ -25,5 +25,5 @@ void main(void) {
 		light /= 1.0-lightDirection.y;
 	}
 	
-	out_color = (diffuse * light) * color;
+	out_color = (diffuse) * color * lightDirection;
 }

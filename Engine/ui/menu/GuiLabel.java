@@ -1,22 +1,21 @@
 package ui.menu;
 
 import ui.Font;
+import ui.Text;
 import ui.UI;
 
 public class GuiLabel extends GuiElement {
 
-	private final String text;
+	private final Text text;
 
 	public GuiLabel(int x, int y, String option) {
 		this.x = x;
 		this.y = y;
-		this.text = option;
+		this.text = new Text(Font.defaultFont, option, 0, 0, Font.defaultSize, false);
 
-		final int longestStrLength = option.length();
-
-		int lineHeight = Font.defaultFont.getHeight() + 20;
+		int lineHeight = Font.defaultFont.getPaddingHeight() + 20;
 		height = lineHeight;
-		width = Font.defaultFont.getWidth() * (longestStrLength + 1);
+		width = (int) (text.getWidth());
 	}
 
 	public void center() {
@@ -31,6 +30,10 @@ public class GuiLabel extends GuiElement {
 
 	@Override
 	public void update() {
-		UI.drawString(text, x, y, false);
+		/*text.setPosition(x, y);
+		text.setText(text.getText());
+		UI.drawString(text);*/
+		UI.drawString(text.getText(), x, y);	// Normally we can just draw the text, but labels can potentially have
+												// animated text, so we draw it this way (jank)
 	}
 }

@@ -42,7 +42,7 @@ public class AnimationHandler {
 			
 			final Animator animator = entity.getAnimator();
 			animator.update();
-			entity.getDiffuse().bind(0);
+			entity.getTexture().bind(0);
 			shader.specularity.loadFloat(0f);
 
 			shader.diffuse.loadTexUnit(0);
@@ -63,9 +63,9 @@ public class AnimationHandler {
 		shader.projectionViewMatrix.loadMatrix(camera.getProjectionMatrix());
 		shader.cameraPos.loadVec3(camera.getPosition());
 
-		animatedModel.getDiffuse().bind(0);
+		animatedModel.getTexture().bind(0);
 		animatedModel.getModel().bind(0, 1, 2, 3, 4);
-		animatedModel.getDiffuse().bind(0);
+		animatedModel.getTexture().bind(0);
 		shader.specularity.loadFloat(0f);
 
 		shader.diffuse.loadTexUnit(0);

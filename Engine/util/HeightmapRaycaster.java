@@ -8,7 +8,7 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
 import gl.Camera;
-import map.Terrain;
+import map.ground.Terrain;
 
 public class HeightmapRaycaster {
 
@@ -98,7 +98,7 @@ public class HeightmapRaycaster {
 	private static boolean isUnderGround(Terrain terrain, Vector3f testPoint) {
 		float height = 0;
 		if (terrain != null) {
-			height = terrain.getHeightAt(testPoint.x, testPoint.z);
+			height = 0;//terrain.getHeightAt(testPoint.x, testPoint.z);
 			
 		}
 		if (testPoint.y < height) {

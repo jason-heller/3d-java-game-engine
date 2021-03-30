@@ -14,6 +14,7 @@ import org.lwjgl.opengl.GLContext;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
+import dev.Console;
 import io.FileUtils;
 
 class TextureData {
@@ -107,7 +108,7 @@ class TextureData {
 }
 
 public class TextureUtils {
-	public static Texture createTexture(byte[] rgba, int width, int height) {
+	public static Texture createTexture(byte[] rgba, byte material, int width, int height) {
 		final ByteBuffer buf = BufferUtils.createByteBuffer(rgba.length);
 		buf.put(rgba);
 		buf.flip();
@@ -115,7 +116,10 @@ public class TextureUtils {
 		final TextureData textureData = new TextureData(buf, width, height);
 		textureData.type = GL11.GL_TEXTURE_2D;
 		final int textureId = loadTextureToOpenGL(textureData);
-		return new Texture(textureId, textureData.getWidth(), true, 0);
+		
+		Texture tex = new Texture(textureId, textureData.getWidth(), textureData.getHeight(), true, 0);
+		tex.setMaterial(material);
+		return tex;
 	}
 
 	public static Texture createTexture(byte[][] rgba, int width, int height) {
@@ -139,7 +143,7 @@ public class TextureUtils {
 		GL11.glTexParameteri(GL13.GL_TEXTURE_CUBE_MAP, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 		GL11.glBindTexture(GL13.GL_TEXTURE_CUBE_MAP, 0);
 
-		return new Texture(texID, GL13.GL_TEXTURE_CUBE_MAP, width * 6, false, 0);
+		return new Texture(texID, GL13.GL_TEXTURE_CUBE_MAP, width * 6, height, false, 0);
 	}
 
 	public static Texture createTexture(String path) {
@@ -149,7 +153,7 @@ public class TextureUtils {
 		}
 		textureData.type = GL11.GL_TEXTURE_2D;
 		final int textureId = loadTextureToOpenGL(textureData);
-		return new Texture(textureId, textureData.getWidth(), true, 0);
+		return new Texture(textureId, textureData.getWidth(), textureData.getHeight(), true, 0);
 	}
 
 	public static Texture createTexture(String path, int type, boolean nearest, boolean mipmap, float bias,
@@ -223,6 +227,58 @@ public class TextureUtils {
 				
 				byteArrInd += 4;
 			}
+		}
+		
+		return data;
+	}
+	
+	// +x, -x, +y, -y, +z, -z
+	private static final int[] FACE_ORDER = new int[] {1, 4, 0, 5, 2, 3};
+	public static byte[][] getRawCubemapTexData(String path) {
+		byte[][] data = new byte[6][];
+		byte[] byteArr;
+		
+		TextureData td = readTextureData("res/" + path);
+		
+		ByteBuffer buf = td.getBuffer();
+		final int size = td.getHeight();
+		final int len = size * size * 3;
+		
+		byteArr = new byte[buf.remaining()];
+		buf.get(byteArr);
+		int pixelIndex = 0;
+		int newLinePxStripe = td.getWidth();
+		int i = 0;
+		
+		try {
+		for(i = 0; i < 6; i++) {
+			final int faceIndex = FACE_ORDER[i];
+			data[faceIndex] = new byte[len];
+			pixelIndex = 0;
+			
+			for(int j = 0; j < len; j += 3) {
+				// AGRB
+				int index = (pixelIndex % size) + (newLinePxStripe * (pixelIndex / size));	// Index into pixel of partition
+				index += size * i;	// Index into current partition
+				index *= 4;					// Scale to start of ARGB data
+				
+				data[faceIndex][j]   = byteArr[index + 2];
+				data[faceIndex][j+1] = byteArr[index + 1];
+				data[faceIndex][j+2] = byteArr[index + 0];
+				
+				pixelIndex++;
+			}
+		}
+		} catch(Exception e) {
+			System.err.println(byteArr.length +", " + i + ", " + pixelIndex);
+			int index = (pixelIndex % size) + (newLinePxStripe * (pixelIndex / size));	// Index into pixel of partition
+			System.err.println("pixel #" + index);
+			index += size * size * i;	// Index into current partition
+			System.err.println("pixel pos" + index);
+			index *= 4;					// Scale to start of ARGB data
+			System.err.println("data pos" + index);
+			
+			e.printStackTrace();
 		}
 		
 		return data;

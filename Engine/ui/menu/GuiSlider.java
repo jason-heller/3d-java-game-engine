@@ -2,6 +2,7 @@ package ui.menu;
 
 import io.Input;
 import ui.Font;
+import ui.Text;
 import ui.UI;
 import ui.menu.listener.SliderListener;
 import util.Colors;
@@ -17,13 +18,13 @@ public class GuiSlider extends GuiElement {
 
 	private boolean hasFocus = false;
 
-	private final String label;
+	private final Text text;
 	private String prefix = "";
 
 	public GuiSlider(int x, int y, String label, float minValue, float maxValue, float value, float increment) {
 		this.x = x;
 		this.y = y;
-		this.label = label;
+		this.text = new Text(Font.defaultFont, label, 0, -6, Font.defaultSize, false);
 		this.minValue = minValue;
 		this.maxValue = maxValue;
 		this.value = value;
@@ -34,7 +35,7 @@ public class GuiSlider extends GuiElement {
 
 		height = 16;
 		width = 150;
-		txtWidth = 128 + Font.defaultFont.getWidth() * (label.length() + 3) / 128 * 128;
+		txtWidth = (int)(text.getWidth() + 64) / 64 * 64;
 		sliderPos = (int) ((value - minValue) / (maxValue - minValue) * width);
 	}
 
@@ -53,7 +54,9 @@ public class GuiSlider extends GuiElement {
 	}
 
 	public void setTextPrefix(String prefix) {
+		String origTxt = text.getText().replace(this.prefix, "");
 		this.prefix = prefix;
+		text.setText(prefix + origTxt);
 	}
 
 	public void setValue(int value) {
@@ -63,17 +66,22 @@ public class GuiSlider extends GuiElement {
 
 	@Override
 	public void update() {
-		UI.drawString(prefix + label, x, y - 6, false);
+		text.setPosition(x, y);
+		UI.drawString(text);
 
 		if (hasFocus || Input.getMouseX() > x + txtWidth && Input.getMouseX() < x + width + txtWidth
 				&& Input.getMouseY() > y && Input.getMouseY() < y + height) {
-			if (Input.isDown(Input.KEY_LMB)) {
+			
+			if (Input.isPressed(Input.KEY_LMB)) {
+				hasFocus = true;
+			}
+			
+			if (Input.isDown(Input.KEY_LMB) && hasFocus) {
 				value = minValue + (Input.getMouseX() - ((float) x + txtWidth)) / width * (maxValue - minValue);
 				value = offset + (float) (Math.floor(value / increment) * increment);
 				value = Math.min(Math.max(minValue, value), maxValue);
 
 				sliderPos = (int) ((value - minValue) / (maxValue - minValue) * width);
-				hasFocus = true;
 
 				if (listener != null) {
 					listener.onClick(value);

@@ -234,4 +234,10 @@ public class Window {
 		System.setProperty("org.lwjgl.opengl.Window.undecorated", border ? "true" : "false");
 		Window.setDisplayMode(Display.getDisplayMode());
 	}
+
+	public static void resetDeltaTime() {
+		final long currentFrameTime = getCurrentTime();
+		deltaTime = (currentFrameTime - lastFrameTime) / 1000f * timeScale;
+		lastFrameTime = currentFrameTime;
+	}
 }

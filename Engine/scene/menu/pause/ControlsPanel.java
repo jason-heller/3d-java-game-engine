@@ -16,7 +16,6 @@ import ui.menu.listener.SliderListener;
 
 public class ControlsPanel extends GuiPanel {
 
-	private final GuiSlider sensitivity;
 	private final GuiButton reset;
 
 	public ControlsPanel(GuiPanel parent, int x, int y, int width, int height) {
@@ -25,40 +24,23 @@ public class ControlsPanel extends GuiPanel {
 		setScrollable(true);
 		setLayout(new GuiFlowLayout(GuiFlowLayout.VERTICAL), x, y, 582, 9999);//392
 
+		add(new GuiLabel(x, y ,"#SGeneral"));
+		
 		int i = 0;
 		Iterator<String> iter = Controls.controls.keySet().iterator();
-		add(new GuiLabel(x, y ,"#SGameplay"));
-		for (i = 0; i < 6; i++) {
+
+		for (i = 0; i < 4; i++) {
 			addBind(iter.next());
 		}
 		
 		addSeparator();
 		add(new GuiLabel(x, y ,"#SMovement"));
-		for (i = 0; i < 7; i++) {
+		for (i = 0; i < 6; i++) {
 			addBind(iter.next());
 		}
+
+		addSeparator();
 		
-		addSeparator();
-		add(new GuiLabel(x, y ,"#SInventory"));
-		for (i = 0; i < 9; i++) {
-			addBind(iter.next());
-		}
-
-		addSeparator();
-		sensitivity = new GuiSlider(x, y, "Mouse Sensitivity", .05f, 2f, Camera.mouseSensitivity, .05f);
-		sensitivity.addListener(new SliderListener() {
-
-			@Override
-			public void onClick(float value) {
-			}
-
-			@Override
-			public void onRelease(float value) {
-				Camera.mouseSensitivity = value;
-			}
-
-		});
-		add(sensitivity);
 		this.reset = new GuiButton(x, y, "Reset Binds");
 		reset.addListener(new MenuListener() {
 

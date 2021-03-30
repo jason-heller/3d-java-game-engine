@@ -1,18 +1,13 @@
 package gl.shadow;
 
-import java.util.List;
-
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
 import core.Resources;
-import gl.Camera;
 import gl.Render;
 import gl.fbo.FrameBuffer;
-import map.Chunk;
-import scene.entity.Entity;
 
 /**
  * This class is in charge of using all of the classes in the shadows package to
@@ -77,12 +72,12 @@ public class ShadowRender {
 	 * @param sun
 	 *            - the light acting as the sun in the scene.
 	 */
-	public void render(Camera camera, List<Entity> entities, List<Chunk> chunks, Vector3f lightDir) {
+	/*public void render(Camera camera, List<Entity> entities, List<Chunk> chunks, Vector3f lightDir) {
 		shadowBox.update(camera);
 		prepare(lightDir, shadowBox);
 		entityRenderer.render(projectionViewMatrix, entities, chunks);
 		finish();
-	}
+	}*/
 
 	/**
 	 * This biased projection-view matrix is used to convert fragments into
