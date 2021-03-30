@@ -33,6 +33,8 @@ enum CommandData {
 	heal(false, "hp", "part"),
 	has_walker(false),
 	shadow_quality(false, "0-3"),
+	mipmap_bias(false),
+	
 	
 	// Getters
 	version("VERSION", Application.class, GETTER, false),

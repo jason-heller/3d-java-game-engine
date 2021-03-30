@@ -55,6 +55,7 @@ public class Settings {
 		ParticleHandler.maxParticles = getInt("max_particles");
 		
 		Render.shadowQuality = getInt("shadow_quality");
+		Render.defaultBias = getFloat("mipmap_bias");
 		ShadowBox.shadowDistance = getFloat("shadow_dist");
 		ShadowRender.shadowMapSize = getInt("shadow_fbo_size");
 		
@@ -97,6 +98,7 @@ public class Settings {
 		addEntry("mouse_sensitivity", Camera.mouseSensitivity);
 		addEntry("max_particles", ParticleHandler.maxParticles);
 		addEntry("shadow_quality", Render.shadowQuality);
+		addEntry("mipmap_bias", Render.defaultBias);
 		addEntry("shadow_dist", ShadowBox.shadowDistance);
 		addEntry("shadow_fbo_size", ShadowRender.shadowMapSize);
 		addEntry("no_splash", MainMenuUI.disableIntroSplash);

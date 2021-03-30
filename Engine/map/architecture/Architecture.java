@@ -7,11 +7,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL14;
 
 import core.Resources;
 import dev.Console;
 import dev.Debug;
 import gl.Camera;
+import gl.Render;
 import gl.TexturedModel;
 import gl.line.LineRender;
 import gl.map.architecture.render.ArcRender;
@@ -297,4 +300,13 @@ public class Architecture {
 	public Lightmap getLightmap() {
 		return lightmap;
 	}
+	
+	public void changeMipmapBias() {
+		for (Texture texture : this.getReferencedTextures()) {
+			if (texture == null) continue;
+			texture.bind(0);
+			GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL14.GL_TEXTURE_LOD_BIAS, Render.defaultBias);
+		}
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+	} 
 }

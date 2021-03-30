@@ -35,7 +35,7 @@ public class Lightmap {
         }
 
        // buf.flip();
-        texture = TextureUtils.createTexture(rgba, (byte)0, SIZE, SIZE);
+        texture = TextureUtils.createTexture(rgba, (byte)0, SIZE, SIZE, false);
         //texture.bind(0);
         Resources.addTexture("lightmap", texture);
         setFiltering(Render.shadowQuality);
@@ -58,12 +58,13 @@ public class Lightmap {
     	buf.flip();
     	GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, SIZE-2, SIZE-2, 2, 2, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buf);
 	}
-	
+
 	public void setFiltering(int filter) {
-		 texture.bind(0);
-		int f = filteringQualities[Math.min(Render.shadowQuality, 1)];
+		texture.bind(0);
+		int quality = Math.min(Render.shadowQuality, 1);
+		int f = filteringQualities[quality];
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, f);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, f);//_MIPMAP_LINEAR
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, f);// _MIPMAP_LINEAR
 	}
 
 	public void create(byte[] lighting, ArcFace[] faces) {

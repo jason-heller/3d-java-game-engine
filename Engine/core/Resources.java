@@ -48,7 +48,7 @@ public class Resources {
 
 			final byte[] data = Squish.decompressImage(null, width, height, textureData, Squish.CompressionType.DXT3);
 
-			return addTexture(key, material, data, width, height);
+			return addTexture(key, material, data, width, height, true);
 		} catch (final IOException e) {
 			Console.printStackTrace(e);
 		} finally {
@@ -177,8 +177,8 @@ public class Resources {
 		return buffer;
 	}
 
-	public static Texture addTexture(String key, byte material, byte[] decompressedData, int width, int height) {
-		final Texture tex = TextureUtils.createTexture(decompressedData, material, width, height);
+	public static Texture addTexture(String key, byte material, byte[] decompressedData, int width, int height, boolean mipmap) {
+		final Texture tex = TextureUtils.createTexture(decompressedData, material, width, height, mipmap);
 		return addTexture(key, tex);
 	}
 

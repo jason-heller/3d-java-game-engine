@@ -19,6 +19,6 @@ public class ArcPackedTexture {
 	}
 
 	public Texture passToOpenGL() {
-		return Resources.addTexture(id, material, decompressedData, width, height);
+		return Resources.addTexture(id, material, decompressedData, width, height, true);
 	}
 }

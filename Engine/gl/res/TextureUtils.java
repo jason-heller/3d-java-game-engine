@@ -14,7 +14,7 @@ import org.lwjgl.opengl.GLContext;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
-import dev.Console;
+import gl.Render;
 import io.FileUtils;
 
 class TextureData {
@@ -29,7 +29,7 @@ class TextureData {
 	private boolean anisotropic = false;
 	private boolean nearest = true;
 	private boolean transparent;
-	private float bias = 1f;
+	private float bias = Render.defaultBias;
 	private int numRows = 1;
 
 	public TextureData(ByteBuffer buffer, int width, int height) {
@@ -108,13 +108,14 @@ class TextureData {
 }
 
 public class TextureUtils {
-	public static Texture createTexture(byte[] rgba, byte material, int width, int height) {
+	public static Texture createTexture(byte[] rgba, byte material, int width, int height, boolean mipmap) {
 		final ByteBuffer buf = BufferUtils.createByteBuffer(rgba.length);
 		buf.put(rgba);
 		buf.flip();
 
 		final TextureData textureData = new TextureData(buf, width, height);
 		textureData.type = GL11.GL_TEXTURE_2D;
+		textureData.setMipmap(mipmap);
 		final int textureId = loadTextureToOpenGL(textureData);
 		
 		Texture tex = new Texture(textureId, textureData.getWidth(), textureData.getHeight(), true, 0);

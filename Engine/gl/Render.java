@@ -22,6 +22,7 @@ public class Render {
 	public static FrameBuffer screen;
 	private static GenericShader genericShader;
 	public static int shadowQuality;
+	public static float defaultBias = -1f;
 	
 	public static void cleanUp() {
 		genericShader.cleanUp();

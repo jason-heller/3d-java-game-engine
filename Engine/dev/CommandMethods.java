@@ -150,6 +150,14 @@ public class CommandMethods {
 		}
 	}
 	
+	public static void mipmap_bias(float bias) {
+		Render.defaultBias = bias;
+		if (Application.scene instanceof PlayableScene) {
+			PlayableScene s = (PlayableScene)Application.scene;
+			s.getArcHandler().getArchitecture().changeMipmapBias();
+		}
+	}
+	
 	public static void fov(int fov) {
 		Camera.fov = fov;
 		Application.scene.getCamera().updateProjection();

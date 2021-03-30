@@ -157,10 +157,10 @@ public class Debug {
 					
 					if (Debug.viewLightmapTexture) {
 						float u1, u2, v1, v2;
-						u1 = (tv[0][0] * A.x + tv[0][1] * A.y + tv[0][2] * A.z - nearestFace.lmMins[0]) / (nearestFace.lmSizes[0] + 1);
-						v1 = (tv[1][0] * A.x + tv[1][1] * A.y + tv[1][2] * A.z - nearestFace.lmMins[1]) / (nearestFace.lmSizes[1] + 1);
-						u2 = (tv[0][0] * B.x + tv[0][1] * B.y + tv[0][2] * B.z - nearestFace.lmMins[0]) / (nearestFace.lmSizes[0] + 1);
-						v2 = (tv[1][0] * B.x + tv[1][1] * B.y + tv[1][2] * B.z - nearestFace.lmMins[1]) / (nearestFace.lmSizes[1] + 1);
+						u1 = (tv[0][0] * A.x + tv[0][1] * A.y + tv[0][2] * A.z + tv[0][3] - nearestFace.lmMins[0]) / (nearestFace.lmSizes[0] + 1);
+						v1 = (tv[1][0] * A.x + tv[1][1] * A.y + tv[1][2] * A.z + tv[1][3] - nearestFace.lmMins[1]) / (nearestFace.lmSizes[1] + 1);
+						u2 = (tv[0][0] * B.x + tv[0][1] * B.y + tv[0][2] * B.z + tv[0][3] - nearestFace.lmMins[0]) / (nearestFace.lmSizes[0] + 1);
+						v2 = (tv[1][0] * B.x + tv[1][1] * B.y + tv[1][2] * B.z + tv[1][3] - nearestFace.lmMins[1]) / (nearestFace.lmSizes[1] + 1);
 						u1 = u1 * nearestFace.lightmapScaleX + nearestFace.lightmapOffsetX;
 						v1 = v1 * nearestFace.lightmapScaleY + nearestFace.lightmapOffsetY;
 						u2 = u2 * nearestFace.lightmapScaleX + nearestFace.lightmapOffsetX;

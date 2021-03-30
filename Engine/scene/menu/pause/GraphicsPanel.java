@@ -21,7 +21,7 @@ import ui.menu.listener.SliderListener;
 
 public class GraphicsPanel extends GuiPanel {
 	private final GuiDropdown resolution;
-	private final GuiSlider fov, fps, particleCount, shadowDistance;
+	private final GuiSlider fov, fps, particleCount, shadowDistance, mipmapBias;
 	private final GuiSpinner fullscreen, bordered, shadowQuality;
 
 	private final DisplayMode[] resolutions;
@@ -132,6 +132,25 @@ public class GraphicsPanel extends GuiPanel {
 		});
 		add(particleCount);
 		
+		mipmapBias = new GuiSlider(x, y, "Mipmap Distance", -2f, 5f, -Render.defaultBias, .5f);
+		mipmapBias.addListener(new SliderListener() {
+
+			@Override
+			public void onClick(float value) {
+			}
+
+			@Override
+			public void onRelease(float value) {
+				Render.defaultBias = -value;
+				if (Application.scene instanceof PlayableScene) {
+					PlayableScene s = (PlayableScene)Application.scene;
+					s.getArcHandler().getArchitecture().changeMipmapBias();
+				}
+			}
+
+		});
+		add(mipmapBias);
+		
 		addSeparator();
 		add(new GuiLabel(x, y, "#SShadows"));
 		shadowDistance = new GuiSlider(x, y, "Shadow Distance", 16, 64, ShadowBox.shadowDistance, 1);
@@ -154,7 +173,7 @@ public class GraphicsPanel extends GuiPanel {
 		});
 		add(shadowDistance);
 
-		shadowQuality = new GuiSpinner(x + 32, y, "Quality", Render.shadowQuality, "Very Low", "Low", "Medium", "High");
+		shadowQuality = new GuiSpinner(x + 32, y, "Quality", Render.shadowQuality, "Low", "Medium", "High", "Very High");
 		shadowQuality.addListener(new MenuListener() {
 			@Override
 			public void onClick(String option, int index) {
