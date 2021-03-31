@@ -112,7 +112,7 @@ public class CollideUtils {
 			}
 		}
 		
-		mtv.finalize(facePoints[0]);
+		mtv.finalize(facePoints[0], face);
 		return mtv;
 	}
 

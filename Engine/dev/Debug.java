@@ -37,7 +37,7 @@ import ui.UI;
 import util.Colors;
 
 public class Debug {
-	public static boolean debugMode = true;
+	public static boolean debugMode = false;
 	public static boolean wireframeMode = false;
 	public static boolean fullbright = false;
 	public static boolean viewNavMesh = false, viewNavPath = false;
@@ -85,8 +85,11 @@ public class Debug {
 		String vz = String.format("%.1f", player.vel.z);
 
 		UI.drawString(
-				"\n#rX: " + cx + " #gY: " + cy + " #bZ: " + cz + "\n" + "#wFPS: " + (int) Window.framerate + "/"
-						+ Window.maxFramerate + "\n" + "\nVX: " + vx + " VY: " + vy + " VZ: " + vz + "\n",
+				 "\n#rX: " + cx + " #gY: " + cy + " #bZ: " + cz
+				+ "\n" + "#wFPS: " + (int) Window.framerate + "/" + Window.maxFramerate 
+				+ "\n" + "\nVX: " + vx + " VY: " + vy + " VZ: " + vz 
+				+ "\ngrounded:" + player.isGrounded() + ", prev: " + player.previouslyGrounded 
+				+ "\n",
 				5, 5, .25f, false);
 
 		if (viewLightmapTexture) {

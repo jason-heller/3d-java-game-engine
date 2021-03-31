@@ -1,6 +1,11 @@
 package core;
 
 
+import java.io.File;
+import java.util.Locale;
+
+import javax.swing.JOptionPane;
+
 import org.lwjgl.opengl.Display;
 
 import audio.AudioHandler;
@@ -10,7 +15,6 @@ import gl.Window;
 import io.Controls;
 import io.Input;
 import io.Settings;
-import map.architecture.ArchitectureHandler;
 import scene.MainMenu;
 import scene.Scene;
 import ui.UI;
@@ -26,8 +30,13 @@ public class Application {
 	private static float tickTimer = 0f;
 	private static boolean forceClose;
 	public static boolean paused = false;
+	
 	public static final int TICKS_PER_SECOND = 25;
 	public static final float TICKRATE = 1f / TICKS_PER_SECOND;
+	
+	public static String operatingSystem;
+	public static String osArchitecture;
+	public static String nativesPath;
 	
 	public static void changeScene(Class<?> sceneClass) {
 		scene.cleanUp();
@@ -41,7 +50,7 @@ public class Application {
 
 	public static void main(String[] args) throws InterruptedException {
 		//System.setProperty("org.lwjgl.librarypath", new File("lib/windows").getAbsolutePath());
-		
+		initOpenGL();
 		AudioHandler.init();
 		Settings.init();
 		Controls.init();
@@ -56,6 +65,8 @@ public class Application {
 		for (final String arg : args) {
 			Console.send(arg);
 		}
+		
+		Console.send("run autoexec");
 
 		while ((!Display.isCloseRequested() && !forceClose)) {
 			
@@ -103,7 +114,34 @@ public class Application {
 		Thread.sleep(1000);
 		System.exit(0);
 	}
-	
+
+	private static void initOpenGL() {
+		Locale.setDefault(Locale.US);
+		
+		operatingSystem = System.getProperty("os.name").toLowerCase();
+		osArchitecture = System.getProperty("os.arch").toLowerCase();
+		nativesPath =  new File("lib").getAbsolutePath();
+		
+		System.out.println("operating system: " + operatingSystem);
+		System.out.println("architecture: " + osArchitecture);
+		
+		String ext = "";
+		if (operatingSystem.contains("win")) {
+			ext = "windows";
+		} else if (operatingSystem.contains("lin")) {
+			ext = "linux";
+		} else if (operatingSystem.contains("mac")) {
+			ext = "macosx";
+		} else if (operatingSystem.contains("sol")) {
+			ext = "solaris";
+		} else {
+			JOptionPane.showMessageDialog(null, "Unsupported operating system: " + operatingSystem);
+			System.exit(-1);
+		}
+
+		System.setProperty("org.lwjgl.librarypath", nativesPath + "/" + ext);
+	}
+
 	public static boolean isCloseRequested() {
 		return forceClose;
 	}

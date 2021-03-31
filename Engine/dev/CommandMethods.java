@@ -64,6 +64,18 @@ public class CommandMethods {
 		TestHostileEntity.spawnViaCommand(x, y ,z);
 	}
 	
+	public static void kill() {
+		PlayableScene PlayableScene;
+		if (!(Application.scene instanceof PlayableScene)) {
+			Console.log("Cannot use this command outside gameplay");
+			return;
+		} else {
+			PlayableScene = (PlayableScene)Application.scene;
+		}
+		
+		PlayableScene.getPlayer().takeDamage(PlayerEntity.getHp(0), 0);
+	}
+	
 	public static void hurt(int damage, int part) {
 		PlayableScene PlayableScene;
 		if (!(Application.scene instanceof PlayableScene)) {
@@ -92,7 +104,7 @@ public class CommandMethods {
 		if (hp < 0) {
 			hurt(-hp, part);
 		} else {
-			PlayableScene.getPlayer().heal(hp, PlayerEntity.HP_ALL);
+			PlayableScene.getPlayer().heal(hp, part);
 		}
 	}
 	

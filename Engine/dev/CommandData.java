@@ -38,8 +38,12 @@ enum CommandData {
 	
 	// Getters
 	version("VERSION", Application.class, GETTER, false),
+	os_name("operatingSystem", Application.class, GETTER, false),
+	os_arch("osArchitecture", Application.class, GETTER, false),
+	natives_path("nativesPath", Application.class, GETTER, false),
 	
 	// Setters
+	enable_console("allowConsole", Debug.class, SETTER, false),
 	timescale("timeScale", Window.class, SETTER, false),
 	hideui("hideUI", UI.class, SETTER, false),
 	debug("debugMode", Debug.class, SETTER, false),

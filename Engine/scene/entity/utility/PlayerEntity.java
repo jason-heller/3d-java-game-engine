@@ -4,10 +4,12 @@ import org.joml.Vector3f;
 
 import audio.AudioHandler;
 import core.Application;
+import dev.Console;
 import dev.Debug;
 import geom.MTV;
 import gl.Camera;
 import gl.Window;
+import io.Input;
 import scene.PlayableScene;
 import scene.entity.EntityHandler;
 import scene.singlearc.DamageIndicators;
@@ -48,7 +50,7 @@ public class PlayerEntity extends PhysicsEntity {
 		
 		if (grounded) {
 			
-			stepTimer += Window.deltaTime * vel.length();
+			stepTimer += Window.deltaTime * new Vector3f(vel.x, 0f, vel.z).length();
 			
 			if (stepTimer > 6) {
 				stepTimer = 0f;
@@ -71,6 +73,30 @@ public class PlayerEntity extends PhysicsEntity {
 		if (hp[0] < 5 || bloodDmgIndicator > 0f) {
 			float baseDmgOpaciy = Math.max(Math.min(bloodDmgIndicator, 1f), (5f - hp[0]) / 5f);
 			UI.drawImage("dmg_screen_effect", 0, 0, 1280, 720).setOpacity(baseDmgOpaciy);
+		}
+		
+		if (hp[0] <= 0) {
+			PlayerHandler.hasWalker = false;
+			
+			PlayerHandler.disable();
+			if (camera.getControlStyle() == Camera.FIRST_PERSON) {
+				camera.getPosition().set(pos.x, pos.y + Camera.offsetY, pos.z);
+			}
+			
+			if (Camera.offsetY > -3f) {
+				Camera.offsetY -= 3f*Window.deltaTime;
+			}
+			
+			if (Input.isPressed("walk_left") || Input.isPressed("walk_right") || Input.isPressed("walk_forward")
+					|| Input.isPressed("walk_backward") || Input.isPressed("sneak")) {
+				for(int i = 0; i < hp.length; i++) {
+					hp[i] = maxHp[i];
+				}
+				PlayerHandler.hasWalker = true;
+				Console.send("map "+PlayableScene.currentMap);
+			}
+			
+			camera.sway(1f, 4f, .45f);
 		}
 		
 		if (!PlayerHandler.hasWalker && vel.lengthSquared() > .1f) {
@@ -117,10 +143,14 @@ public class PlayerEntity extends PhysicsEntity {
 	public void heal(int health, int part) {
 		if (part < 0) {
 			for(int i = 0; i < hp.length; i++) {
-				hp[part] += health;
+				hp[i] += health;
 			}
 		} else {
 			hp[part] += health;
+		}
+		
+		if (hp[0] > 0) {
+			PlayerHandler.enable();
 		}
 	}
 	

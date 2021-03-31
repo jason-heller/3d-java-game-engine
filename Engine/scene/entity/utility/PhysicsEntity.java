@@ -8,6 +8,7 @@ import org.joml.Vector3f;
 
 import core.Application;
 import core.Resources;
+import dev.Console;
 import dev.Debug;
 import geom.AxisAlignedBBox;
 import geom.CollideUtils;
@@ -45,6 +46,8 @@ public abstract class PhysicsEntity extends Entity {
 	
 	public static float gravity = 25f;
 	public static float maxGravity = -200f;
+	private float upwarp = 0f;
+	private Plane lastFloorCollided = null;
 	
 	protected Material materialStandingOn = Material.ROCK;
 	
@@ -208,8 +211,11 @@ public abstract class PhysicsEntity extends Entity {
 		List<BspLeaf> leaves = bsp.walk(max, min);
 		List<ArcFace> faces = bsp.getFaces(leaves);
 		
+		upwarp = 0f;
 		mapGeometryCollide(bsp, faces);
 		mapClipCollide(architecture, leaves);
+		
+		pos.y += upwarp;
 		
 		super.update(scene);
 	}
@@ -237,7 +243,7 @@ public abstract class PhysicsEntity extends Entity {
 					}
 					
 					if (doCollide) {
-						collide(mtv);
+						collide(bsp, mtv);
 					}
 				}
 			}
@@ -256,7 +262,7 @@ public abstract class PhysicsEntity extends Entity {
 	}
 	
 	private void mapGeometryCollide(Bsp bsp, List<ArcFace> faces) {
-		if (previouslyGrounded  && !grounded) {
+		if (previouslyGrounded) {
 			floorStickGeomCol(bsp, faces);
 			mapGeometryCollide(bsp, faces, 1);
 			return;
@@ -292,7 +298,7 @@ public abstract class PhysicsEntity extends Entity {
 		if (nearest != null) {
 			MTV mtv = nearest;
 			
-			collide(mtv/*, bsp.planes[nearestFace.planeId]*/);
+			collide(bsp, mtv);
 			faces.remove(nearestFace);
 			
 		} else {
@@ -307,7 +313,8 @@ public abstract class PhysicsEntity extends Entity {
 	private void floorStickGeomCol(Bsp bsp, List<ArcFace> faces) {
 		MTV nearest = null;
 		ArcFace nearestFace = null;
-
+		
+		pos.y -= .2f;
 		for(ArcFace face : faces) {
 			Plane plane = bsp.planes[face.planeId];
 			Vector3f normal = plane.normal;
@@ -315,6 +322,7 @@ public abstract class PhysicsEntity extends Entity {
 				continue;
 			
 			MTV mtv = CollideUtils.bspFaceBoxCollide(bsp.vertices, bsp.edges, bsp.surfEdges, face, normal, bbox);
+
 			
 			if (Debug.viewCollide && mtv != null) {
 				for(int i = face.firstEdge; i < face.numEdges + face.firstEdge; i++) {
@@ -337,24 +345,21 @@ public abstract class PhysicsEntity extends Entity {
 				}
 			}
 		}
-		
+
 		if (nearest != null) {
 			MTV mtv = nearest;
 			collideWithFloor(mtv);
 			
 			faces.remove(nearestFace);
-		} else
+		} else {
+			pos.y+=.2f;
 			return;
+		}
 	}
 	
-	private void collide(MTV mtv) {
-		if (mtv.getPlane().normal.y > .5f) {
+	private void collide(Bsp bsp, MTV mtv) {
+		if (mtv.getAxis().y > .5f || bsp.planes[ mtv.getFace().planeId].normal.y > .5f) {
 			collideWithFloor(mtv);
-			/*Vector3f tempVel = new Vector3f(vel);
-			vel.y = 0f;
-			pos.add(mtv.getMTV());
-			vel.x = tempVel.x;
-			vel.z = tempVel.z;*/
 			return;
 		}
 		
@@ -369,16 +374,14 @@ public abstract class PhysicsEntity extends Entity {
 	}
 
 	protected void collideWithFloor(MTV mtv) {
-		grounded = true;
 		
 		// Easy out
 		if (mtv.getAxis().y == 1f) {
 			pos.y += mtv.getMTV().y;
 			vel.y = 0f;
+			grounded = true;
 			return;
 		}
-		
-		vel.y = mtv.getAxis().y < .99f ? -6f: 0f;
 		
 		Plane plane = mtv.getPlane();
 		float depth = Float.NEGATIVE_INFINITY;
@@ -390,18 +393,22 @@ public abstract class PhysicsEntity extends Entity {
 				new Vector3f(-bbox.getBounds().x, -bbox.getBounds().y, -bbox.getBounds().z)
 				};
 		
-		for(int i = 0; i < 4; i++) {
+		for(int i = 0; i < points.length; i++) {
 			float newDepth = plane.collide(Vector3f.add(pos, points[i]), Vector3f.Y_AXIS);
 
-			if (!  Float.isNaN(newDepth) && newDepth > depth) 
+			if (!Float.isNaN(newDepth) && newDepth > depth) 
 				depth = newDepth;
 		}
 		
-		if (depth == Float.NEGATIVE_INFINITY) {
+		if (depth == Float.NEGATIVE_INFINITY || depth > bbox.getBounds().y) {
 			return;
 		}
 
-		pos.y += depth;
+		grounded = true;
+		if (depth > upwarp) {
+			upwarp = depth;
+			lastFloorCollided = plane;
+		}
 	}
 
 	public AxisAlignedBBox getBBox() {

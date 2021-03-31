@@ -101,7 +101,7 @@ public class PlayerHandler {
 	
 				
 				float modifier = 1f;
-				if (RUN && !CTRL) {
+				if (RUN && !CTRL && entity.grounded) {
 					modifier = 2.5f;
 					camera.sway(.1f, 5f, 5f);
 				}
@@ -266,11 +266,11 @@ public class PlayerHandler {
 	
 	public static void disable() {
 		disabled = true;
-		entity.deactivated = true;
+		//entity.deactivated = true;
 	}
 	
 	public static void enable() {
 		disabled = false;
-		entity.deactivated = false;
+		//entity.deactivated = false;
 	}
 }

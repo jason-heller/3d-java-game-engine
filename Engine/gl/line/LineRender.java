@@ -26,7 +26,7 @@ public class LineRender {
 	
 	private static int pointer = 0;
 	
-	private static final int MAX_LINES = 6000;
+	private static final int MAX_LINES = 12000;
 	private static final int INSTANCE_DATA_LENGTH = 9;
 	private static final FloatBuffer buffer = BufferUtils.createFloatBuffer(MAX_LINES * INSTANCE_DATA_LENGTH);
 	
