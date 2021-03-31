@@ -2,6 +2,10 @@
 
 This is a 3D survival horror game being developed by me and a few friends.
 
+# Video
+
+<iframe width="699" height="393" src="https://www.youtube.com/embed/wbCgHfwIKBs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 # Required Libraries
 - [LWJGL2] https://www.lwjgl.org/
 - [JOML] https://github.com/JOML-CI/JOML
