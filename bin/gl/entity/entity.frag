@@ -18,7 +18,6 @@ void main(void) {
 		discard;
 
 	float ambientLight = lightDiffuse + (lightDirection.y*lightScale);
-
 	float light = (dot(vec3(lightDirection.x, 0, lightDirection.z), pass_normals)*lightScale) + ambientLight;
 	
 	if (lightDirection.y < 0.0) {
