@@ -1,8 +1,6 @@
 package map.architecture;
 
 import java.io.DataInputStream;
-import java.io.EOFException;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -218,7 +216,7 @@ public class ArcLoader {
 				leaf.numFaces = in.readShort();
 				leaf.firstAmbientSample = in.readShort();
 				leaf.numAmbientSamples = in.readShort();
-				leaf.waterDataId = in.readByte();
+				leaf.isUnderwater = in.readByte() != -1;
 				
 				int numClipsInLeaf = in.readByte();
 				leaf.clips = new short[numClipsInLeaf];
@@ -263,9 +261,12 @@ public class ArcLoader {
 					String val = FileUtils.readString(in);
 					tags.put(key, val);
 				}
-				if (name.equals("spawn_player")) {
+				
+				switch(name) {
+				case "spawn_player":
 					SpawnPoint spawn = new SpawnPoint(readVec3(tags, "pos"), readVec3(tags, "rot"), tags.get("label"));
 					arc.addFunction(spawn);
+					break;
 				}
 			}
 			

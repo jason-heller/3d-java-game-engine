@@ -19,11 +19,13 @@ import org.lwjgl.opengl.GL15;
 import core.Resources;
 import geom.CollideUtils;
 import gl.Camera;
+import gl.Render;
 import gl.Window;
 import gl.line.LineRender;
 import gl.res.Model;
 import gl.res.Texture;
 import gl.res.Vbo;
+import io.Input;
 import map.architecture.Architecture;
 import map.architecture.components.ArcEdge;
 import map.architecture.components.ArcFace;
@@ -32,7 +34,7 @@ import map.architecture.vis.Bsp;
 import map.architecture.vis.BspLeaf;
 import scene.PlayableScene;
 import scene.Scene;
-import scene.entity.utility.PlayerEntity;
+import scene.entity.util.PlayerEntity;
 import ui.UI;
 import util.Colors;
 
@@ -83,11 +85,15 @@ public class Debug {
 		String vx = String.format("%.1f", player.vel.x);
 		String vy = String.format("%.1f", player.vel.y);
 		String vz = String.format("%.1f", player.vel.z);
+		String spd = String.format("%.1f", player.vel.length());
 
 		UI.drawString(
 				 "\n#rX: " + cx + " #gY: " + cy + " #bZ: " + cz
-				+ "\n" + "#wFPS: " + (int) Window.framerate + "/" + Window.maxFramerate 
-				+ "\n" + "\nVX: " + vx + " VY: " + vy + " VZ: " + vz 
+				+ "\n" + "#wFPS: " + (int) Window.framerate + "/" + Window.maxFramerate
+				+ "\n" + "draw calls: " + Render.drawCalls
+				+ "\n" + "tex swaps: " + Render.textureSwaps
+				+ "\n" + "VX: " + vx + " VY: " + vy + " VZ: " + vz
+				+ "\n" + "speed: " + spd
 				+ "\ngrounded:" + player.isGrounded() + ", prev: " + player.previouslyGrounded 
 				+ "\n",
 				5, 5, .25f, false);

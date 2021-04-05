@@ -4,6 +4,7 @@ import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 
+import gl.Render;
 import gl.fbo.FrameBuffer;
 import shader.UniformFloat;
 import shader.UniformSampler;
@@ -23,8 +24,8 @@ public class WaveShader extends PostShader {
 
 	@Override
 	public void loadUniforms() {
-		Vector3f waterColor = new Vector3f(0,0,1);
-		this.timer.loadFloat(PostProcessing.getPostProcessingTimer());
+		Vector3f waterColor = new Vector3f(1,1,1);
+		this.timer.loadFloat(Render.getTimer());
 		this.color.loadVec3(waterColor);
 	}
 
@@ -38,6 +39,7 @@ public class WaveShader extends PostShader {
 		GL13.glActiveTexture(GL13.GL_TEXTURE0);
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, frameBuffer.getTextureBuffer());
 		GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
+		Render.drawCalls++;
 		stop();
 
 		// unbindFbo();

@@ -8,6 +8,7 @@ import org.lwjgl.opengl.GL11;
 import core.Resources;
 import dev.Debug;
 import gl.Camera;
+import gl.Render;
 import gl.res.Model;
 import map.ground.Chunk;
 import map.ground.ChunkMeshHandler;
@@ -51,6 +52,7 @@ public class TerrainRender {
 			model.bind(0,1,2);
 			model.getIndexVbo().bind();
 			GL11.glDrawElements(GL11.GL_TRIANGLES, ChunkMeshHandler.indexCount, GL11.GL_UNSIGNED_INT, 0);
+			Render.drawCalls++;
 			model.unbind(0,1,2);
 		}
 		shader.stop();

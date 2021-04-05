@@ -11,10 +11,14 @@ import org.lwjgl.opengl.GL14;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
+import dev.Console;
+import gl.Render;
+
 public class FrameBuffer {
 	public static void bind(int frameBuffer, int width, int height) {
+		
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
-		GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, frameBuffer);
+		GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, frameBuffer);
 		GL11.glViewport(0, 0, width, height);
 	}
 
@@ -40,8 +44,8 @@ public class FrameBuffer {
 		this.multisampled = multisampled;
 		this.numTargets = numTargets;
 		this.textureBuffers = new int[numTargets];
-		fbo = createFbo();
-
+		this.fbo = createFbo();
+		
 		if (hasTextureBuffer) {
 			if (multisampled) {
 				for (int i = 0; i < numTargets; i++) {
@@ -71,16 +75,19 @@ public class FrameBuffer {
 	public void bindDepthBuffer(int unit) {
 		GL13.glActiveTexture(GL13.GL_TEXTURE0 + unit);
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, depthBuffer);
+		Render.textureSwaps++;
 	}
 
 	public void bindTextureBuffer(int unit) {
 		GL13.glActiveTexture(GL13.GL_TEXTURE0 + unit);
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureBuffers[0]);
+		Render.textureSwaps++;
 	}
 
 	public void bindTextureBuffer(int unit, int textureBufferIndex) {
 		GL13.glActiveTexture(GL13.GL_TEXTURE0 + unit);
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureBuffers[textureBufferIndex]);
+		Render.textureSwaps++;
 	}
 
 	public void cleanUp() {
@@ -102,7 +109,7 @@ public class FrameBuffer {
 		final int frameBuffer = GL30.glGenFramebuffers();
 		GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, frameBuffer);
 		determineDrawBuffers();
-		GL11.glReadBuffer(GL11.GL_NONE);
+		//GL11.glReadBuffer(GL11.GL_NONE);
 		return frameBuffer;
 	}
 

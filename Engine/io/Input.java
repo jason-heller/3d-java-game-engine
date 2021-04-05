@@ -55,7 +55,7 @@ public enum Input {
 			}
 		}
 
-		return -1;
+		return 0;
 	}
 
 	public static char getChar(int code) {
@@ -356,7 +356,7 @@ public enum Input {
 				if (states[i] == INPUT.RELEASED) {
 					keys[i] = 0;
 				}
-				if (states[i] == INPUT.PRESSED) {
+				else if (states[i] == INPUT.PRESSED) {
 					states[i] = INPUT.HELD_DOWN;
 				}
 			}
@@ -486,5 +486,13 @@ public enum Input {
 
 	public static boolean isMouseGrabbed() {
 		return Mouse.isGrabbed();
+	}
+	
+	public int[] getKeys() {
+		return keys;
+	}
+	
+	public int[] getStates() {
+		return states;
 	}
 }

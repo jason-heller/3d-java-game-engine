@@ -1,4 +1,4 @@
-package scene.entity.utility;
+package scene.entity.util;
 
 import org.joml.Vector3f;
 import org.lwjgl.input.Keyboard;
@@ -13,19 +13,20 @@ import util.MathUtil;
 public class PlayerHandler {
 	private static PlayerEntity entity;
 	
-	public static final float WALKER_SPEED_MULTIPLIER = 1.25f;
+	public static final float WALKER_SPEED_MULTIPLIER = 0.5f;
 	public static float speedPenaltyMultiplier = 1f;
 	public static boolean hasWalker = true;
 
 	public static float jumpVel = 20f;
-	public static float friction = 10f, airFriction = 1f;
-	public static float maxSpeed = 100f, maxAirSpeed = 100f, maxWaterSpeed = 32f;
-	public static float accelSpeed = 100f, airAccel = 25f, waterAccel = 32f;
+	public static float runSpeedMultiplier = 2.25f;
+	public static float maxSpeed = 10f, maxAirSpeed = 10f, maxWaterSpeed = 32f;
+	public static float accelSpeed = 80f, airAccel = 10f, waterAccel = 32f;
+	public static float maxSpeedCrouch = 4f;
 	
-	private static final float CAMERA_STANDING_HEIGHT = 3f;
-	private static final float CAMERA_CROUCHING_HEIGHT = 2f;
-	private static final float CROUCH_SPEED = 4f;
-	private static final float MOVE_SPEED = 75f;
+	public static final float CAMERA_STANDING_HEIGHT = 3f;
+	public static final float CAMERA_CROUCHING_HEIGHT = 2f;
+	
+	private static float accel = accelSpeed;
 	
 	private static float walkSfxTimer = 0f;
 
@@ -35,14 +36,13 @@ public class PlayerHandler {
 		return entity;
 	}
 
-	private static void passPhysVars() {
-		final float speedScale = speedPenaltyMultiplier * (hasWalker ? WALKER_SPEED_MULTIPLIER : 1f);
-		accelSpeed = MOVE_SPEED * speedScale;
-		entity.maxSpeed = maxSpeed;
-		entity.maxAirSpeed = maxAirSpeed;
+	private static void passPhysVars(boolean running) {
+		final float speedScale = speedPenaltyMultiplier;
+		final float runScale = (running ? runSpeedMultiplier : 1f) * speedPenaltyMultiplier;
+		accel = accelSpeed * speedScale;
+		entity.maxSpeed = maxSpeed * runScale;
+		entity.maxAirSpeed = maxAirSpeed * runScale;
 		entity.maxWaterSpeed = maxWaterSpeed;
-		entity.friction = friction;
-		entity.airFriction = airFriction;
 	}
 
 	public static void setEntity(PlayerEntity entity) {
@@ -52,7 +52,10 @@ public class PlayerHandler {
 	}
 
 	public static void update(Scene scene) {
-		passPhysVars();
+		boolean RUN = Input.isDown("run");
+		
+		passPhysVars(RUN);
+		
 		if (disabled) {
 			return;
 		}
@@ -64,10 +67,8 @@ public class PlayerHandler {
 		float direction = yaw;
 
 		final boolean A = Input.isDown("walk_left"), D = Input.isDown("walk_right"), W = Input.isDown("walk_forward"),
-				S = Input.isDown("walk_backward"), JUMP = Input.isDown("jump"), RUN = Input.isDown("run");
+				S = Input.isDown("walk_backward"), JUMP = Input.isDown("jump");
 		final boolean CTRL = Input.isDown("sneak");
-		
-		PostProcessing.underwater = entity.isFullySubmerged();
 
 		if (entity.isSubmerged()) {
 			waterPhysics(scene);
@@ -78,10 +79,10 @@ public class PlayerHandler {
 			if (A && D) {
 			} else if (A) {
 				direction = yaw + 90;
-				speed = accelSpeed;
+				speed = accel;
 			} else if (D) {
 				direction = yaw - 90;
-				speed = accelSpeed;
+				speed = accel;
 			}
 	
 			if (W && S) {
@@ -90,7 +91,7 @@ public class PlayerHandler {
 					direction += 45 * (direction > yaw ? -1f : 1f);
 				}
 	
-				speed = accelSpeed;
+				speed = accel;
 			} else if (W && !getEntity().isSliding()) {
 	
 				if (direction != yaw) {
@@ -99,14 +100,11 @@ public class PlayerHandler {
 					direction = yaw + 180;
 				}
 	
-				
-				float modifier = 1f;
 				if (RUN && !CTRL && entity.grounded) {
-					modifier = 2.5f;
 					camera.sway(.1f, 5f, 5f);
 				}
 				
-				speed = accelSpeed * modifier;
+				speed = accel;
 			}
 	
 			if ((getEntity().isGrounded() || getEntity().isSubmerged() && getEntity().vel.y < 0) && JUMP) {
@@ -144,11 +142,11 @@ public class PlayerHandler {
 		}
 	
 		if (CTRL) {
-			Camera.offsetY -= Window.deltaTime * CROUCH_SPEED;
+			Camera.offsetY -= Window.deltaTime * maxSpeedCrouch;
 			if (Camera.offsetY < CAMERA_CROUCHING_HEIGHT)
 				Camera.offsetY = CAMERA_CROUCHING_HEIGHT;
 		} else {
-			Camera.offsetY += Window.deltaTime * CROUCH_SPEED;
+			Camera.offsetY += Window.deltaTime * maxSpeedCrouch;
 			if (Camera.offsetY > CAMERA_STANDING_HEIGHT)
 				Camera.offsetY = CAMERA_STANDING_HEIGHT;
 		}
@@ -197,9 +195,9 @@ public class PlayerHandler {
 				JUMP = Input.isDown("jump");
 		
 		if ((W || A || D) && !S) {
-			entity.accelerate(Vector3f.Y_AXIS, accelSpeed * (pitch <= 0 ? 1 : -1));
+			entity.accelerate(Vector3f.Y_AXIS, accel * (pitch <= 0 ? 1 : -1));
 		} else if (S) {
-			entity.accelerate(Vector3f.Y_AXIS, accelSpeed * (pitch <= 0 ? -1 : 1));
+			entity.accelerate(Vector3f.Y_AXIS, accel * (pitch <= 0 ? -1 : 1));
 		}
 		
 		if (JUMP) {

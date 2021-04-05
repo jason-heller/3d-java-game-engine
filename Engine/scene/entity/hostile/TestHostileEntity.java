@@ -7,8 +7,8 @@ import gl.res.Model;
 import map.architecture.components.ArcNavigation;
 import scene.PlayableScene;
 import scene.entity.EntityHandler;
-import scene.entity.utility.NavigableEntity;
-import scene.entity.utility.PlayerEntity;
+import scene.entity.util.NavigableEntity;
+import scene.entity.util.PlayerEntity;
 
 public class TestHostileEntity extends NavigableEntity {
 	private PlayerEntity player;

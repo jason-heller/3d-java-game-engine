@@ -8,7 +8,7 @@ import dev.Debug;
 import gl.Camera;
 import map.Enviroment;
 import scene.PlayableScene;
-import scene.entity.utility.PlayerEntity;
+import scene.entity.util.PlayerEntity;
 
 public class Overworld extends PlayableScene {
 	
@@ -48,7 +48,10 @@ public class Overworld extends PlayableScene {
 	public void update() {
 		super.update();
 		if (ui.isPaused()) return;
+		
 		env.update(this);
+		arcHandler.update(camera);
+		
 		if (isLoading) {
 			if (env.isFullyLoaded()) {
 				isLoading = false;
@@ -59,9 +62,9 @@ public class Overworld extends PlayableScene {
 	}
 
 	@Override
-	public void render() {
+	public void render(float clipX, float clipY, float clipZ, float clipDist) {
 		env.render(camera);
-		arcHandler.render(camera);
+		arcHandler.render(camera, clipX, clipY, clipZ, clipDist);
 		if (Debug.debugMode) {
 			Debug.uiDebugInfo(this);
 		}

@@ -13,8 +13,8 @@ import gl.Window;
 import map.architecture.ArchitectureHandler;
 import scene.PlayableScene;
 import scene.entity.hostile.TestHostileEntity;
-import scene.entity.utility.PlayerEntity;
-import scene.entity.utility.PlayerHandler;
+import scene.entity.util.PlayerEntity;
+import scene.entity.util.PlayerHandler;
 import scene.singlearc.SingleArcScene;
 
 public class CommandMethods {
@@ -50,6 +50,10 @@ public class CommandMethods {
 		AudioHandler.stopAll();
 		PlayableScene.currentMap = map;
 		Application.changeScene(SingleArcScene.class);
+	}
+	
+	public static void nextmap() {
+		ArchitectureHandler.nextMap();
 	}
 	
 	public static void noclip() {

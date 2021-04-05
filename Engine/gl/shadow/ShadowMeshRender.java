@@ -1,5 +1,7 @@
 package gl.shadow;
 
+import gl.Render;
+
 public class ShadowMeshRender {
 
 	private ShadowShader shader;
@@ -25,6 +27,7 @@ public class ShadowMeshRender {
 			shader.projectionViewMatrix.loadMatrix(mvpMatrix);
 			GL11.glDrawElements(GL11.GL_TRIANGLES, model.getIndexCount(),
 					GL11.GL_UNSIGNED_INT, 0);
+					Render.drawCalls++;
 		}
 		
 		shader.projectionViewMatrix.loadMatrix(projectionViewMatrix);

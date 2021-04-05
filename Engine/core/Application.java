@@ -22,7 +22,7 @@ import ui.UI;
 public class Application {
 	
 	public static final String TITLE = "Granny Horror Game";
-	public static final String VERSION = "Version 0.2.3pa"; // Alpha Version, Minor, revision/patch
+	public static final String VERSION = "Version 0.3.0pa"; // Alpha Version, Minor, revision/patch
 	
 	public static Scene scene;
 	private static Class<?> nextScene;
@@ -96,8 +96,6 @@ public class Application {
 				}
 				Input.poll();
 				Render.renderPass(scene);
-
-				Render.postRender(scene);
 			}
 		}
 

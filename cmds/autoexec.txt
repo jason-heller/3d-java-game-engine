@@ -6,4 +6,3 @@ natives_path
 bind f noclip
 bind k kill
 bind jump lcontrol
-enable_console

@@ -1,15 +1,15 @@
-package scene.entity.utility;
+package scene.entity.util;
 
 import org.joml.Vector3f;
 
 import audio.AudioHandler;
 import core.Application;
-import dev.Console;
 import dev.Debug;
 import geom.MTV;
 import gl.Camera;
 import gl.Window;
-import io.Input;
+import gl.post.PostProcessing;
+import map.architecture.vis.BspLeaf;
 import scene.PlayableScene;
 import scene.entity.EntityHandler;
 import scene.singlearc.DamageIndicators;
@@ -45,8 +45,17 @@ public class PlayerEntity extends PhysicsEntity {
 	
 	@Override
 	public void update(PlayableScene scene) {
+
+		PlayerHandler.speedPenaltyMultiplier = Math.max(hp[HP_HIP] / (float)maxHp[HP_HIP], .2f);
 		PlayerHandler.update(Application.scene);
 		super.update(scene);
+		
+		if (submerged) {
+			fullySubmerged = scene.getCamera().getPosition().y < residence.max.y;
+			PostProcessing.underwater = this.isFullySubmerged();
+		} else {
+			PostProcessing.underwater = false;
+		}
 		
 		if (grounded) {
 			
@@ -87,23 +96,32 @@ public class PlayerEntity extends PhysicsEntity {
 				Camera.offsetY -= 3f*Window.deltaTime;
 			}
 			
-			if (Input.isPressed("walk_left") || Input.isPressed("walk_right") || Input.isPressed("walk_forward")
-					|| Input.isPressed("walk_backward") || Input.isPressed("sneak")) {
-				for(int i = 0; i < hp.length; i++) {
-					hp[i] = maxHp[i];
-				}
-				PlayerHandler.hasWalker = true;
-				Console.send("map "+PlayableScene.currentMap);
-			}
+			
 			
 			camera.sway(1f, 4f, .45f);
 		}
 		
+		float speed = vel.lengthSquared();
+
 		if (!PlayerHandler.hasWalker && vel.lengthSquared() > .1f) {
 			if (deteriorationTimer >= 1f) {
 				deteriorationTimer -= 1f;
-				
-				if (Math.random() < .1 && lastRandDmg > 3) {
+
+				if (Math.random() < .4 && lastRandDmg > 3) {
+					takeDamage(1, 2);
+					lastRandDmg = 0;
+				} else {
+					lastRandDmg++;
+				}
+			}
+			
+			deteriorationTimer += Window.deltaTime;
+		}
+		else if (speed + .01f >= PlayerHandler.maxSpeed * PlayerHandler.maxSpeed && grounded) {
+			if (deteriorationTimer >= 1f) {
+				deteriorationTimer -= 1f;
+
+				if (Math.random() < .4 && lastRandDmg > 4) {
 					takeDamage(1, 2);
 					lastRandDmg = 0;
 				} else {
@@ -161,6 +179,8 @@ public class PlayerEntity extends PhysicsEntity {
 			takeDamage((int) (-vel.y / 20f), 2);
 			takeDamage((int) (-vel.y / 15f), 3);
 			AudioHandler.play("fall");
+
+			vel.y = -PlayerHandler.jumpVel;
 		}
 		
 		super.collideWithFloor(mtv);
@@ -172,5 +192,12 @@ public class PlayerEntity extends PhysicsEntity {
 	
 	public static int getMaxHp(int id) {
 		return maxHp[id];
+	}
+
+	public void reset() {
+		for(int i = 0; i < hp.length; i++) {
+			hp[i] = maxHp[i];
+		}
+		PlayerHandler.hasWalker = true;
 	}
 }

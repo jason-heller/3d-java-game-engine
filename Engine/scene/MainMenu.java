@@ -30,9 +30,11 @@ public class MainMenu implements Scene {
 	}
 
 	@Override
-	public void render() {
-		// TODO Auto-generated method stub
-		
+	public void render(float clipX, float clipY, float clipZ, float clipDist) {
+	}
+	
+	@Override
+	public void renderNoReflect() {
 	}
 	
 	@Override

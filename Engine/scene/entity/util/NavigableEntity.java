@@ -1,4 +1,4 @@
-package scene.entity.utility;
+package scene.entity.util;
 
 import java.util.Stack;
 

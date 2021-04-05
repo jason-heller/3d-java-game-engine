@@ -3,6 +3,7 @@ package gl.res;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 
+import gl.Render;
 import map.architecture.Material;
 
 public class Texture {
@@ -37,6 +38,7 @@ public class Texture {
 	public void bind(int unit) {
 		GL13.glActiveTexture(GL13.GL_TEXTURE0 + unit);
 		GL11.glBindTexture(type, id);
+		Render.textureSwaps++;
 	}
 
 	public void delete() {

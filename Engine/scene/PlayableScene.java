@@ -5,6 +5,7 @@ import org.joml.Vector3f;
 import org.lwjgl.input.Mouse;
 
 import core.Resources;
+import dev.Debug;
 import gl.Camera;
 import gl.Render;
 import gl.TexturedModel;
@@ -12,8 +13,8 @@ import gl.Window;
 import map.architecture.Architecture;
 import map.architecture.ArchitectureHandler;
 import scene.entity.EntityHandler;
-import scene.entity.utility.PlayerEntity;
-import scene.entity.utility.PlayerHandler;
+import scene.entity.util.PlayerEntity;
+import scene.entity.util.PlayerHandler;
 import ui.UI;
 
 public abstract class PlayableScene implements Scene {
@@ -72,27 +73,36 @@ public abstract class PlayableScene implements Scene {
 		if (ui.isPaused()) return;
 		
 		if (Mouse.isGrabbed()) {
-			Mouse.setCursorPosition(Window.getWidth()/2, Window.getHeight()/2);
+			Mouse.setCursorPosition(Window.getWidth() / 2, Window.getHeight() / 2);
 		}
+		
+		arcHandler.update(camera);
 		
 		entityHandler.update(this);
 		camera.move();
 	}
 	
 	@Override
-	public void render() {
+	public void render(float clipX, float clipY, float clipZ, float clipDist) {
 
 		Architecture arc = arcHandler.getArchitecture();
 		Vector3f targetLight = arc.getLightAtPosition(camera.getPosition(), camera.getDirectionVector());
 		cameraLight.set(Vector3f.lerp(targetLight, cameraLight, 10f * Window.deltaTime));
 
-		arcHandler.render(camera);
+		arcHandler.render(camera, clipX, clipY, clipZ, clipDist);
 		entityHandler.render(camera, arc);
 		
 		if (PlayerHandler.hasWalker) {
 			Matrix4f m = camera.getViewModelMatrix(true);
 			walker.getMatrix().set(m);
 			Render.renderViewModel(walker, cameraLight);
+		}
+	}
+	
+	@Override
+	public void renderNoReflect() {
+		if (Debug.debugMode) {
+			Debug.uiDebugInfo(this);
 		}
 	}
 	

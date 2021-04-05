@@ -6,6 +6,7 @@ import org.lwjgl.opengl.GL11;
 
 import core.Application;
 import core.Resources;
+import dev.Console;
 import gl.entity.GenericShader;
 import gl.fbo.FrameBuffer;
 import gl.line.LineRender;
@@ -13,7 +14,6 @@ import gl.particle.ParticleHandler;
 import gl.post.PostProcessing;
 import gl.res.Model;
 import gl.res.Texture;
-import map.architecture.Architecture;
 import scene.Scene;
 import ui.UI;
 
@@ -24,6 +24,11 @@ public class Render {
 	public static int shadowQuality;
 	public static float defaultBias = -1f;
 	
+	public static int textureSwaps = 0, drawCalls = 0;
+	
+	private static FrameBuffer reflection, refraction;
+	private static float timer = 0f;
+	
 	public static void cleanUp() {
 		genericShader.cleanUp();
 		LineRender.cleanUp();
@@ -33,6 +38,9 @@ public class Render {
 		ParticleHandler.cleanUp();
 		PostProcessing.cleanUp();
 		//screenMultisampled.cleanUp();
+		screen.cleanUp();
+		reflection.cleanUp();
+		refraction.cleanUp();
 	}
 
 	public static void init() {
@@ -41,9 +49,10 @@ public class Render {
 		ParticleHandler.init();
 		LineRender.init();
 
-		screen = new FrameBuffer(1280, 720, true, true, false, false, 1);
-		//screenMultisampled = new FrameBuffer(1280, 720, true, true, false, false, 1);
-		
+		screen = new FrameBuffer(1280, 720, true, true, false, false, 1);//FboUtils.createTextureFbo(1280, 720);
+		reflection = new FrameBuffer(320, 180, true, true, false, false, 1);
+		refraction = new FrameBuffer(320, 180, true, true, false, false, 1);
+
 		PostProcessing.init();
 
 		Resources.addTexture("skybox", "default.png");
@@ -61,32 +70,43 @@ public class Render {
 		Resources.addTexture("gui_slider", "gui/slider.png");
 		Resources.addTexture("gui_arrow", "gui/arrow.png");
 	}
-
-	public static void postRender(Scene scene) {
-	screen.unbind();
-		//FboUtils.resolve(screen);
-		if (PostProcessing.getNumActiveShaders() != 0) {
-			PostProcessing.render();
-		}
-		UI.render(scene);
+	
+	public static void renderWaterFbos(Scene scene, Camera camera, float waterPlaneY) {
+		screen.unbind();
+		renderRefractions(scene, camera, waterPlaneY);
+		renderReflections(scene, camera, waterPlaneY);
+		screen.bind();
 	}
 
 	/** The main render method for the engine, should only be called once per render pass.
 	 */
 	public static void renderPass(Scene scene) {
 		Camera camera = scene.getCamera();
+		
+		textureSwaps = 0;
+		drawCalls = 0;
+		
 		ParticleHandler.update(camera);
+		
 		screen.bind();
 		GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+		scene.render(0, 1, 0, Float.POSITIVE_INFINITY);
+		scene.renderNoReflect();
 		
-		scene.render();
-		//if (scene instanceof Overworld) {
-			//Enviroment e = ow.getEnviroment();
-			//waterRender.render(camera, e);
-			
-			ParticleHandler.render(camera);
-		//}
-			LineRender.render(camera);
+		ParticleHandler.render(camera);
+		LineRender.render(camera);
+		
+		screen.unbind();
+		
+		//GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_COLOR_BUFFER_BIT);
+		
+		if (PostProcessing.getNumActiveShaders() != 0) {
+			PostProcessing.render();
+		}
+		
+		UI.render(scene);
+		
+		timer += Window.deltaTime;
 	}
 	
 	/** Does a singular render pass for one textured model, in worldspace.<br><br>
@@ -116,6 +136,7 @@ public class Render {
 		model.bind(0, 1, 2);
 		genericShader.color.loadVec4(1, 1, 1, 1);
 		GL11.glDrawElements(GL11.GL_TRIANGLES, model.getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
+		drawCalls++;
 		
 		genericShader.stop();
 	}
@@ -151,12 +172,49 @@ public class Render {
 		genericShader.modelMatrix.loadMatrix(matrix);
 		model.bind(0, 1, 2);
 		GL11.glDrawElements(GL11.GL_TRIANGLES, model.getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
-		
+		drawCalls++;
 		genericShader.stop();
 		//GL11.glEnable(GL11.GL_DEPTH_TEST);
 	}
 	
+	private static void renderRefractions(Scene scene, Camera camera, float clipDist) {
+		refraction.bind();
+		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+		scene.render(0, -1, 0, clipDist);
+		
+		refraction.unbind();
+	}
+
+	private static void renderReflections(Scene scene, Camera camera, float clipDist) {
+		float pitch = camera.getPitch();
+		float offset = (camera.getPosition().y-clipDist)*2;
+
+		reflection.bind();
+		camera.setPitch(-pitch);
+		camera.getPosition().y -= offset;
+		camera.updateViewMatrix();
+		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+		scene.render(0, 1, 0, clipDist);
+		
+		reflection.unbind();
+		camera.setPitch(pitch);
+		camera.getPosition().y += offset;
+		camera.updateViewMatrix();
+	}
+	
+	public static FrameBuffer getReflectionFbo() {
+		return reflection;
+	}
+	
+	public static FrameBuffer getRefractionFbo() {
+		return refraction;
+	}
+	
 	public static GenericShader getGenericShader() {
 		return genericShader;
+	}
+
+	public static float getTimer() {
+		return timer;
 	}
 }

@@ -8,13 +8,13 @@ import ui.menu.listener.MenuListener;
 import util.Colors;
 
 public class GuiKeybind extends GuiElement {
-	private String value;
+	private String value = "???";
 	private final float textWidth = 192;
 	private MenuListener listener = null;
 
 	private final String label, bind;
 
-	private int key = -1;
+	private int key = 0;
 	private boolean edit = false;
 
 	public GuiKeybind(int x, int y, String label, String bind) {
@@ -68,7 +68,7 @@ public class GuiKeybind extends GuiElement {
 
 		if (edit) {
 			final int input = Input.getAny();
-			if (input != -1) {
+			if (input != 0) {
 				key = input;
 				edit = false;
 				Controls.set(bind, key);

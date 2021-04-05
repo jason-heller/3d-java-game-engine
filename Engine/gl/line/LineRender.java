@@ -14,6 +14,7 @@ import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL33;
 
 import gl.Camera;
+import gl.Render;
 import gl.res.Model;
 
 public class LineRender {
@@ -105,6 +106,7 @@ public class LineRender {
 		updateVbo(vboData, buffer);
 		
 		GL31.glDrawArraysInstanced(GL11.GL_LINE_STRIP, 0, 2, colors.size());
+		Render.drawCalls++;
 		
 		line.unbind(0, 1, 2, 3);
 		shader.stop();

@@ -1,7 +1,11 @@
 package map.architecture;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 import org.joml.Vector3f;
 
@@ -20,6 +24,8 @@ public class ArchitectureHandler {
 	private Architecture architecture;
 	
 	public static String[] validMaps = new String[0];
+	private static String[] mapSequence = readMapSequenceFile();
+	private static int currentMap = 0;
 
 	public static void pollValidMaps() {
 		File f = new File("maps/");
@@ -39,7 +45,23 @@ public class ArchitectureHandler {
 			i++;
 		}
 	}
-	
+
+	private static String[] readMapSequenceFile() {
+		List<String> lines = new ArrayList<String>();
+		Scanner sc;
+		
+		try {
+			sc = new Scanner(new File("src/res/maps/map_sequence.txt"));
+			while (sc.hasNextLine()) {
+				lines.add(sc.nextLine());
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		return lines.toArray(new String[0]);
+	}
+
 	public ArchitectureHandler() {
 		ArcRender.init();
 	}
@@ -54,9 +76,9 @@ public class ArchitectureHandler {
 		ArcRender.cleanUp();
 	}
 
-	public void render(Camera camera) {
+	public void render(Camera camera, float clipX, float clipY, float clipZ, float clipDist) {
 		architecture.pollTriggers();
-		architecture.render(camera);
+		architecture.render(camera, clipX, clipY, clipZ, clipDist);
 		
 		if (Debug.viewNavMesh) {
 			ArcNavigation nav = architecture.getNavigation();
@@ -83,5 +105,18 @@ public class ArchitectureHandler {
 		}
 		
 		return false;
+	}
+
+	public void update(Camera camera) {
+		architecture.determineVisibleLeafs(camera);
+	}
+	
+	public boolean isSkyboxEnabled() {
+		return architecture.hasSkybox;
+	}
+	
+	public static void nextMap() {
+		currentMap++;
+		Console.send("map " + mapSequence[currentMap]);
 	}
 }

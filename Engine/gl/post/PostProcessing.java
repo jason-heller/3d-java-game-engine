@@ -7,17 +7,13 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 
 import gl.Render;
-import gl.Window;
 import gl.res.Model;
-import gl.res.ModelUtils;
 
 public class PostProcessing {
 
 	static Map<PostShader, Boolean> shaders = new HashMap<PostShader, Boolean>();
 
 	private static Model quad;
-
-	private static float timer;
 
 	private static int numActiveShaders = 0;
 
@@ -62,17 +58,12 @@ public class PostProcessing {
 		return numActiveShaders;
 	}
 
-	public static float getPostProcessingTimer() {
-		return timer;
-	}
-
 	public static void init() {
 		quad = Model.create();
 		quad.bind();
 		quad.createAttribute(0, new float[] { -0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f }, 2);
 		quad.createAttribute(1, new float[] { 0, 0, 1, 0, 0, 1, 1, 1 }, 2);
 		quad.unbind();
-		timer = 0f;
 
 		// Added later = higher priority
 		// addShader(BRIGHTNESS_SHADER);
@@ -89,7 +80,6 @@ public class PostProcessing {
 	}
 
 	public static void render() {
-		timer += Window.deltaTime;
 
 		quad.bind(0, 1);
 		GL13.glActiveTexture(GL13.GL_TEXTURE0);

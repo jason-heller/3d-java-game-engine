@@ -8,8 +8,8 @@ import gl.Camera;
 import gl.Window;
 import io.Controls;
 import map.architecture.ArchitectureHandler;
-import scene.entity.utility.PhysicsEntity;
-import scene.entity.utility.PlayerHandler;
+import scene.entity.util.PhysicsEntity;
+import scene.entity.util.PlayerHandler;
 import ui.UI;
 
 enum CommandData {
@@ -19,6 +19,7 @@ enum CommandData {
 	noclip(true),
 	spawn_monster(true),
 	map(false, ArchitectureHandler.validMaps),
+	nextmap(false),
 	volume(false),
 	run(false),
 	bind(Controls.class, false, "key", "action"),
@@ -61,17 +62,19 @@ enum CommandData {
 	fullbright("fullbright", Debug.class, SETTER, true),
 	cam_speed("cameraSpeed", Camera.class, SETTER, true),
 	cam_sway("swayFactor", Camera.class, SETTER, false),
-	phys_player_jump_velocity("jumpVel", PlayerHandler.class, SETTER, true),
-	phys_player_friction("friction", PlayerHandler.class, SETTER, true),
-	phys_player_friction_air("airFriction", PlayerHandler.class, SETTER, true),
+	phys_player_jump("jumpVel", PlayerHandler.class, SETTER, true),
+	phys_player_run("runSpeedMultiplier", PlayerHandler.class, SETTER, true),
 	phys_player_speed_max("maxSpeed", PlayerHandler.class, SETTER, true),
 	phys_player_speed_air_max("maxAirSpeed", PlayerHandler.class, SETTER, true),
 	phys_player_speed_water_max("maxWaterSpeed", PlayerHandler.class, SETTER, true),
+	phys_player_speed_crouch_max("maxSpeedCrouch", PlayerHandler.class, SETTER, true),
 	phys_player_accel("accelSpeed", PlayerHandler.class, SETTER, true),
 	phys_player_accel_air("airAccel", PlayerHandler.class, SETTER, true),
 	phys_player_accel_water("waterAccel", PlayerHandler.class, SETTER, true),
 	phys_gravity("gravity", PhysicsEntity.class, SETTER, true),
 	phys_gravity_max("maxGravity", PhysicsEntity.class, SETTER, true),
+	phys_friction("friction", PhysicsEntity.class, SETTER, true),
+	phys_friction_air("airFriction", PhysicsEntity.class, SETTER, true),
 	god("god", Debug.class, SETTER, true);
 
 	Command command;

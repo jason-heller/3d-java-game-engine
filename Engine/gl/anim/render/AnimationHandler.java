@@ -5,6 +5,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.lwjgl.opengl.GL11;
 
 import gl.Camera;
+import gl.Render;
 import gl.anim.Animator;
 import scene.Scene;
 import scene.entity.Entity;
@@ -52,6 +53,7 @@ public class AnimationHandler {
 			shader.modelMatrix.loadMatrix(entity.getMatrix());
 			shader.jointTransforms.loadMatrixArray(animator.getJointTransforms());
 			GL11.glDrawElements(GL11.GL_TRIANGLES, entity.getModel().getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
+			Render.drawCalls++;
 			entity.getModel().unbind(0, 1, 2, 3, 4);
 		}
 		shader.stop();

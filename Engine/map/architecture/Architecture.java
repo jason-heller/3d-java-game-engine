@@ -11,7 +11,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
 
 import core.Resources;
-import dev.Console;
 import dev.Debug;
 import gl.Camera;
 import gl.Render;
@@ -34,7 +33,7 @@ import map.architecture.vis.BspLeaf;
 import map.architecture.vis.Pvs;
 import scene.Scene;
 import scene.entity.Entity;
-import scene.entity.utility.PhysicsEntity;
+import scene.entity.util.PhysicsEntity;
 
 public class Architecture {
 
@@ -65,6 +64,7 @@ public class Architecture {
 	private ArcFuncHandler funcHandler;
 	private Lightmap lightmap;
 	public ArcLightCube[] ambientLightCubes;
+	public boolean hasSkybox = false;
 	
 	public Architecture(Scene scene) {
 		this.scene = scene;	
@@ -73,7 +73,7 @@ public class Architecture {
 		activeTriggers = new HashMap<>();
 	}
 	
-	public void render(Camera camera) {
+	public void determineVisibleLeafs(Camera camera) {
 		BspLeaf cameraLeaf = bsp.walk(camera.getPosition());
 		if (cameraLeaf.clusterId != -1 && cameraLeaf != currentLeaf) {
 			currentLeaf = cameraLeaf;
@@ -89,10 +89,18 @@ public class Architecture {
 			}
 				
 		}
+	}
+	
+	public void render(Camera camera, float clipX, float clipY, float clipZ, float clipDist) {
 		
 		bsp.objects.render(camera, this);
 		
 		for(BspLeaf leaf : renderedLeaves) {
+			
+			if (leaf.isUnderwater && clipDist == Float.POSITIVE_INFINITY) {
+				Render.renderWaterFbos(scene, camera, leaf.max.y);
+				ArcRender.renderWater(camera, leaf.max, leaf.min);
+			}
 			
 			if (Debug.showClips) {
 				for(short id : leaf.clips ) {
@@ -101,22 +109,16 @@ public class Architecture {
 				}
 			}
 			
+			ArcRender.startRender(camera.getProjectionMatrix(), camera.getViewMatrix(), clipX, clipY, clipZ, clipDist);
+			
 			for(TexturedModel visObj : leaf.getMeshes()) {
 				
 				if (!camera.getFrustum().containsBoundingBox(leaf.max, leaf.min)) {continue;}
 
-				ArcRender.render(camera.getProjectionMatrix(), camera.getViewMatrix(), visObj);
-				
-				/*if (Debug.showLeafs) {
-					for(int i = leaf.firstFace; i < leaf.firstFace + leaf.numFaces; i++) {
-						ArcFace face = bsp.faces[bsp.leafFaceIndices[i]];
-						for(int j = face.firstEdge; j < face.firstEdge + face.numEdges; j++) {
-							ArcEdge edge = bsp.edges[Math.abs(bsp.surfEdges[j])];
-							LineRender.drawLine(bsp.vertices[edge.start], bsp.vertices[edge.end], Colors.CYAN);
-						}
-					}
-				}*/
+				ArcRender.render(visObj);
 			}
+			
+			ArcRender.finishRender();
 		}
 		
 		for (ParticleEmitter pe : emitters) {
@@ -198,7 +200,6 @@ public class Architecture {
 		for(int i = 0; i < mapSpecTexRefs.length; i++) {
 			Resources.removeTexture(mapSpecTexRefs[i++]);
 		}
-		//Resources.removeTexture("skybox"); <- removed in skybox2d
 		lightmap.delete();
 	}
 

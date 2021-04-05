@@ -224,7 +224,7 @@ public class Resources {
 		return tex;
 	}
 
-	public static Texture addCubemapz(String key, String... paths) {
+	public static Texture addCubemaps(String key, String... paths) {
 		byte[][] data = TextureUtils.getRawTextureData(paths);
 		int wid = (int) Math.sqrt(data[0].length / 3);
 		final Texture tex = TextureUtils.createTexture(data, wid, wid);

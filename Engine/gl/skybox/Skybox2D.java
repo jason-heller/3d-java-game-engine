@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GL13;
 
 import core.Resources;
 import gl.Camera;
+import gl.Render;
 import gl.res.Model;
 import gl.res.Texture;
 
@@ -70,6 +71,7 @@ public class Skybox2D {
 		
 		box.bind(0);
 		GL11.glDrawElements(GL11.GL_TRIANGLES, box.getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
+		Render.drawCalls++;
 		box.unbind(0);
 		shader.stop();
 		
@@ -77,7 +79,6 @@ public class Skybox2D {
 	}
 	
 	public void cleanUp() {
-		Resources.removeTexture("skybox");
 		box.cleanUp();
 		shader.cleanUp();
 	}

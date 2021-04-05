@@ -8,6 +8,7 @@ import org.lwjgl.opengl.GL30;
 
 import core.Resources;
 import gl.Camera;
+import gl.Render;
 import gl.TexturedModel;
 import gl.map.architecture.render.ArcShader;
 import map.architecture.vis.Bsp;
@@ -59,6 +60,7 @@ public class Skybox3D {
 				object.getModel().bind(0,1,2);
 				shader.modelMatrix.loadMatrix(object.getMatrix());
 				GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, object.getModel().getVertexCount());
+				Render.drawCalls++;
 			}
 		}
 

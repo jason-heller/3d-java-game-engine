@@ -71,8 +71,11 @@ public class ArcPackedAssets {
 			paths[i] = root + paths[i] + ".png";
 		}*/
 		
-		final String root = "sky/";
-		Resources.addCubemap("skybox", root + skybox + ".png");
+		if (!skybox.equals("")) {
+			final String root = "sky/";
+			Resources.addCubemap("skybox", root + skybox + ".png");
+			parent.hasSkybox = true;
+		}
 		//
 		
 		for(ArcPackedModel model : models) {

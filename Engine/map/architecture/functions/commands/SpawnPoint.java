@@ -5,8 +5,8 @@ import org.joml.Vector3f;
 import core.Application;
 import gl.Camera;
 import map.architecture.functions.ArcFunction;
-import scene.entity.utility.PhysicsEntity;
-import scene.entity.utility.PlayerHandler;
+import scene.entity.util.PhysicsEntity;
+import scene.entity.util.PlayerHandler;
 
 public class SpawnPoint extends ArcFunction {
 	private Vector3f rot;

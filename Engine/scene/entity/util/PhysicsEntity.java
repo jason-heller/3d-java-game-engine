@@ -1,4 +1,4 @@
-package scene.entity.utility;
+package scene.entity.util;
 
 
 import java.util.List;
@@ -8,7 +8,6 @@ import org.joml.Vector3f;
 
 import core.Application;
 import core.Resources;
-import dev.Console;
 import dev.Debug;
 import geom.AxisAlignedBBox;
 import geom.CollideUtils;
@@ -34,26 +33,27 @@ import util.Colors;
 
 public abstract class PhysicsEntity extends Entity {
 	
-	private static final float DEFAULT_FRICTION = 3f;
-	
 	protected boolean grounded = false;
 	public boolean previouslyGrounded = false;
 	protected boolean sliding = false;
 	protected boolean submerged = false;
 
-	private boolean fullySubmerged = false;
+	protected boolean fullySubmerged = false;
 	private boolean climbing = false;
 	
-	public static float gravity = 25f;
-	public static float maxGravity = -200f;
+	public static float gravity = 50f;
+	public static float maxGravity = -600f;
+	public static float friction = 4f;
+	public static float airFriction = .75f;
+	
 	private float upwarp = 0f;
 	private Plane lastFloorCollided = null;
+	
+	protected BspLeaf residence;
 	
 	protected Material materialStandingOn = Material.ROCK;
 	
 	public float maxSpeed = 25f, maxAirSpeed = 5f, maxWaterSpeed = 1f;
-	public float friction = DEFAULT_FRICTION;
-	public float airFriction = 0f;
 
 	public boolean visible = true;
 	
@@ -65,7 +65,7 @@ public abstract class PhysicsEntity extends Entity {
 	protected AxisAlignedBBox bbox;
 	public Vector3f vel = new Vector3f();
 	
-	private ArchitectureHandler arcHandler;
+	protected ArchitectureHandler arcHandler;
 	
 	public PhysicsEntity(String name, Vector3f bounds) {
 		super(name);
@@ -161,7 +161,44 @@ public abstract class PhysicsEntity extends Entity {
 
 		pos.y += vel.y * Window.deltaTime;
 
+		friction();
+
+		previouslyGrounded = grounded;
+
+		if (collideWithTerrain)
+			terrainCollide();
+		else
+			grounded = false;
+		
+		climbing = false;
+		
+		Architecture architecture = arcHandler.getArchitecture();
+		Bsp bsp = architecture.bsp;
+		Vector3f max = Vector3f.add(bbox.getCenter(), bbox.getBounds());
+		Vector3f min = Vector3f.sub(bbox.getCenter(), bbox.getBounds());
+		
+		List<BspLeaf> leaves = bsp.walk(max, min);
+		List<ArcFace> faces = bsp.getFaces(leaves);
+		
+		residence = bsp.walk(pos);
+		this.submerged = residence.isUnderwater;
+		fullySubmerged = (submerged && pos.y < residence.max.y);
+		
+		upwarp = 0f;
+		mapGeometryCollide(bsp, faces);
+		mapClipCollide(architecture, leaves);
+		
+		pos.y += upwarp;
+		
+		super.update(scene);
+	}
+
+	private void friction() {
 		// Friction
+		if (vel.lengthSquared() < .01f) {
+			return;
+		}
+		
 		if (!sliding && previouslyGrounded || submerged) {
 			final float speed = vel.length();
 			if (speed != 0) {
@@ -193,31 +230,6 @@ public abstract class PhysicsEntity extends Entity {
 																					// friction.
 			}
 		}
-
-		previouslyGrounded = grounded;
-
-		if (collideWithTerrain)
-			terrainCollide();
-		else
-			grounded = false;
-		
-		climbing = false;
-		
-		Architecture architecture = arcHandler.getArchitecture();
-		Bsp bsp = architecture.bsp;
-		Vector3f max = Vector3f.add(bbox.getCenter(), bbox.getBounds());
-		Vector3f min = Vector3f.sub(bbox.getCenter(), bbox.getBounds());
-		
-		List<BspLeaf> leaves = bsp.walk(max, min);
-		List<ArcFace> faces = bsp.getFaces(leaves);
-		
-		upwarp = 0f;
-		mapGeometryCollide(bsp, faces);
-		mapClipCollide(architecture, leaves);
-		
-		pos.y += upwarp;
-		
-		super.update(scene);
 	}
 
 	private void mapClipCollide(Architecture arc, List<BspLeaf> leaves) {
@@ -262,6 +274,7 @@ public abstract class PhysicsEntity extends Entity {
 	}
 	
 	private void mapGeometryCollide(Bsp bsp, List<ArcFace> faces) {
+		
 		if (previouslyGrounded) {
 			floorStickGeomCol(bsp, faces);
 			mapGeometryCollide(bsp, faces, 1);
@@ -276,6 +289,12 @@ public abstract class PhysicsEntity extends Entity {
 		ArcFace nearestFace = null;
 
 		for(ArcFace face : faces) {
+			
+			Architecture arc = arcHandler.getArchitecture();
+			int id = arc.getTexData()[face.texId].textureId;
+			if (id == -1) {
+				continue;
+			}
 			
 			Plane plane = bsp.planes[face.planeId];
 			Vector3f normal = plane.normal;
@@ -314,8 +333,15 @@ public abstract class PhysicsEntity extends Entity {
 		MTV nearest = null;
 		ArcFace nearestFace = null;
 		
-		pos.y -= .2f;
+		//pos.y -= .2f;
 		for(ArcFace face : faces) {
+			
+			Architecture arc = arcHandler.getArchitecture();
+			int id = arc.getTexData()[face.texId].textureId;
+			if (id == -1) {
+				continue;
+			}
+			
 			Plane plane = bsp.planes[face.planeId];
 			Vector3f normal = plane.normal;
 			if (normal.y < 0.75f)
@@ -334,9 +360,7 @@ public abstract class PhysicsEntity extends Entity {
 			if (mtv != null && (nearest == null || nearest.compareTo(mtv) >= 0)) {
 				nearest = mtv;
 				nearestFace = face;
-				Architecture arc = arcHandler.getArchitecture();
 
-				int id = arc.getTexData()[face.texId].textureId;
 				if (id != -1) {
 					String texName = arc.getMapTextureRefs()[id];
 					Texture tex = Resources.getTexture(texName);
@@ -352,7 +376,7 @@ public abstract class PhysicsEntity extends Entity {
 			
 			faces.remove(nearestFace);
 		} else {
-			pos.y+=.2f;
+			//pos.y+=.2f;
 			return;
 		}
 	}

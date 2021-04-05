@@ -7,7 +7,7 @@ import java.util.TreeMap;
 
 import org.joml.Vector3f;
 
-import scene.entity.utility.NavigableEntity;
+import scene.entity.util.NavigableEntity;
 
 public class ArcNavigation {
 	

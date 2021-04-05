@@ -7,5 +7,6 @@ public interface Scene {
 	public void tick();
 	public void cleanUp();
 	public Camera getCamera();
-	public void render();
+	public void renderNoReflect();
+	public void render(float clipX, float clipY, float clipZ, float clipDist);
 }

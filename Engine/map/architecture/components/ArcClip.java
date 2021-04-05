@@ -5,8 +5,8 @@ import org.joml.Vector3f;
 import geom.AxisAlignedBBox;
 import geom.Plane;
 import scene.entity.Entity;
-import scene.entity.utility.PhysicsEntity;
-import scene.entity.utility.PlayerEntity;
+import scene.entity.util.PhysicsEntity;
+import scene.entity.util.PlayerEntity;
 
 public class ArcClip {
 	public AxisAlignedBBox bbox;

@@ -23,7 +23,7 @@ public class BspLeaf {
 	public short numFaces;
 	public short firstAmbientSample;
 	public short numAmbientSamples;
-	public short waterDataId;
+	public boolean isUnderwater;
 
 	private TexturedModel[] texModels;
 	public short[] clips;		// A list of IDs to the BSP's clip array

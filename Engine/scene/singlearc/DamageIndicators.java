@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import org.joml.Vector3f;
 
 import gl.Window;
-import scene.entity.utility.PlayerEntity;
+import scene.entity.util.PlayerEntity;
 import ui.Image;
 import ui.UI;
 import util.Colors;

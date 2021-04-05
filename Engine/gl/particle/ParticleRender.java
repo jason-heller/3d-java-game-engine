@@ -16,6 +16,7 @@ import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL33;
 
 import gl.Camera;
+import gl.Render;
 import gl.res.Model;
 import gl.res.Texture;
 
@@ -75,6 +76,7 @@ class ParticleRender {
 			updateVbo(vbo, vboData, buffer);
 			
 			GL31.glDrawArraysInstanced(GL11.GL_TRIANGLE_STRIP, 0, 4, particleList.size());
+			Render.drawCalls++;
 		}
 		
 		GL20.glDisableVertexAttribArray(0);

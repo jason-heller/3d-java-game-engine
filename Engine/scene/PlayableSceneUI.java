@@ -8,7 +8,7 @@ import core.Resources;
 import io.Controls;
 import io.Input;
 import io.Settings;
-import scene.entity.utility.PlayerHandler;
+import scene.entity.util.PlayerHandler;
 import scene.menu.pause.OptionsPanel;
 import ui.UI;
 import ui.menu.GuiMenu;
