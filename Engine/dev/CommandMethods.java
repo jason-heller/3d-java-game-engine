@@ -174,6 +174,10 @@ public class CommandMethods {
 		}
 	}
 	
+	public static void water_quality(int quality) {
+		Render.setWaterQuality(quality);
+	}
+	
 	public static void fov(int fov) {
 		Camera.fov = fov;
 		Application.scene.getCamera().updateProjection();

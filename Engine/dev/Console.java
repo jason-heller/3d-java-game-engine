@@ -90,7 +90,12 @@ public class Console {
 		String s = "";
 
 		for (int i = 0; i < x.length; i++) {
-			s += x[i].toString() + (i == x.length - 1 ? "" : ", ");
+			if (x[i] == null)
+				s += "null";
+			else
+				s += x[i].toString();
+			
+			s += (i == x.length - 1 ? "" : ", ");
 		}
 
 		log(s);

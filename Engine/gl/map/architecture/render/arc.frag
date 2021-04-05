@@ -18,10 +18,6 @@ void main(void){
 	color = texture(sampler, pass_textureCoords.xy);
 	light = texture(lightmap, pass_textureCoords.zw);
 	
-	//if (color.rgb == vec3(1.0,0.0,1.0) || color.a == 0.0) {
-	//	discard;
-	//}
-	
 	color.a = 1.0;
 	out_color = (color * (light + vec4(lightMin))) * lightScale;
 	out_brightness = vec4(0.0);

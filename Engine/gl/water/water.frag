@@ -1,46 +1,43 @@
 #version 150
 
 in vec2 pass_textureCoords;
+in vec3 cameraVec;
 in vec4 clipSpace;
 
 uniform sampler2D reflection;
 uniform sampler2D refraction;
 uniform sampler2D dudv;
-//uniform vec3 lightDirection;
+uniform sampler2D depth;
+
 uniform float timer;
 
 out vec4 out_color;
 
-const vec2 lightBias = vec2(0.7, 0.6);//just indicates the balance between diffuse and ambient lighting
+const float near = 0.1;
+const float far = 8000.0;
 
 void main(void){
-	vec2 normalizedDeviceSpace = (clipSpace.xy/clipSpace.w)/2.0 + 0.5;
+	vec2 normalizedDeviceSpace = (clipSpace.xy / clipSpace.w) / 2.0 + 0.5;
+	
+	float d = texture(depth, normalizedDeviceSpace).r;
+	float dCoord = 2.0 * near * far / (far + near - (2.0 * d - 1.0) * (far - near));
+	d = gl_FragCoord.z;
+	float wCoord = 2.0 * near * far / (far + near - (2.0 * d - 1.0) * (far - near));
+	float waterDepth = dCoord - wCoord;
 
 	float scroll = timer / 50.0;
 	vec2 offset = (texture(dudv, vec2(pass_textureCoords.x + scroll, pass_textureCoords.y + scroll)).rg*2.0 - 1.0) * .025;
-	normalizedDeviceSpace+=offset;
+	offset *= clamp(waterDepth / 40.0, 0.0, 1.0);
+	
+	normalizedDeviceSpace += offset;
 	normalizedDeviceSpace = clamp(normalizedDeviceSpace, 0.001, 0.999);
 	
-	
-	
-	vec4 reflectionColor = texture(reflection, vec2(normalizedDeviceSpace.x, 1.0-normalizedDeviceSpace.y));	
+	vec4 reflectionColor = texture(reflection, vec2(normalizedDeviceSpace.x, 1.0 - normalizedDeviceSpace.y));	
 	vec4 refractionColor = texture(refraction, normalizedDeviceSpace);	
 	
+	vec3 cameraNormal = normalize(cameraVec);
+	float refracFactor = dot(cameraNormal, vec3(0,1,0));
 	
-	
-	//vec3 newLightDir = -lightDirection;
-	//if (newLightDir.y < -.65) {
-	//	newLightDir.y = -.65;
-	//}
-	//float diffuseLight = max(dot(-newLightDir, vec3(0,1,0)), 0.0) * lightBias.x + lightBias.y;
-	
-	//if (lightDirection.y > .65) {
-	//	diffuseLight -= lightDirection.y-.65;
-	//}
-	
-	//out_color = reflectionColor;
-	//
-	out_color = mix(reflectionColor, refractionColor, 0.5);
-	//out_color.a = 0.4;
-	
+	out_color = mix(reflectionColor, refractionColor, refracFactor);
+	out_color.a = clamp(waterDepth / 20.0, 0.0, 1.0);
 }

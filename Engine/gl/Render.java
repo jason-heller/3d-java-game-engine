@@ -8,6 +8,7 @@ import core.Application;
 import core.Resources;
 import dev.Console;
 import gl.entity.GenericShader;
+import gl.fbo.FboUtils;
 import gl.fbo.FrameBuffer;
 import gl.line.LineRender;
 import gl.particle.ParticleHandler;
@@ -27,7 +28,10 @@ public class Render {
 	public static int textureSwaps = 0, drawCalls = 0;
 	
 	private static FrameBuffer reflection, refraction;
+	private static float lastWaterFboPos = Float.POSITIVE_INFINITY;
 	private static float timer = 0f;
+	
+	public static int waterQuality = 4;		// TODO: Make the resizing of this not fuck everything up
 	
 	public static void cleanUp() {
 		genericShader.cleanUp();
@@ -49,9 +53,9 @@ public class Render {
 		ParticleHandler.init();
 		LineRender.init();
 
-		screen = new FrameBuffer(1280, 720, true, true, false, false, 1);//FboUtils.createTextureFbo(1280, 720);
-		reflection = new FrameBuffer(320, 180, true, true, false, false, 1);
-		refraction = new FrameBuffer(320, 180, true, true, false, false, 1);
+		screen = new FrameBuffer(1280, 720, true, true, false, false, 1);// FboUtils.createTextureFbo(1280, 720);
+		reflection = new FrameBuffer(320 * waterQuality, 180 * waterQuality, true, true, false, false, 1);
+		refraction = new FrameBuffer(320 * waterQuality, 180 * waterQuality, true, true, true, false, 1);
 
 		PostProcessing.init();
 
@@ -72,10 +76,13 @@ public class Render {
 	}
 	
 	public static void renderWaterFbos(Scene scene, Camera camera, float waterPlaneY) {
-		screen.unbind();
-		renderRefractions(scene, camera, waterPlaneY);
-		renderReflections(scene, camera, waterPlaneY);
-		screen.bind();
+		if (lastWaterFboPos != waterPlaneY) {
+			lastWaterFboPos = waterPlaneY;		// HACK: Prevents the reflection/refraction FBOs from calculating the same thing multiple times
+			screen.unbind();
+			renderRefractions(scene, camera, waterPlaneY);
+			renderReflections(scene, camera, waterPlaneY);
+			screen.bind();
+			}
 	}
 
 	/** The main render method for the engine, should only be called once per render pass.
@@ -107,6 +114,8 @@ public class Render {
 		UI.render(scene);
 		
 		timer += Window.deltaTime;
+		
+		lastWaterFboPos = Float.POSITIVE_INFINITY;
 	}
 	
 	/** Does a singular render pass for one textured model, in worldspace.<br><br>
@@ -186,18 +195,25 @@ public class Render {
 	}
 
 	private static void renderReflections(Scene scene, Camera camera, float clipDist) {
+		float offset = (camera.getPosition().y - clipDist)*2;
+		
 		float pitch = camera.getPitch();
-		float offset = (camera.getPosition().y-clipDist)*2;
+		float yaw = camera.getYaw();
+		float roll = camera.getRoll();
 
 		reflection.bind();
-		camera.setPitch(-pitch);
+		camera.setPitch(-camera.getEffectedPitch());
+		camera.setYaw(camera.getEffectedYaw());		// TODO: Broken
+		camera.setRoll(-camera.getEffectedRoll());
 		camera.getPosition().y -= offset;
-		camera.updateViewMatrix();
+		camera.updateViewMatrixRaw();
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-		scene.render(0, 1, 0, clipDist);
+		scene.render(0, 1, 0, -clipDist);
 		
 		reflection.unbind();
 		camera.setPitch(pitch);
+		camera.setYaw(yaw);
+		camera.setRoll(roll);
 		camera.getPosition().y += offset;
 		camera.updateViewMatrix();
 	}
@@ -216,5 +232,13 @@ public class Render {
 
 	public static float getTimer() {
 		return timer;
+	}
+	
+	public static void setWaterQuality(int quality) {
+		waterQuality = quality;
+		int width = 320 * waterQuality;
+		int height = 180 * waterQuality;
+		FboUtils.resize(refraction, width, height);
+		FboUtils.resize(reflection, width, height);
 	}
 }

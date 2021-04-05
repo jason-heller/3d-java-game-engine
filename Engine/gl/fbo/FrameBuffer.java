@@ -1,17 +1,14 @@
 package gl.fbo;
 
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
-import org.lwjgl.opengl.GL14;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
-import dev.Console;
 import gl.Render;
 
 public class FrameBuffer {
@@ -91,6 +88,8 @@ public class FrameBuffer {
 	}
 
 	public void cleanUp() {
+		GL13.glActiveTexture(GL13.GL_TEXTURE0);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
 		GL30.glDeleteFramebuffers(fbo);
 		if (hasTextureBuffer()) {
 			for (final int i : textureBuffers) {
@@ -168,17 +167,6 @@ public class FrameBuffer {
 		return multisampled;
 	}
 
-	public void resize(int width, int height) {
-		this.width = width;
-		this.height = height;
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, fbo);
-
-		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB, width, height, 0, GL11.GL_RGB, GL11.GL_FLOAT,
-				(ByteBuffer) null);
-		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL14.GL_DEPTH_COMPONENT16, width, height, 0, GL11.GL_DEPTH_COMPONENT,
-				GL11.GL_FLOAT, (ByteBuffer) null);
-	}
-
 	public void resolve(FrameBuffer output) {
 		GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, fbo);
 		GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, output.getId());
@@ -195,5 +183,9 @@ public class FrameBuffer {
 
 	public void unbindBuffer() {
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+	}
+
+	public int getNumTargets() {
+		return this.numTargets;
 	}
 }

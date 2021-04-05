@@ -180,7 +180,7 @@ public class PlayerEntity extends PhysicsEntity {
 			takeDamage((int) (-vel.y / 15f), 3);
 			AudioHandler.play("fall");
 
-			vel.y = -PlayerHandler.jumpVel;
+			vel.y = -PlayerHandler.jumpVel;	// TODO: Bad
 		}
 		
 		super.collideWithFloor(mtv);

@@ -7,6 +7,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
+import dev.Console;
 import gl.Window;
 import ui.UI;
 
@@ -262,7 +263,7 @@ public enum Input {
 	}
 
 	public static boolean isDown(String key) {
-		return isDown(Controls.get(key));
+		return !Console.isVisible() && isDown(Controls.get(key));
 	}
 
 	public static boolean isPressed(int key) {
@@ -276,7 +277,7 @@ public enum Input {
 	}
 
 	public static boolean isPressed(String key) {
-		return isPressed(Controls.get(key));
+		return !Console.isVisible() && isPressed(Controls.get(key));
 	}
 
 	public static boolean isReleased(int key) {
@@ -290,7 +291,7 @@ public enum Input {
 	}
 
 	public static boolean isReleased(String key) {
-		return isReleased(Controls.get(key));
+		return !Console.isVisible() && isReleased(Controls.get(key));
 	}
 
 	public static int keyState(int key) {
@@ -340,7 +341,7 @@ public enum Input {
 
 	public static void poll() {
 		int i = 0;
-
+		
 		final int[] keys = INPUT.keys;
 		final int[] states = INPUT.states;
 		// int[] mouse = INPUT.mouse;
@@ -363,7 +364,7 @@ public enum Input {
 		}
 
 		i = 0;
-
+		
 		final long currentTimeMillis = System.currentTimeMillis();
 		if (currentTimeMillis - lastPoll >= pollRate) {
 			lastPoll = currentTimeMillis;

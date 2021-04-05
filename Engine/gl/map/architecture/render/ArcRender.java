@@ -13,6 +13,8 @@ import gl.Camera;
 import gl.Render;
 import gl.TexturedModel;
 import gl.water.WaterShader;
+import io.Controls;
+import io.Input;
 
 public class ArcRender {
 	
@@ -22,6 +24,7 @@ public class ArcRender {
 	public static void init() {
 		shader = new ArcShader();
 		waterShader = new WaterShader();
+		GL11.glEnable(GL30.GL_CLIP_DISTANCE0);
 	}
 	
 	public static void startRender(Matrix4f projection, Matrix4f view, float clipX, float clipY, float clipZ, float clipDist) {
@@ -78,10 +81,13 @@ public class ArcRender {
 		waterShader.start();
 		waterShader.projectionViewMatrix.loadMatrix(camera.getProjectionViewMatrix());
 		
+		GL11.glEnable(GL11.GL_ALPHA);
+		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		
 		GL20.glEnableVertexAttribArray(0);
 		GL20.glEnableVertexAttribArray(1);
 		
-		waterShader.loadModelAndTextures();
+		waterShader.setup(camera);
 
 		Vector3f bounds = Vector3f.sub(max, min);
 		waterShader.offset.loadVec3(min.x, max.y, min.z);
@@ -94,6 +100,8 @@ public class ArcRender {
 		GL20.glDisableVertexAttribArray(0);
 		GL20.glDisableVertexAttribArray(1);
 		GL30.glBindVertexArray(0);
+		
+		GL11.glDisable(GL11.GL_ALPHA);
 		waterShader.stop();
 	}
 	

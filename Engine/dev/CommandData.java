@@ -35,7 +35,7 @@ enum CommandData {
 	has_walker(false),
 	shadow_quality(false, "0-3"),
 	mipmap_bias(false),
-	
+	water_quality(false, "0-4"),
 	
 	// Getters
 	version("VERSION", Application.class, GETTER, false),

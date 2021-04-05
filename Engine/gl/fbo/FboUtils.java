@@ -107,4 +107,10 @@ public class FboUtils {
 		GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
 	}
 
+	public static void resize(FrameBuffer fbo, int width, int height) {
+		fbo.cleanUp();
+		fbo = new FrameBuffer(width, height, fbo.hasTextureBuffer(), fbo.hasDepthBuffer(), fbo.hasDepthBufferTexture(),
+				fbo.isMultisampled(), fbo.getNumTargets());
+	}
+
 }

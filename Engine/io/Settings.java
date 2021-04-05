@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import audio.AudioHandler;
+import dev.Console;
 import dev.Debug;
 import gl.Camera;
 import gl.Render;

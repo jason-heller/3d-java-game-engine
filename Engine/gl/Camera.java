@@ -54,9 +54,9 @@ public class Camera {
 	private final Vector3f position = new Vector3f();
 	private final Vector3f prevPosition = new Vector3f();
 	private final Frustum frustum = new Frustum();
-	private float yaw;
-	private float pitch;
-	private float roll;
+	private float rawYaw, effectedYaw;		// Raw = only the camera's direction, whereas the effected
+	private float rawPitch, effectedPitch;	// variables include the camera's looking direction, which
+	private float rawRoll, effectedRoll;	// includes effects such as shaking and flinching
 
 	private float angleAroundPlayer;
 
@@ -83,7 +83,7 @@ public class Camera {
 	}
 
 	public void addPitch(float f) {
-		pitch += f;
+		rawPitch += f;
 	}
 
 	public void addYaw(float f) {
@@ -91,10 +91,10 @@ public class Camera {
 	}
 
 	private void clampPitch() {
-		if (pitch < -MAX_PITCH) {
-			pitch = -MAX_PITCH;
-		} else if (pitch > MAX_PITCH) {
-			pitch = MAX_PITCH;
+		if (rawPitch < -MAX_PITCH) {
+			rawPitch = -MAX_PITCH;
+		} else if (rawPitch > MAX_PITCH) {
+			rawPitch = MAX_PITCH;
 		}
 	}
 
@@ -116,11 +116,7 @@ public class Camera {
 	public Frustum getFrustum() {
 		return frustum;
 	}
-
-	public float getPitch() {
-		return pitch;
-	}
-
+	
 	public Vector3f getPosition() {
 		return position;
 	}
@@ -142,7 +138,27 @@ public class Camera {
 	}
 
 	public float getYaw() {
-		return yaw;
+		return rawYaw;
+	}
+	
+	public float getPitch() {
+		return rawPitch;
+	}
+	
+	public float getRoll() {
+		return rawRoll;
+	}
+	
+	public float getEffectedYaw() {
+		return effectedYaw;
+	}
+	
+	public float getEffectedPitch() {
+		return effectedPitch;
+	}
+	
+	public float getEffectedRoll() {
+		return effectedRoll;
 	}
 	
 	public Vector3f getPrevPosition() {
@@ -160,7 +176,7 @@ public class Camera {
 				final float offset = 10f;
 				final float pitchChange = Input.getMouseDY() * (mouseSensitivity / offset);
 				final float angleChange = Input.getMouseDX() * (mouseSensitivity / offset);
-				pitch -= pitchChange;
+				rawPitch -= pitchChange;
 				angleAroundPlayer -= angleChange;
 				clampPitch();
 			}
@@ -169,7 +185,7 @@ public class Camera {
 		// WASD movement
 		if (controlStyle == SPECTATOR && !Console.isVisible()) {
 			final Vector3f forward = MathUtil.getDirection(viewMatrix);
-			final float yawRad = (float) Math.toRadians(yaw);
+			final float yawRad = (float) Math.toRadians(rawYaw);
 			final Vector3f strafe = new Vector3f(-(float) Math.sin(yawRad), 0, (float) Math.cos(yawRad))
 					.perpindicular();
 
@@ -288,15 +304,15 @@ public class Camera {
 				lookAt = Vector3f.sub(position, lookPos).normalize();
 			}
 
-			pitch = MathUtil.lerp(pitch, (float) Math.toDegrees(Math.asin(lookAt.y)), .05f);
-			yaw = MathUtil.angleLerp(yaw, -(float) Math.toDegrees(Math.atan2(lookAt.x, lookAt.z)), .05f);
-			angleAroundPlayer = -(yaw - 360);
+			rawPitch = MathUtil.lerp(rawPitch, (float) Math.toDegrees(Math.asin(lookAt.y)), .05f);
+			rawYaw = MathUtil.angleLerp(rawYaw, -(float) Math.toDegrees(Math.atan2(lookAt.x, lookAt.z)), .05f);
+			angleAroundPlayer = -(rawYaw - 360);
 		} else {
 			handleControl();
 
-			this.yaw = 360 - angleAroundPlayer;
-			yaw += 360;
-			yaw %= 360;
+			this.rawYaw = 360 - angleAroundPlayer;
+			rawYaw += 360;
+			rawYaw %= 360;
 		}
 
 		updateViewMatrix();
@@ -307,7 +323,7 @@ public class Camera {
 	}
 
 	public void setPitch(float pitch) {
-		this.pitch = pitch;
+		this.rawPitch = pitch;
 	}
 
 	public void setPosition(Vector3f position) {
@@ -315,7 +331,7 @@ public class Camera {
 	}
 
 	public void setRoll(float roll) {
-		this.roll = roll;
+		this.rawRoll = roll;
 	}
 
 	public void setYaw(float f) {
@@ -350,9 +366,31 @@ public class Camera {
 	public void updateViewMatrix() {
 		viewMatrix.identity();
 
-		viewMatrix.rotateX(pitch + screenShake.y + flinch.y + swayDir.y);
-		viewMatrix.rotateY(yaw + screenShake.x + flinch.x + swayDir.x);
-		viewMatrix.rotateZ(roll + flinch.z + swayDir.z);
+		effectedYaw = rawYaw + screenShake.x + flinch.x + swayDir.x;
+		effectedPitch = rawPitch + screenShake.y + flinch.y + swayDir.y;
+		effectedRoll = rawRoll + flinch.z + swayDir.z;
+		
+		viewMatrix.rotateX(effectedPitch);
+		viewMatrix.rotateY(effectedYaw);
+		viewMatrix.rotateZ(effectedRoll);
+		final Vector3f negativeCameraPos = new Vector3f(-position.x, -position.y, -position.z);
+		viewMatrix.translate(negativeCameraPos);
+
+		viewDirection.x = -viewMatrix.m02;
+		viewDirection.y = -viewMatrix.m12;
+		viewDirection.z = -viewMatrix.m22;
+
+		Matrix4f.mul(projectionMatrix, viewMatrix, projectionViewMatrix);
+
+		frustum.update(projectionViewMatrix);
+	}
+	
+	public void updateViewMatrixRaw() {
+		viewMatrix.identity();
+
+		viewMatrix.rotateX(rawPitch);
+		viewMatrix.rotateY(rawYaw);
+		viewMatrix.rotateZ(rawRoll);
 		final Vector3f negativeCameraPos = new Vector3f(-position.x, -position.y, -position.z);
 		viewMatrix.translate(negativeCameraPos);
 
@@ -390,7 +428,4 @@ public class Camera {
 		
 		return m;
 	}
-
-	
-
 }

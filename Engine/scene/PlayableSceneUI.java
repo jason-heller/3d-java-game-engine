@@ -84,7 +84,6 @@ public class PlayableSceneUI {
 				AudioHandler.pause();
 			} else {
 				unpause();
-				PlayerHandler.enable();
 			}
 		}
 		
@@ -108,6 +107,7 @@ public class PlayableSceneUI {
 		} else {
 			paused = false;
 			AudioHandler.unpause();
+			PlayerHandler.enable();
 			//if (!Console.isVisible()) {
 				Input.requestMouseGrab();
 			//}

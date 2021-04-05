@@ -57,14 +57,10 @@ public class Controls {
 	}
 
 	public static int get(String id) {
-		return Console.isVisible() ? 0xFF : controls.get(id);
+		return controls.get(id);
 	}
 
 	public static void handleCustomBinds(int input) {
-		if (Console.isVisible()) {
-			return;
-		}
-
 		for (final int key : customBinds.keySet()) {
 			if (input != key) {
 				continue;
@@ -83,17 +79,6 @@ public class Controls {
 		defaults();
 		if (Settings.configFile.exists()) {
 			load();
-		}
-	}
-
-	public static void listBinds() {
-		Console.log("Predefined binds:");
-		for (final String key : controls.keySet()) {
-			Console.log(key + " \"" + Keyboard.getKeyName(controls.get(key)) + "\"");
-		}
-		Console.log("Custom binds:");
-		for (final int key : customBinds.keySet()) {
-			Console.log(Keyboard.getKeyName(key) + " \"" + customBinds.get(key) + "\"");
 		}
 	}
 
