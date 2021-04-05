@@ -4,7 +4,7 @@ This is a 3D survival horror game being developed by me and a few friends.
 
 # Video
 
-[![Demo of first map](https://img.youtube.com/vi/wbCgHfwIKBs/0.jpg)](https://www.youtube.com/watch?v=wbCgHfwIKBs)
+[![Demo of first map](https://img.youtube.com/vi/wbCgHfwIKBs/0.jpg)](https://www.youtube.com/watch?v=AYJI8efdEC8)
 
 # Required Libraries
 - [LWJGL2] https://www.lwjgl.org/
