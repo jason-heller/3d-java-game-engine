@@ -27,12 +27,17 @@ import map.architecture.components.ArcStaticObject;
 import map.architecture.components.ArcTextureData;
 import map.architecture.components.ArcTriggerClip;
 import map.architecture.components.ClipType;
+import map.architecture.functions.commands.CamView;
+import map.architecture.functions.commands.PathNode;
 import map.architecture.functions.commands.SpawnPoint;
 import map.architecture.vis.Bsp;
 import map.architecture.vis.BspLeaf;
 import map.architecture.vis.BspNode;
 import map.architecture.vis.Pvs;
+import scene.PlayableScene;
 import scene.Scene;
+import scene.entity.EntityHandler;
+import scene.entity.friendly.BoyNPC;
 
 // Architecture File (for map geom)
 public class ArcLoader {
@@ -143,7 +148,7 @@ public class ArcLoader {
 			for (int i = 0; i < clipEdges.length; i++) {
 				clipEdges[i] = in.readShort();		// ptr to edge
 			}
-			bsp.clipEdges = clipEdges;
+			bsp.clipPlaneIndices = clipEdges;
 			int numClips = in.readShort();
 			/*int numTriggerEvents = */in.readShort();	// Unused
 			// int triggerIndex = 0;
@@ -266,6 +271,18 @@ public class ArcLoader {
 				case "spawn_player":
 					SpawnPoint spawn = new SpawnPoint(readVec3(tags, "pos"), readVec3(tags, "rot"), tags.get("label"));
 					arc.addFunction(spawn);
+					break;
+				case "npc_boy":
+					BoyNPC npc = new BoyNPC(readVec3(tags, "pos"), readInt(tags, "target"), ((PlayableScene)scene).getPlayer());
+					EntityHandler.addEntity(npc);
+					break;
+				case "path_node":
+					PathNode pathNode = new PathNode(readVec3(tags, "pos"), readInt(tags, "id"), readInt(tags, "next"), readInt(tags, "prev"), tags.get("cmd"));
+					arc.addFunction(pathNode);
+					break;
+				case "cam_view":
+					CamView camView = new CamView(readVec3(tags, "pos"), readVec3(tags, "rot"));
+					arc.addFunction(camView);
 					break;
 				}
 			}
@@ -501,9 +518,9 @@ public class ArcLoader {
 		return data.equals("") ? 0f : Float.parseFloat(data);
 	}
 
-	@SuppressWarnings("unused")
 	private static int readInt(Map<String, String> tags, String string) {
 		String data = tags.get(string);
+
 		return data.equals("") ? 0 : Integer.parseInt(data);
 	}
 

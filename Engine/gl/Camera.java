@@ -58,8 +58,6 @@ public class Camera {
 	private float rawPitch, effectedPitch;	// variables include the camera's looking direction, which
 	private float rawRoll, effectedRoll;	// includes effects such as shaking and flinching
 
-	private float angleAroundPlayer;
-
 	private float shakeTime = 0f, shakeIntensity = 0f;
 	private float flinchTime = 0f, flinchIntensity = 0f;
 	private Vector3f flinchDir = new Vector3f();
@@ -87,7 +85,7 @@ public class Camera {
 	}
 
 	public void addYaw(float f) {
-		angleAroundPlayer += f;
+		rawYaw += f;
 	}
 
 	private void clampPitch() {
@@ -177,7 +175,7 @@ public class Camera {
 				final float pitchChange = Input.getMouseDY() * (mouseSensitivity / offset);
 				final float angleChange = Input.getMouseDX() * (mouseSensitivity / offset);
 				rawPitch -= pitchChange;
-				angleAroundPlayer -= angleChange;
+				rawYaw += angleChange;
 				clampPitch();
 			}
 		}
@@ -306,11 +304,11 @@ public class Camera {
 
 			rawPitch = MathUtil.lerp(rawPitch, (float) Math.toDegrees(Math.asin(lookAt.y)), .05f);
 			rawYaw = MathUtil.angleLerp(rawYaw, -(float) Math.toDegrees(Math.atan2(lookAt.x, lookAt.z)), .05f);
-			angleAroundPlayer = -(rawYaw - 360);
+			//angleAroundPlayer = -(rawYaw - 360);
 		} else {
 			handleControl();
 
-			this.rawYaw = 360 - angleAroundPlayer;
+			rawYaw %= 360;
 			rawYaw += 360;
 			rawYaw %= 360;
 		}
@@ -334,8 +332,8 @@ public class Camera {
 		this.rawRoll = roll;
 	}
 
-	public void setYaw(float f) {
-		angleAroundPlayer = -f;
+	public void setYaw(float yaw) {
+		this.rawYaw = yaw;
 	}
 
 	public void setZoom(float i) {

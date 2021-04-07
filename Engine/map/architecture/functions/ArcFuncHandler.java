@@ -77,14 +77,14 @@ public class ArcFuncHandler {
 							.replace("last", "" + (funcList.size() - 1)).substring(6));
 				} else if (line.startsWith("range=")) {
 					range = Float.parseFloat(line.substring(6));
-				} else {
+				} else if (line != null) {
 					argArrList.add(line);
 				}
 			}
 		}
 
 		String[] args = new String[argArrList.size()];
-		strs = argArrList.toArray(strs);
+		args = argArrList.toArray(args);
 		
 		switch(callMethod) {
 		case BY_RANDOM:

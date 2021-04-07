@@ -12,6 +12,8 @@ import gl.Render;
 import gl.Window;
 import map.architecture.ArchitectureHandler;
 import scene.PlayableScene;
+import scene.entity.Entity;
+import scene.entity.EntityHandler;
 import scene.entity.hostile.TestHostileEntity;
 import scene.entity.util.PlayerEntity;
 import scene.entity.util.PlayerHandler;
@@ -96,6 +98,18 @@ public class CommandMethods {
 		}
 	}
 	
+	public static void look(float yaw, float pitch, float roll) {
+		Camera camera = Application.scene.getCamera();
+		camera.setYaw(yaw);
+		camera.setPitch(pitch);
+		camera.setRoll(roll);
+	}
+	
+	public static void shake(float time, float intensity) {
+		Camera camera = Application.scene.getCamera();
+		camera.shake(time, intensity);
+	}
+	
 	public static void heal(int hp, int part) {
 		PlayableScene PlayableScene;
 		if (!(Application.scene instanceof PlayableScene)) {
@@ -116,19 +130,35 @@ public class CommandMethods {
 		PlayerHandler.hasWalker = !PlayerHandler.hasWalker;
 	}
 	
-	public static void tp(String _x, String _y, String _z) {
+	public static void tp(String a, String b, String c, String d) {
 		if (!(Application.scene instanceof PlayableScene)) {
 			Console.log("Cannot use this command outside gameplay");
 			return;
 		}
 		PlayableScene playableScene = (PlayableScene)Application.scene;
-		PlayerEntity player = playableScene.getPlayer();
+		Entity entity = null;
+		
+		if (a.startsWith("@")) {
+			entity = EntityHandler.getEntity(a.substring(1));
+			
+			if (entity == null) {
+				Console.log("No such entity: \"" + a.substring(1) + "\"");
+				return;
+			}
 
-		player.pos.x = Float.parseFloat(_x);
-		player.pos.y = Float.parseFloat(_y);
-		player.pos.z = Float.parseFloat(_z);
+			entity.pos.x = Float.parseFloat(b);
+			entity.pos.y = Float.parseFloat(c);
+			entity.pos.z = Float.parseFloat(d);
+		} else {
+			entity = playableScene.getPlayer();
+
+			entity.pos.x = Float.parseFloat(a);
+			entity.pos.y = Float.parseFloat(b);
+			entity.pos.z = Float.parseFloat(c);
+		}
+		
 		Camera camera = playableScene.getCamera();
-		camera.setPosition(player.pos);
+		camera.setPosition(entity.pos);
 	}
 	
 	public static void tp_rel(String _x, String _y, String _z) {

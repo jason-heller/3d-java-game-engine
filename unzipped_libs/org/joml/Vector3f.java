@@ -639,6 +639,10 @@ public class Vector3f implements Serializable, Externalizable {
 		this.z = 0.0f;
 		return this;
 	}
+	
+	public boolean equals(Vector3f o) {
+		return (this.x == o.x && this.y == o.y && this.z == o.z);
+	}
 
 	/*
 	 * public void rotate(float rx, int i, int j, int k) { double x, y, z; double u,

@@ -59,6 +59,11 @@ public class MTV implements Comparable<MTV> {
 		this.face = face;
 	}
 	
+	public void finalize() {
+		axis.normalize();
+		depth = (float)Math.sqrt(depth) * 1.01f;
+	}
+	
 	public Vector3f getMTV() {
 		return Vector3f.mul(axis, depth);
 	}
@@ -82,5 +87,17 @@ public class MTV implements Comparable<MTV> {
 	
 	public Plane getPlane() {
 		return plane;
+	}
+	
+	public void setDepth(float depth) {
+		this.depth = depth;
+	}
+	
+	public void setPlane(Plane plane) {
+		this.plane = plane;
+	}
+
+	public void setAxis(Vector3f axis) {
+		this.axis = axis;
 	}
 }

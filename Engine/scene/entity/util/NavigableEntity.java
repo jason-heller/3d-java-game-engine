@@ -4,10 +4,11 @@ import java.util.Stack;
 
 import org.joml.Vector3f;
 
-import dev.Console;
 import dev.Debug;
+import geom.CollideUtils;
 import gl.Window;
 import gl.line.LineRender;
+import map.architecture.Architecture;
 import map.architecture.components.ArcNavigation;
 import scene.PlayableScene;
 import util.Colors;
@@ -19,7 +20,8 @@ public abstract class NavigableEntity extends PhysicsEntity {
 	protected Vector3f navTarget = null;
 
 	private int navTargetNode = -1;
-	private Vector3f navStep = null;
+	public int navPathNode = -1;
+	protected Vector3f navStep = null;
 	private ArcNavigation navigation = null;
 
 	private Stack<Integer> path;
@@ -30,7 +32,7 @@ public abstract class NavigableEntity extends PhysicsEntity {
 	private boolean targetReachable = true;
 	private int stateChangeTimer = 0;
 	
-	private float stepTimeEst = Float.POSITIVE_INFINITY, stepTimeActual = 0f;
+	protected float stepTimeEst = Float.POSITIVE_INFINITY, stepTimeActual = 0f;
 	
 	private Vector3f lastTargetPoint = new Vector3f();
 	
@@ -49,10 +51,11 @@ public abstract class NavigableEntity extends PhysicsEntity {
 		this.navigation = navigation;
 	}
 
-	protected void setTarget(Vector3f navTarget) {
+	public void setTarget(Vector3f navTarget) {
 		this.navTarget = navTarget;
 		if (navTarget == null) {
 			navTargetNode = -1;
+			this.navStep = null;
 			return;
 		}
 
@@ -110,8 +113,12 @@ public abstract class NavigableEntity extends PhysicsEntity {
 		if (navTarget != null/* && moveState == PURSUE*/) {
 
 			if (navStep != null && Vector3f.distanceSquared(pos, navTarget) < Vector3f.distanceSquared(pos, navStep)) {
-				navStep = new Vector3f(navTarget);
-				calcStepTime(navTarget);
+				Architecture arc = arcHandler.getArchitecture();
+				Vector3f to = Vector3f.sub(navStep, pos).normalize();
+				if (CollideUtils.raycast(arc.getRenderedLeaves(), arc.bsp, pos, to) == Float.POSITIVE_INFINITY) {
+					navStep = new Vector3f(navTarget);
+					calcStepTime(navTarget);
+				}
 			}
 			
 			int nearestNavNode = navigation.getNearest(navTarget);

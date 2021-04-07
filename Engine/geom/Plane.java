@@ -77,7 +77,7 @@ public class Plane {
 	}
 
 	public float signedDistanceTo(Vector3f point) {
-		return point.dot(normal) + dist;
+		return point.dot(normal) - dist;
 	}
 
 	public void translate(Vector3f offset) {

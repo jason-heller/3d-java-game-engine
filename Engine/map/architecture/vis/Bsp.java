@@ -27,7 +27,7 @@ public class Bsp {
 	public short[] leafFaceIndices;
 
 	public ArcClip[] clips;
-	public int[] clipEdges;
+	public int[] clipPlaneIndices;
 
 	public ArcObjects objects;
 	

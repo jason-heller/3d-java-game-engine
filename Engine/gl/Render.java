@@ -15,6 +15,7 @@ import gl.particle.ParticleHandler;
 import gl.post.PostProcessing;
 import gl.res.Model;
 import gl.res.Texture;
+import map.architecture.functions.commands.CamView;
 import scene.Scene;
 import ui.UI;
 
@@ -94,6 +95,12 @@ public class Render {
 		drawCalls = 0;
 		
 		ParticleHandler.update(camera);
+		
+		if (CamView.requestRender) {
+			Render.renderCamView(camera, scene, CamView.renderPos, CamView.renderRot);
+
+			CamView.requestRender = false;
+		}
 		
 		screen.bind();
 		GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
@@ -240,5 +247,28 @@ public class Render {
 		int height = 180 * waterQuality;
 		FboUtils.resize(refraction, width, height);
 		FboUtils.resize(reflection, width, height);
+	}
+
+	private static void renderCamView(Camera camera, Scene scene, Vector3f pos, Vector3f rot) {
+		final Vector3f origPos = new Vector3f(camera.getPosition());
+		final float yaw = camera.getYaw();
+		final float pitch = camera.getPitch();
+		final float roll = camera.getRoll();
+
+		refraction.bind();
+		camera.setYaw(rot.x);
+		camera.setPitch(rot.y);
+		camera.setRoll(rot.z);
+		camera.setPosition(pos);
+		camera.updateViewMatrix();
+		GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+		scene.render(0, 1, 0, Float.POSITIVE_INFINITY);
+		
+		refraction.unbind();
+		camera.setPitch(pitch);
+		camera.setYaw(yaw);
+		camera.setRoll(roll);
+		camera.setPosition(origPos);
+		camera.updateViewMatrix();
 	}
 }

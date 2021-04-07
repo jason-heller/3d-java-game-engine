@@ -8,6 +8,7 @@ import org.joml.Vector3f;
 
 import core.Application;
 import core.Resources;
+import dev.Console;
 import dev.Debug;
 import geom.AxisAlignedBBox;
 import geom.CollideUtils;
@@ -44,7 +45,7 @@ public abstract class PhysicsEntity extends Entity {
 	public static float gravity = 50f;
 	public static float maxGravity = -600f;
 	public static float friction = 4f;
-	public static float airFriction = .75f;
+	public static float airFriction = .1f;
 	
 	private float upwarp = 0f;
 	private Plane lastFloorCollided = null;
@@ -61,11 +62,14 @@ public abstract class PhysicsEntity extends Entity {
 
 	protected static final float SLIDE_ANGLE = .9f;
 	protected static final float EPSILON = 0.01f;
+	private static final float STEP_HEIGHT = 2;
 
 	protected AxisAlignedBBox bbox;
 	public Vector3f vel = new Vector3f();
 	
 	protected ArchitectureHandler arcHandler;
+	
+	public boolean solid = true;
 	
 	public PhysicsEntity(String name, Vector3f bounds) {
 		super(name);
@@ -243,11 +247,11 @@ public abstract class PhysicsEntity extends Entity {
 				
 				Plane[] planes = new Plane[clip.numPlanes];
 				for(int i = 0; i < clip.numPlanes; i++) {
-					planes[i] = bsp.planes[clip.firstPlane + i];
+					planes[i] = bsp.planes[bsp.clipPlaneIndices[clip.firstPlane + i]];
 				}
 				
-				MTV mtv = bbox.collide(clip.bbox);
-				//MTV mtv = CollideUtils.convexHullBoxCollide(planes, bbox);
+				//MTV mtv = bbox.collide(clip.bbox);
+				MTV mtv = CollideUtils.convexHullBoxCollide(planes, bbox);
 				if (mtv != null) {
 					boolean doCollide = clip.interact(this, true);
 					if (clip instanceof ArcTriggerClip) {
@@ -382,7 +386,25 @@ public abstract class PhysicsEntity extends Entity {
 	}
 	
 	private void collide(Bsp bsp, MTV mtv) {
-		if (mtv.getAxis().y > .5f || bsp.planes[ mtv.getFace().planeId].normal.y > .5f) {
+		
+		// Go up steps
+		ArcFace face = mtv.getFace();
+		if (face != null && grounded && vel.y == 0f && bsp.planes[face.planeId].normal.y < .01f) {
+
+			float highest = Float.NEGATIVE_INFINITY;
+			for(int i = face.firstEdge; i < face.firstEdge + face.numEdges; i++) {
+				ArcEdge edge = bsp.edges[Math.abs(bsp.surfEdges[i])];
+				highest = Math.max(Math.max(bsp.vertices[edge.start].y, bsp.vertices[edge.end].y), highest);
+			}
+			
+			float hDiff = highest - (pos.y - bbox.getBounds().y);
+			if (hDiff < STEP_HEIGHT) {
+				pos.y += hDiff;
+				return;
+			}
+		}
+
+		if (mtv.getAxis().y > .5f/* || bsp.planes[ mtv.getFace().planeId].normal.y > .5f*/) {
 			collideWithFloor(mtv);
 			return;
 		}

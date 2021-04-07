@@ -1,5 +1,5 @@
 package map.architecture;
 
 public enum Material {
-	ROCK, GRASS, DIRT, ASPHALT, WOOD, WATER;
+	ROCK, GRASS, DIRT, METAL, ASPHALT, WOOD, WATER, CAMERA;
 }

@@ -6,15 +6,16 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
+import core.Application;
 import core.Resources;
-import dev.Console;
 import dev.Debug;
 import gl.Camera;
 import gl.Render;
 import gl.TexturedModel;
+import gl.fbo.FrameBuffer;
 import gl.water.WaterShader;
-import io.Controls;
-import io.Input;
+import map.architecture.Architecture;
+import map.architecture.Material;
 
 public class ArcRender {
 	
@@ -27,9 +28,11 @@ public class ArcRender {
 		GL11.glEnable(GL30.GL_CLIP_DISTANCE0);
 	}
 	
-	public static void startRender(Matrix4f projection, Matrix4f view, float clipX, float clipY, float clipZ, float clipDist) {
+	public static void startRender(Camera camera, float clipX, float clipY, float clipZ, float clipDist) {
+		Matrix4f view = camera.getViewMatrix();
+		
 		shader.start();
-		shader.projectionMatrix.loadMatrix(projection);
+		shader.projectionMatrix.loadMatrix(camera.getProjectionMatrix());
 		shader.viewMatrix.loadMatrix(view);
 		shader.camPos.loadVec3(view.getTranslation());
 		shader.clipPlane.loadVec4(clipX, clipY, clipZ, clipDist);
@@ -38,21 +41,22 @@ public class ArcRender {
 		Resources.getTexture(Debug.fullbright ? "none" : "lightmap").bind(1);
 	}
 	
-	public static void render(TexturedModel tMesh) {
+	public static void render(Camera camera, Architecture arc, TexturedModel tMesh) {
 		if (Debug.wireframeMode) {
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
 			GL11.glDisable(GL11.GL_TEXTURE_2D);
 		}
 		
-		/*Material material = tMesh.getTexture().getMaterial();
+		Material material = tMesh.getTexture().getMaterial();
 		
 		switch(material) {
-		case WATER:
-			renderWater(camera.getProjectionViewMatrix(), tMesh);
+		case CAMERA:
+			arc.callCommand("camview_render index=0");
+			renderCamView(tMesh);
 			break;
-		default:*/
+		default:
 			renderDefault(tMesh);
-		//}
+		}
 		
 		if (Debug.wireframeMode) {
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
@@ -63,6 +67,16 @@ public class ArcRender {
 	private static void renderDefault(TexturedModel tMesh) {
 		(Debug.ambientOnly ? Resources.getTexture("none") : tMesh.getTexture()).bind(0);
 
+		tMesh.getModel().bind(0,1,2);
+		shader.modelMatrix.loadMatrix(tMesh.getMatrix());
+		GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, tMesh.getModel().getVertexCount());
+		Render.drawCalls++;
+	}
+	
+	private static void renderCamView(TexturedModel tMesh) {
+		FrameBuffer refractionFbo = Render.getRefractionFbo();
+		refractionFbo.bindTextureBuffer(0);
+		
 		tMesh.getModel().bind(0,1,2);
 		shader.modelMatrix.loadMatrix(tMesh.getMatrix());
 		GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, tMesh.getModel().getVertexCount());

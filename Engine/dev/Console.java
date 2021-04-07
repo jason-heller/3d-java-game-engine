@@ -151,6 +151,15 @@ public class Console {
 	}
 
 	public static void send(String string) {
+		String[] multiCmds = string.split("::");
+		if (multiCmds.length > 1) {
+			for(String cmd : multiCmds) {
+				send(cmd);
+			}
+			return;
+		}
+		
+		
 		if (blockComment && string.contains("*/")) {
 			blockComment = false;
 			string = string.substring(string.indexOf("*/") + 2);

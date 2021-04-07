@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
 import core.Resources;
+import dev.Console;
 import gl.Camera;
 import gl.Render;
 import gl.entity.GenericShader;
@@ -31,10 +32,10 @@ public class EntityHandler {
 	private Model createBillBoardedModel() {
 		Model model = Model.create();
 		model.bind(0, 1, 2);
-		model.createAttribute(0, new float[] {-1f, -1f, 0f, 1f, -1f, 0f, 1f, 1f, 0f, -1f, 1f, 0f}, 3);
-		model.createAttribute(1, new float[] {1,1, 0,1, 0,0, 1,0}, 2);
-		model.createAttribute(2, new float[] {1,1,1, 1,1,1, 1,1,1, 1,1,1}, 3);
-		model.createIndexBuffer(new int[] {0,1,3, 3,1,2});
+		model.createAttribute(0, new float[] { -1f, -1f, 0f, 1f, -1f, 0f, 1f, 1f, 0f, -1f, 1f, 0f }, 3);
+		model.createAttribute(1, new float[] { 1, 1, 0, 1, 0, 0, 1, 0 }, 2);
+		model.createAttribute(2, new float[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, 3);
+		model.createIndexBuffer(new int[] { 0, 1, 3, 3, 1, 2 });
 		model.unbind(0, 1, 2);
 		return model;
 	}
@@ -57,6 +58,7 @@ public class EntityHandler {
 	}
 	
 	public void update(PlayableScene scene) {
+		
 		for(List<Entity> batch : entities.values()) {
 			for(Entity entity : batch) {
 				entity.update(scene);
@@ -115,5 +117,18 @@ public class EntityHandler {
 		}
 		entities.clear();
 		billboard.cleanUp();
+	}
+
+	public static Entity getEntity(String name) {
+		for(List<Entity> batch : entities.values()) {
+			for(Entity entity : batch) {
+				
+				if (entity.name.equals(name)) {
+					return entity;
+				}
+			}
+		}
+		
+		return null;
 	}
 }

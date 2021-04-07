@@ -19,7 +19,7 @@ public class PlayerHandler {
 
 	public static float jumpVel = 20f;
 	public static float runSpeedMultiplier = 2.25f;
-	public static float maxSpeed = 10f, maxAirSpeed = 10f, maxWaterSpeed = 32f;
+	public static float maxSpeed = 10f, maxAirSpeed = 30f, maxWaterSpeed = 32f;
 	public static float accelSpeed = 80f, airAccel = 10f, waterAccel = 32f;
 	public static float maxSpeedCrouch = 4f;
 	

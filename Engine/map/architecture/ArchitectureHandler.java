@@ -12,10 +12,12 @@ import org.joml.Vector3f;
 import dev.Console;
 import dev.Debug;
 import gl.Camera;
+import gl.Render;
 import gl.line.LineRender;
 import gl.map.architecture.render.ArcRender;
 import map.architecture.components.ArcNavNode;
 import map.architecture.components.ArcNavigation;
+import map.architecture.functions.commands.CamView;
 import scene.Scene;
 import util.Colors;
 
@@ -23,6 +25,7 @@ public class ArchitectureHandler {
 	
 	private Architecture architecture;
 	
+	private static boolean changeMap = false;
 	public static String[] validMaps = new String[0];
 	private static String[] mapSequence = readMapSequenceFile();
 	private static int currentMap = 0;
@@ -108,6 +111,12 @@ public class ArchitectureHandler {
 	}
 
 	public void update(Camera camera) {
+		if (changeMap) {
+			Console.send("map " + mapSequence[currentMap]);
+			changeMap = false;
+			return;
+		}
+		
 		architecture.determineVisibleLeafs(camera);
 	}
 	
@@ -117,6 +126,7 @@ public class ArchitectureHandler {
 	
 	public static void nextMap() {
 		currentMap++;
-		Console.send("map " + mapSequence[currentMap]);
+		changeMap = true;
+		
 	}
 }

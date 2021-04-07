@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
 
 import core.Resources;
+import dev.Console;
 import dev.Debug;
 import gl.Camera;
 import gl.Render;
@@ -28,6 +29,7 @@ import map.architecture.components.ArcTextureData;
 import map.architecture.components.ArcTriggerClip;
 import map.architecture.functions.ArcFuncHandler;
 import map.architecture.functions.ArcFunction;
+import map.architecture.functions.commands.CamView;
 import map.architecture.vis.Bsp;
 import map.architecture.vis.BspLeaf;
 import map.architecture.vis.Pvs;
@@ -86,13 +88,24 @@ public class Architecture {
 				if (leaf.clusterId == -1) continue;
 				if (vis[leaf.clusterId] == 0) continue;
 				renderedLeaves.add(leaf);
-			}
+			}	
+			
+			if (CamView.requestRender) {
+				BspLeaf camViewLeaf = bsp.walk(CamView.renderPos);
+				if (camViewLeaf.clusterId == -1) return;
+				vis = pvs.getClustersToRender(camViewLeaf);
 				
+				for(int i = 0; i < bsp.leaves.length; i++) {
+					BspLeaf leaf = bsp.leaves[i];
+					if (leaf.clusterId == -1) continue;
+					if (vis[leaf.clusterId] == 0) continue;
+					renderedLeaves.add(leaf);
+				}	
+			}
 		}
 	}
 	
 	public void render(Camera camera, float clipX, float clipY, float clipZ, float clipDist) {
-		
 		bsp.objects.render(camera, this);
 		
 		for(BspLeaf leaf : renderedLeaves) {
@@ -109,13 +122,13 @@ public class Architecture {
 				}
 			}
 			
-			ArcRender.startRender(camera.getProjectionMatrix(), camera.getViewMatrix(), clipX, clipY, clipZ, clipDist);
+			ArcRender.startRender(camera, clipX, clipY, clipZ, clipDist);
 			
 			for(TexturedModel visObj : leaf.getMeshes()) {
 				
 				if (!camera.getFrustum().containsBoundingBox(leaf.max, leaf.min)) {continue;}
 
-				ArcRender.render(visObj);
+				ArcRender.render(camera, this, visObj);
 			}
 			
 			ArcRender.finishRender();

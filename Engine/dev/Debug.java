@@ -16,7 +16,6 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL15;
 
-import core.Resources;
 import geom.CollideUtils;
 import gl.Camera;
 import gl.Render;
@@ -25,7 +24,6 @@ import gl.line.LineRender;
 import gl.res.Model;
 import gl.res.Texture;
 import gl.res.Vbo;
-import io.Input;
 import map.architecture.Architecture;
 import map.architecture.components.ArcEdge;
 import map.architecture.components.ArcFace;
@@ -85,6 +83,9 @@ public class Debug {
 		String vx = String.format("%.1f", player.vel.x);
 		String vy = String.format("%.1f", player.vel.y);
 		String vz = String.format("%.1f", player.vel.z);
+		String rx = String.format("%.1f", camera.getYaw());
+		String ry = String.format("%.1f", camera.getPitch());
+		String rz = String.format("%.1f", camera.getRoll());
 		String spd = String.format("%.1f", player.vel.length());
 
 		UI.drawString(
@@ -94,6 +95,7 @@ public class Debug {
 				+ "\n" + "tex swaps: " + Render.textureSwaps
 				+ "\n" + "VX: " + vx + " VY: " + vy + " VZ: " + vz
 				+ "\n" + "speed: " + spd
+				+ "\n" + "yaw: " + rx + " pitch: " + ry + " roll: " + rz
 				+ "\ngrounded:" + player.isGrounded() + ", prev: " + player.previouslyGrounded 
 				+ "\n",
 				5, 5, .25f, false);
@@ -117,8 +119,7 @@ public class Debug {
 			for (BspLeaf leaf : allVisible) {
 				for (int i = 0; i < leaf.numFaces; i++) {
 					ArcFace face = bsp.faces[bsp.leafFaceIndices[leaf.firstFace + i]];
-					float dist = CollideUtils.convexPolygonRay(bsp.vertices, bsp.edges, bsp.surfEdges, bsp.planes, face,
-							camPos, camDir);
+					float dist = CollideUtils.convexPolygonRay(bsp, face, camPos, camDir);
 
 					if (!Float.isNaN(dist) && dist < nearest) {
 						dist = nearest;

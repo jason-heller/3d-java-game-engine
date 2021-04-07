@@ -36,6 +36,8 @@ enum CommandData {
 	shadow_quality(false, "0-3"),
 	mipmap_bias(false),
 	water_quality(false, "0-4"),
+	look(false, "yaw", "pitch", "roll"),
+	shake(false, "time", "intensity"),
 	
 	// Getters
 	version("VERSION", Application.class, GETTER, false),
