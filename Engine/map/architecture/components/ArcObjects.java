@@ -11,7 +11,7 @@ import core.Resources;
 import dev.Console;
 import gl.Camera;
 import gl.Render;
-import gl.entity.GenericShader;
+import gl.generic.GenericShader;
 import gl.res.Model;
 import gl.res.Texture;
 import map.architecture.Architecture;
@@ -58,7 +58,7 @@ public class ArcObjects {
 			if (model == null) 
 				continue;
 			
-			shader.lightDirection.loadVec3(arc.getLightAtPosition(object.lightingPos, object.rot));
+			shader.lights.loadVec3(arc.getLightsAt(object.lightingPos));
 			
 			Matrix4f matrix = new Matrix4f();
 			matrix.translate(object.pos);

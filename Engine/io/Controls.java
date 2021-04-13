@@ -61,6 +61,8 @@ public class Controls {
 	}
 
 	public static void handleCustomBinds(int input) {
+		if (Console.isVisible()) return;
+		
 		for (final int key : customBinds.keySet()) {
 			if (input != key) {
 				continue;

@@ -2,7 +2,6 @@ package geom;
 
 import org.joml.Vector3f;
 
-import dev.Console;
 import map.architecture.components.ArcFace;
 
 /** Minimum Translation Vector
@@ -13,8 +12,8 @@ public class MTV implements Comparable<MTV> {
 	
 	private Vector3f axis;
 	private float depth;
-	private Plane plane;
-	private ArcFace face;
+	private ArcFace face = null;
+	private Plane plane = null;
 	
 	public MTV() {
 		depth = Float.MAX_VALUE;
@@ -52,16 +51,10 @@ public class MTV implements Comparable<MTV> {
 		return true;
 	}
 
-	public void finalize(Vector3f pt, ArcFace face) {
+	public void finish(Vector3f pt, ArcFace face) {
 		axis.normalize();
 		depth = (float)Math.sqrt(depth) * 1.01f;
-		this.plane = new Plane(pt, axis);
 		this.face = face;
-	}
-	
-	public void finalize() {
-		axis.normalize();
-		depth = (float)Math.sqrt(depth) * 1.01f;
 	}
 	
 	public Vector3f getMTV() {
@@ -85,19 +78,19 @@ public class MTV implements Comparable<MTV> {
 		return face;
 	}
 	
-	public Plane getPlane() {
-		return plane;
-	}
-	
 	public void setDepth(float depth) {
 		this.depth = depth;
+	}
+	
+	public void setAxis(Vector3f axis) {
+		this.axis = axis;
 	}
 	
 	public void setPlane(Plane plane) {
 		this.plane = plane;
 	}
-
-	public void setAxis(Vector3f axis) {
-		this.axis = axis;
+	
+	public Plane getPlane() {
+		return plane;
 	}
 }

@@ -42,7 +42,7 @@ public class ArcClip {
 			break;
 
 		case NPC_CLIP:
-			if (entity instanceof PhysicsEntity && !(entity instanceof PlayerEntity))
+			if (entity instanceof PhysicsEntity)
 				return true;
 			break;
 

@@ -7,9 +7,10 @@ import org.lwjgl.opengl.GL11;
 import core.Application;
 import core.Resources;
 import dev.Console;
-import gl.entity.GenericShader;
+import dev.Debug;
 import gl.fbo.FboUtils;
 import gl.fbo.FrameBuffer;
+import gl.generic.GenericShader;
 import gl.line.LineRender;
 import gl.particle.ParticleHandler;
 import gl.post.PostProcessing;
@@ -130,8 +131,8 @@ public class Render {
 	 * @param texMesh the textured model to draw.
 	 * @param lightDirection a vector representing the direction of ambient light in the scene
 	 */
-	public static void renderModel(TexturedModel texMesh, Vector3f lightDirection) {
-		renderModel(texMesh.getModel(), texMesh.getTexture(), texMesh.getMatrix(), lightDirection);
+	public static void renderModel(TexturedModel texMesh, Vector3f[] lights) {
+		renderModel(texMesh.getModel(), texMesh.getTexture(), texMesh.getMatrix(), lights);
 	}
 	
 	/** Does a singular render pass for one textured model, in worldspace.<br><br>
@@ -141,11 +142,11 @@ public class Render {
 	 * @param matrix the model matrix for the mesh
 	 * @param lightDirection a vector representing the direction of ambient light in the scene
 	 */
-	public static void renderModel(Model model, Texture texture, Matrix4f matrix, Vector3f lightDirection) {
+	public static void renderModel(Model model, Texture texture, Matrix4f matrix, Vector3f[] lights) {
 		Camera camera = Application.scene.getCamera();
 		genericShader.start();
 		genericShader.projectionViewMatrix.loadMatrix(camera.getProjectionViewMatrix());
-		genericShader.lightDirection.loadVec3(lightDirection);
+		genericShader.lights.loadVec3(lights);
 		
 		texture.bind(0);
 		genericShader.modelMatrix.loadMatrix(matrix);
@@ -163,8 +164,8 @@ public class Render {
 	 * @param texMesh the textured model to draw.
 	 * @param lightDirection a vector representing the direction of ambient light in the scene
 	 */
-	public static void renderViewModel(TexturedModel texMesh, Vector3f lightDir) {
-		renderViewModel(texMesh.getModel(), texMesh.getTexture(), texMesh.getMatrix(), lightDir);
+	public static void renderViewModel(TexturedModel texMesh, Vector3f[] lights) {
+		renderViewModel(texMesh.getModel(), texMesh.getTexture(), texMesh.getMatrix(), lights);
 	}
 	
 	/** Does a singular render pass for one textured model, in viewspace.<br><br>
@@ -175,16 +176,22 @@ public class Render {
 	 * @param matrix the model matrix for the mesh
 	 * @param lightDirection a vector representing the direction of ambient light in the scene
 	 */
-	public static void renderViewModel(Model model, Texture texture, Matrix4f matrix, Vector3f lightDir) {
+	public static void renderViewModel(Model model, Texture texture, Matrix4f matrix, Vector3f[] lights) {
 		Camera camera = Application.scene.getCamera();
 		//GL11.glDisable(GL11.GL_DEPTH_TEST);
 		genericShader.start();
 		genericShader.projectionViewMatrix.loadMatrix(camera.getProjectionMatrix());
 		
-		genericShader.lightDirection.loadVec3(lightDir);
+		genericShader.lights.loadVec3(lights);
 		genericShader.color.loadVec4(1, 1, 1, 1);
 		
-		texture.bind(0);
+		
+		if (Debug.ambientOnly) {
+			Resources.getTexture("none").bind(0);
+		} else {
+			texture.bind(0);
+		}
+		
 		genericShader.modelMatrix.loadMatrix(matrix);
 		model.bind(0, 1, 2);
 		GL11.glDrawElements(GL11.GL_TRIANGLES, model.getIndexCount(), GL11.GL_UNSIGNED_INT, 0);

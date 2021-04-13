@@ -6,12 +6,10 @@ import java.util.List;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
-import org.lwjgl.opengl.ContextAttribs;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
-import org.lwjgl.opengl.PixelFormat;
 
 public class Window {
 	private static long lastFrameTime;
@@ -237,7 +235,14 @@ public class Window {
 
 	public static void resetDeltaTime() {
 		final long currentFrameTime = getCurrentTime();
-		deltaTime = (currentFrameTime - lastFrameTime) / 1000f * timeScale;
+		if (Display.isActive()) 
+			deltaTime = (currentFrameTime - lastFrameTime) / 1000f * timeScale;
+		else
+			deltaTime = 0f;
 		lastFrameTime = currentFrameTime;
+	}
+	
+	public static boolean isActive() {
+		return Display.isActive();
 	}
 }

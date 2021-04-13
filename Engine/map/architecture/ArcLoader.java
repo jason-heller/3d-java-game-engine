@@ -38,6 +38,8 @@ import scene.PlayableScene;
 import scene.Scene;
 import scene.entity.EntityHandler;
 import scene.entity.friendly.BoyNPC;
+import scene.entity.object.RopePointEntity;
+import scene.entity.object.SolidPhysProp;
 
 // Architecture File (for map geom)
 public class ArcLoader {
@@ -56,6 +58,10 @@ public class ArcLoader {
 		Pvs pvs = new Pvs();
 		ArcNavigation nav = new ArcNavigation();
 		Vector3f sunVector = new Vector3f(.5f, -.5f, 0);
+		
+		arc.bsp = bsp;
+		
+		EntityHandler.link(arc);
 
 		ArcPackedAssets packedAssets = new ArcPackedAssets(arc);
 		arc.setPackedAssets(packedAssets);
@@ -130,7 +136,7 @@ public class ArcLoader {
 			ArcFace[] faces = new ArcFace[in.readInt()];
 			for (int i = 0; i < faces.length; ++i) {
 				faces[i] = new ArcFace();
-				faces[i].onNode = in.readByte();
+				/*faces[i].onNode = */in.readByte();
 				faces[i].planeId = in.readShort();
 				faces[i].firstEdge = in.readInt();
 				faces[i].numEdges = in.readShort();
@@ -267,6 +273,7 @@ public class ArcLoader {
 					tags.put(key, val);
 				}
 				
+				// TODO: Move his to its own file
 				switch(name) {
 				case "spawn_player":
 					SpawnPoint spawn = new SpawnPoint(readVec3(tags, "pos"), readVec3(tags, "rot"), tags.get("label"));
@@ -283,6 +290,15 @@ public class ArcLoader {
 				case "cam_view":
 					CamView camView = new CamView(readVec3(tags, "pos"), readVec3(tags, "rot"));
 					arc.addFunction(camView);
+					break;
+				case "prop":
+					SolidPhysProp prop = new SolidPhysProp(readVec3(tags, "pos"), readVec3(tags, "rot"), tags.get("model"));
+					EntityHandler.addEntity(prop);
+					break;
+				case "rope_node":
+					RopePointEntity rpe = new RopePointEntity(readVec3(tags, "pos"), tags.get("name"), tags.get("next"),
+							readFloat(tags, "give"), readInt(tags, "precision"), readVec3(tags, "color"), readFloat(tags, "speed"));
+					EntityHandler.addEntity(rpe);
 					break;
 				}
 			}
@@ -382,11 +398,11 @@ public class ArcLoader {
 				texData[i].lmVecs[0][0] = in.readFloat();
 				texData[i].lmVecs[0][1] = in.readFloat();
 				texData[i].lmVecs[0][2] = in.readFloat();
-				texData[i].lmVecs[0][3] = in.readFloat() / 6f;
+				texData[i].lmVecs[0][3] = in.readFloat();
 				texData[i].lmVecs[1][0] = in.readFloat();
 				texData[i].lmVecs[1][1] = in.readFloat();
 				texData[i].lmVecs[1][2] = in.readFloat();
-				texData[i].lmVecs[1][3] = in.readFloat() / 6f;
+				texData[i].lmVecs[1][3] = in.readFloat();
 			}
 
 			// Texture list
@@ -436,6 +452,7 @@ public class ArcLoader {
 			
 			// Ambient lighting
 			int numLightCubes = in.readInt();
+			final int[] order = new int[] {0, 1, 4, 5, 2, 3};	// Oops
 			ArcLightCube[] lightCubes = new ArcLightCube[numLightCubes];
 			for(int i = 0; i < numLightCubes; i++) {
 				ArcLightCube lightCube = new ArcLightCube();
@@ -447,7 +464,7 @@ public class ArcLoader {
 			        int ch2 = in.read();
 			        int ch3 = in.read();
 			        int ch4 = in.readByte();
-					colors[k] = ((ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1 << 0));
+					colors[order[k]] = ((ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1 << 0));
 				}
 				
 				lightCube.colors = colors;
@@ -464,7 +481,6 @@ public class ArcLoader {
 			arc.setProperties(mapName, mapVer, gameId);
 			arc.setSunVector(sunVector);
 			//
-			arc.bsp = bsp;
 			arc.pvs = pvs;
 			arc.faces = faces;
 			arc.setNavigation(nav);

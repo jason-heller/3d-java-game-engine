@@ -116,7 +116,7 @@ public class CollideUtils {
 			}
 		}
 		
-		mtv.finalize(facePoints[0], face);
+		mtv.finish(facePoints[0], face);
 		return mtv;
 	}
 

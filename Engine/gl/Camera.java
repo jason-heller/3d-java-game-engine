@@ -383,6 +383,17 @@ public class Camera {
 		frustum.update(projectionViewMatrix);
 	}
 	
+	public Matrix4f createModelMatrix() {
+		Matrix4f matrix = new Matrix4f();
+		
+		matrix.rotateX(effectedPitch);
+		matrix.rotateY(effectedYaw);
+		matrix.rotateZ(effectedRoll);
+		final Vector3f negativeCameraPos = new Vector3f(-position.x, -position.y, -position.z);
+		viewMatrix.translate(negativeCameraPos);
+		return matrix;
+	}
+	
 	public void updateViewMatrixRaw() {
 		viewMatrix.identity();
 

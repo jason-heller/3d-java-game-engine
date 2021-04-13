@@ -6,7 +6,7 @@ public class ArcFace {
 	public float[] lmMins;
 	public float[] lmSizes;
 	public byte[] lmStyles;
-	public byte onNode;
+	// public byte onNode;
 	public short planeId;
 	public int firstEdge;
 	public short numEdges;

@@ -12,12 +12,11 @@ import org.joml.Vector3f;
 import dev.Console;
 import dev.Debug;
 import gl.Camera;
-import gl.Render;
 import gl.line.LineRender;
 import gl.map.architecture.render.ArcRender;
 import map.architecture.components.ArcNavNode;
 import map.architecture.components.ArcNavigation;
-import map.architecture.functions.commands.CamView;
+import map.architecture.vis.BspLeaf;
 import scene.Scene;
 import util.Colors;
 
@@ -71,7 +70,6 @@ public class ArchitectureHandler {
 
 	public void load(Scene scene, Vector3f vec, String path) {
 		architecture = ArcLoader.load(scene, path, vec, true);
-		architecture.callCommand("spawn_player");
 	}
 	
 	public void cleanUp() {

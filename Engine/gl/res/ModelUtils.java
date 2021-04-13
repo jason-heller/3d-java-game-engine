@@ -206,6 +206,8 @@ public class ModelUtils {
 			model.createAttribute(0, vertexArray, 3);
 			model.createAttribute(1, uvArray, 2);
 			model.createAttribute(2, normalArray, 3);
+			model.max = max;
+			model.min = min;
 			if (boneArray.length > 0) {
 				model.createAttribute(3, boneArray, 1);
 			}

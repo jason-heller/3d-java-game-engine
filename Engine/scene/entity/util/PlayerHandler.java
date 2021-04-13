@@ -5,9 +5,9 @@ import org.lwjgl.input.Keyboard;
 
 import gl.Camera;
 import gl.Window;
-import gl.post.PostProcessing;
 import io.Input;
 import scene.Scene;
+import scene.entity.object.HoldableEntity;
 import util.MathUtil;
 
 public class PlayerHandler {
@@ -31,6 +31,8 @@ public class PlayerHandler {
 	private static float walkSfxTimer = 0f;
 
 	private static boolean disabled = false;
+
+	public static HoldableEntity holding = null;
 	
 	public static PhysicsEntity getEntity() {
 		return entity;

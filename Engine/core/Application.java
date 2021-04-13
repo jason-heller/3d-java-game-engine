@@ -7,6 +7,7 @@ import java.util.Locale;
 import javax.swing.JOptionPane;
 
 import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.GLContext;
 
 import audio.AudioHandler;
 import dev.Console;
@@ -37,6 +38,8 @@ public class Application {
 	public static String operatingSystem;
 	public static String osArchitecture;
 	public static String nativesPath;
+	
+	//private static long lastGC = 0;
 	
 	public static void changeScene(Class<?> sceneClass) {
 		scene.cleanUp();
@@ -97,6 +100,12 @@ public class Application {
 				Input.poll();
 				Render.renderPass(scene);
 			}
+			
+			/*long time = System.currentTimeMillis();
+			if (time - lastGC > 10000) {
+				lastGC = time;
+				System.gc();
+			}*/
 		}
 
 		scene.cleanUp();

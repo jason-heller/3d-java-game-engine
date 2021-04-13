@@ -119,19 +119,19 @@ public class AxisAlignedBBox {
 		
 		// TODO: Fix this and write not shit code. This is shit code.
 		int index = 0;
-		float dist = Math.abs(center.x - other.center.x) - bounds.x;
+		float dist = Math.abs(center.x - other.center.x);
 		float minDist = dist;
 		float dir = Math.signum(center.x - other.center.x);
 		
-		dist = Math.abs(center.y - other.center.y) - bounds.y;
-		if (dist < minDist) {
+		dist = Math.abs(center.y - other.center.y);
+		if (dist > minDist) {
 			dir = Math.signum(center.y - other.center.y);
 			minDist = dist;
 			index = 1;
 		}
 		
-		dist = Math.abs(center.z - other.center.z) - bounds.z;
-		if (dist < minDist) {
+		dist = Math.abs(center.z - other.center.z);
+		if (dist > minDist) {
 			dir = Math.signum(center.z - other.center.z);
 			minDist = dist;
 			index = 2;

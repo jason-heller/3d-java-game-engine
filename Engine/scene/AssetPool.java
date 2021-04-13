@@ -19,10 +19,13 @@ public class AssetPool {
 		addSound("walk_rock", "walk_rock.ogg", 2, true);
 		addSound("walk_grass", "walk_grass.ogg", 3, true);
 		addSound("fall", "player/fall.ogg");
+		
+		addModel("trash", "entity/prop/trash.obj");
+		addTexture("trash", "entity/prop/trash.png");
 	}
 
 	private static void addModel(String key, String val) {
-		Resources.addModel(key, val);
+		Resources.addObjModel(key, val);
 		loadedModels.add(key);
 	}
 	

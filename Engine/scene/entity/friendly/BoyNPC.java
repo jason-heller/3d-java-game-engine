@@ -52,4 +52,5 @@ public class BoyNPC extends NavigableEntity {
 			speed = MOVE_SPEED;
 		}
 	}
+	
 }

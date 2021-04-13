@@ -28,7 +28,7 @@ public abstract class PlayableScene implements Scene {
 
 	protected PlayerEntity player;
 	
-	private Vector3f cameraLight;
+	private Vector3f[] cameraLight = new Vector3f[6];
 	
 	private TexturedModel walker;
 	
@@ -40,18 +40,20 @@ public abstract class PlayableScene implements Scene {
 		camera = new Camera();
 		camera.setControlStyle(Camera.FIRST_PERSON);
 		camera.grabMouse();
-		cameraLight = new Vector3f(1,1,1);
+		
+		for(int i = 0; i < 6; i++) {
+			cameraLight[i] = new Vector3f(1,1,1);
+		}
+		
+		AssetPool.loadInGameAssets();
+		Resources.addObjModel("walker", "item/walker.obj");
+		walker = new TexturedModel("walker", "item1", new Matrix4f());
 		
 		ui = new PlayableSceneUI(this);
 		
 		arcHandler = new ArchitectureHandler();
 		
 		entityHandler = new EntityHandler();
-		
-		AssetPool.loadInGameAssets();
-		Resources.addObjModel("walker", "item/walker.obj");
-		walker = new TexturedModel("walker", "item1", new Matrix4f());
-		
 		
 		ui.update();
 		UI.render(this);
@@ -76,6 +78,10 @@ public abstract class PlayableScene implements Scene {
 			Mouse.setCursorPosition(Window.getWidth() / 2, Window.getHeight() / 2);
 		}
 		
+		if (!Window.isActive()) {
+			ui.pause();
+		}
+		
 		arcHandler.update(camera);
 		
 		entityHandler.update(this);
@@ -86,23 +92,25 @@ public abstract class PlayableScene implements Scene {
 	public void render(float clipX, float clipY, float clipZ, float clipDist) {
 
 		Architecture arc = arcHandler.getArchitecture();
-		Vector3f targetLight = arc.getLightAtPosition(camera.getPosition(), camera.getDirectionVector());
-		cameraLight.set(Vector3f.lerp(targetLight, cameraLight, 10f * Window.deltaTime));
+		Vector3f[] targetLight = arc.getLightsAt(camera.getPosition());
+		for(int i = 0; i < 6; i++) {
+			cameraLight[i].set(Vector3f.lerp(targetLight[i], cameraLight[i], 10f * Window.deltaTime));
+		}
 
 		arcHandler.render(camera, clipX, clipY, clipZ, clipDist);
 		entityHandler.render(camera, arc);
-		
-		if (PlayerHandler.hasWalker) {
-			Matrix4f m = camera.getViewModelMatrix(true);
-			walker.getMatrix().set(m);
-			Render.renderViewModel(walker, cameraLight);
-		}
 	}
 	
 	@Override
 	public void renderNoReflect() {
 		if (Debug.debugMode) {
 			Debug.uiDebugInfo(this);
+		}
+		
+		if (PlayerHandler.hasWalker) {
+			Matrix4f m = camera.getViewModelMatrix(true);
+			walker.getMatrix().set(m);
+			Render.renderViewModel(walker, cameraLight);
 		}
 	}
 	

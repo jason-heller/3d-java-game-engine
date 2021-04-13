@@ -9,9 +9,8 @@ import geom.MTV;
 import gl.Camera;
 import gl.Window;
 import gl.post.PostProcessing;
-import map.architecture.vis.BspLeaf;
+import map.architecture.vis.Bsp;
 import scene.PlayableScene;
-import scene.entity.EntityHandler;
 import scene.singlearc.DamageIndicators;
 import ui.UI;
 
@@ -40,7 +39,7 @@ public class PlayerEntity extends PhysicsEntity {
 		super("player", new Vector3f(5f, 5f, 5f));
 		this.camera = camera;
 		PlayerHandler.setEntity(this);
-		EntityHandler.addEntity(this);
+		
 	}
 	
 	@Override
@@ -51,7 +50,7 @@ public class PlayerEntity extends PhysicsEntity {
 		super.update(scene);
 		
 		if (submerged) {
-			fullySubmerged = scene.getCamera().getPosition().y < residence.max.y;
+			fullySubmerged = scene.getCamera().getPosition().y < leaf.max.y;
 			PostProcessing.underwater = this.isFullySubmerged();
 		} else {
 			PostProcessing.underwater = false;
@@ -101,9 +100,9 @@ public class PlayerEntity extends PhysicsEntity {
 			camera.sway(1f, 4f, .45f);
 		}
 		
-		float speed = vel.lengthSquared();
-
-		if (!PlayerHandler.hasWalker && vel.lengthSquared() > .1f) {
+		float speed = new Vector3f(vel.x, 0f, vel.z).lengthSquared();
+		
+		if (!PlayerHandler.hasWalker && speed > .1f) {
 			if (deteriorationTimer >= 1f) {
 				deteriorationTimer -= 1f;
 
@@ -117,7 +116,7 @@ public class PlayerEntity extends PhysicsEntity {
 			
 			deteriorationTimer += Window.deltaTime;
 		}
-		else if (speed + .01f >= PlayerHandler.maxSpeed * PlayerHandler.maxSpeed && grounded) {
+		else if (speed - .1f >= PlayerHandler.maxSpeed * PlayerHandler.maxSpeed && grounded) {
 			if (deteriorationTimer >= 1f) {
 				deteriorationTimer -= 1f;
 
@@ -173,7 +172,7 @@ public class PlayerEntity extends PhysicsEntity {
 	}
 	
 	@Override
-	protected void collideWithFloor(MTV mtv) {
+	protected void collideWithFloor(Bsp bsp, MTV mtv) {
 		float fallHeight = -PlayerHandler.jumpVel * 2.4f;
 		if (vel.y < fallHeight) {
 			takeDamage((int) (-vel.y / 20f), 2);
@@ -183,7 +182,7 @@ public class PlayerEntity extends PhysicsEntity {
 			vel.y = -PlayerHandler.jumpVel;	// TODO: Bad
 		}
 		
-		super.collideWithFloor(mtv);
+		super.collideWithFloor(bsp, mtv);
 	}
 
 	public static int getHp(int id) {

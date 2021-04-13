@@ -1,13 +1,13 @@
 package map.architecture.components;
 
-import java.io.EOFException;
-
 import org.joml.Vector3f;
 
-import dev.Console;
 import map.architecture.vis.BspLeaf;
 
 public class ArcLightCube {
+
+	public static final Vector3f[] NO_LIGHT = new Vector3f[] { Vector3f.ZERO, Vector3f.ZERO, Vector3f.ZERO,
+			Vector3f.ZERO, Vector3f.ZERO, Vector3f.ZERO };
 
 	public float x, y, z;
 	public int[] colors;
@@ -24,6 +24,14 @@ public class ArcLightCube {
 		}
 		
 		return getColor(index);
+	}
+	
+	public Vector3f[] getLighting() {
+		Vector3f[] lights = new Vector3f[6];
+		for(int i = 0; i < 6; i++) {
+			lights[i] = getColor(i);
+		}
+		return lights;
 	}
 
 	public Vector3f getColor(int index) {

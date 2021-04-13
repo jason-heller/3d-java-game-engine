@@ -6,13 +6,13 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
-import core.Application;
 import core.Resources;
 import dev.Debug;
 import gl.Camera;
 import gl.Render;
 import gl.TexturedModel;
 import gl.fbo.FrameBuffer;
+import gl.res.Texture;
 import gl.water.WaterShader;
 import map.architecture.Architecture;
 import map.architecture.Material;
@@ -21,6 +21,10 @@ public class ArcRender {
 	
 	private static ArcShader shader;
 	private static WaterShader waterShader;
+	
+	private static Texture lastTexture = null;
+	
+	public static boolean fullRender = false;
 	
 	public static void init() {
 		shader = new ArcShader();
@@ -65,7 +69,7 @@ public class ArcRender {
 	}
 	
 	private static void renderDefault(TexturedModel tMesh) {
-		(Debug.ambientOnly ? Resources.getTexture("none") : tMesh.getTexture()).bind(0);
+		bindIfDiff(tMesh.getTexture());
 
 		tMesh.getModel().bind(0,1,2);
 		shader.modelMatrix.loadMatrix(tMesh.getMatrix());
@@ -73,6 +77,13 @@ public class ArcRender {
 		Render.drawCalls++;
 	}
 	
+	private static void bindIfDiff(Texture texture) {
+		if (lastTexture != texture) {
+			lastTexture = texture;
+			(Debug.ambientOnly ? Resources.getTexture("none") : texture).bind(0);
+		}
+	}
+
 	private static void renderCamView(TexturedModel tMesh) {
 		FrameBuffer refractionFbo = Render.getRefractionFbo();
 		refractionFbo.bindTextureBuffer(0);
@@ -89,6 +100,7 @@ public class ArcRender {
 		GL20.glDisableVertexAttribArray(2);
 		GL30.glBindVertexArray(0);
 		shader.stop();
+		lastTexture = null;
 	}
 
 	public static void renderWater(Camera camera, Vector3f max, Vector3f min) {

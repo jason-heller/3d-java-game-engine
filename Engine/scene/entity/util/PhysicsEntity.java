@@ -29,6 +29,7 @@ import map.architecture.vis.BspLeaf;
 import map.ground.TerrainSampler;
 import scene.PlayableScene;
 import scene.entity.Entity;
+import scene.entity.EntityHandler;
 import scene.overworld.Overworld;
 import util.Colors;
 
@@ -50,7 +51,7 @@ public abstract class PhysicsEntity extends Entity {
 	private float upwarp = 0f;
 	private Plane lastFloorCollided = null;
 	
-	protected BspLeaf residence;
+	protected boolean applyGravity = true;
 	
 	protected Material materialStandingOn = Material.ROCK;
 	
@@ -62,7 +63,7 @@ public abstract class PhysicsEntity extends Entity {
 
 	protected static final float SLIDE_ANGLE = .9f;
 	protected static final float EPSILON = 0.01f;
-	private static final float STEP_HEIGHT = 2;
+	private static final float STEP_HEIGHT = 2f;
 
 	protected AxisAlignedBBox bbox;
 	public Vector3f vel = new Vector3f();
@@ -154,7 +155,7 @@ public abstract class PhysicsEntity extends Entity {
 		}
 		
 		//aabb.setCenter(pos.x, pos.y, pos.z);
-		if (!submerged && !climbing) {
+		if (!submerged && !climbing && applyGravity) {
 			vel.y = Math.max(vel.y - gravity * Window.deltaTime, maxGravity);
 		}
 
@@ -184,17 +185,75 @@ public abstract class PhysicsEntity extends Entity {
 		List<BspLeaf> leaves = bsp.walk(max, min);
 		List<ArcFace> faces = bsp.getFaces(leaves);
 		
-		residence = bsp.walk(pos);
-		this.submerged = residence.isUnderwater;
-		fullySubmerged = (submerged && pos.y < residence.max.y);
+		leaf = bsp.walk(pos);
+		this.submerged = leaf.isUnderwater;
+		fullySubmerged = (submerged && pos.y < leaf.max.y);
 		
 		upwarp = 0f;
+
+		entityCollide(leaves);
 		mapGeometryCollide(bsp, faces);
 		mapClipCollide(architecture, leaves);
 		
 		pos.y += upwarp;
 		
 		super.update(scene);
+	}
+
+	protected void entityCollide(List<BspLeaf> leaves) {
+		if (!solid) return;
+		
+		for(BspLeaf leaf : leaves) {
+			List<Entity> entities = EntityHandler.getEntities(leaf);
+			
+			if (entities == null)
+				continue;
+			
+			for(Entity entity : entities) {
+				if (entity == this) continue;
+				if (entity instanceof PhysicsEntity) {
+					PhysicsEntity physEnt = (PhysicsEntity) entity;
+					
+					if (!physEnt.solid)
+						continue;
+					
+					/*MTV mtv;
+					if (bbox.getBounds().lengthSquared() <= physEnt.bbox.getBounds().lengthSquared()) {
+						mtv = bbox.collide(physEnt.bbox);
+						
+						if (mtv != null) {
+							vel.add(mtv.getMTV());
+						}
+						
+					} else {
+						mtv = physEnt.bbox.collide(bbox);
+						
+						if (mtv != null) {
+							physEnt.vel.add(mtv.getMTV());
+						}
+					}*/
+					
+					MTV mtv = bbox.collide(physEnt.bbox);
+					
+					if (mtv != null) {
+						if (mtv.getAxis().y > .5f) {
+							vel.y = 0f;
+							grounded = true;
+							pos.y = physEnt.pos.y + physEnt.bbox.getBounds().y + bbox.getBounds().y;
+						} else {
+							vel.add(mtv.getMTV());
+						}
+					}
+					
+					/*mtv = bbox.collide(physEnt.bbox);
+					
+					if (mtv != null) {
+						//pos.add(mtv.getMTV());
+						vel.add(mtv.getMTV());
+					}*/
+				}
+			}
+		}
 	}
 
 	private void friction() {
@@ -319,9 +378,8 @@ public abstract class PhysicsEntity extends Entity {
 		}
 		
 		if (nearest != null) {
-			MTV mtv = nearest;
 			
-			collide(bsp, mtv);
+			collide(bsp, nearest);
 			faces.remove(nearestFace);
 			
 		} else {
@@ -376,7 +434,7 @@ public abstract class PhysicsEntity extends Entity {
 
 		if (nearest != null) {
 			MTV mtv = nearest;
-			collideWithFloor(mtv);
+			collideWithFloor(bsp, mtv);
 			
 			faces.remove(nearestFace);
 		} else {
@@ -386,10 +444,9 @@ public abstract class PhysicsEntity extends Entity {
 	}
 	
 	private void collide(Bsp bsp, MTV mtv) {
-		
 		// Go up steps
 		ArcFace face = mtv.getFace();
-		if (face != null && grounded && vel.y == 0f && bsp.planes[face.planeId].normal.y < .01f) {
+		if (face != null && grounded && bsp.planes[face.planeId].normal.y == 0f) {
 
 			float highest = Float.NEGATIVE_INFINITY;
 			for(int i = face.firstEdge; i < face.firstEdge + face.numEdges; i++) {
@@ -403,14 +460,20 @@ public abstract class PhysicsEntity extends Entity {
 				return;
 			}
 		}
-
-		if (mtv.getAxis().y > .5f/* || bsp.planes[ mtv.getFace().planeId].normal.y > .5f*/) {
-			collideWithFloor(mtv);
+		
+		if (mtv.getAxis().y > .5f) {
+			collideWithFloor(bsp, mtv);
 			return;
 		}
 		
-		if (mtv.getDepth() > 0.01f) {
-			Plane plane = mtv.getPlane();
+		if (mtv.getDepth() > 0.1f) {
+			Plane plane;
+			if (face != null)
+				plane = new Plane(bsp.vertices[bsp.edges[Math.abs(bsp.surfEdges[face.firstEdge])].end],
+					mtv.getAxis());
+			else
+				plane = new Plane(mtv.getAxis(), mtv.getPlane().dist);
+
 			Vector3f projVel = plane.projectPoint(Vector3f.add(pos, vel));
 			Vector3f projPos = plane.projectPoint(pos);
 			vel.set(Vector3f.sub(projVel, projPos));
@@ -419,7 +482,7 @@ public abstract class PhysicsEntity extends Entity {
 		pos.add(mtv.getMTV());
 	}
 
-	protected void collideWithFloor(MTV mtv) {
+	protected void collideWithFloor(Bsp bsp, MTV mtv) {
 		
 		// Easy out
 		if (mtv.getAxis().y == 1f) {
@@ -430,6 +493,9 @@ public abstract class PhysicsEntity extends Entity {
 		}
 		
 		Plane plane = mtv.getPlane();
+		if (plane == null) {
+			plane = bsp.planes[mtv.getFace().planeId];
+		}
 		float depth = Float.NEGATIVE_INFINITY;
 		
 		final Vector3f[] points = new Vector3f[] {
@@ -438,7 +504,7 @@ public abstract class PhysicsEntity extends Entity {
 				new Vector3f(-bbox.getBounds().x, -bbox.getBounds().y, bbox.getBounds().z),
 				new Vector3f(-bbox.getBounds().x, -bbox.getBounds().y, -bbox.getBounds().z)
 				};
-		
+
 		for(int i = 0; i < points.length; i++) {
 			float newDepth = plane.collide(Vector3f.add(pos, points[i]), Vector3f.Y_AXIS);
 

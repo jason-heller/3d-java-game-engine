@@ -8,6 +8,7 @@ import gl.Window;
 import gl.anim.Animator;
 import gl.res.Model;
 import gl.res.Texture;
+import map.architecture.vis.BspLeaf;
 import scene.PlayableScene;
 
 public abstract class Entity {
@@ -24,10 +25,21 @@ public abstract class Entity {
 	
 	public boolean deactivated;
 	private boolean uniqueModel = false, uniqueTexture = false;
-	public Vector3f lighting = new Vector3f();
+	public Vector3f[] lighting = new Vector3f[6];
 	
+	protected BspLeaf leaf;
+	
+	protected float deactivationRange = Float.POSITIVE_INFINITY;
+	
+	public void setLeaf(BspLeaf leaf) {
+		this.leaf = leaf;
+	}
+
 	public Entity(String name) {
 		this.name = name;
+		for(int i = 0; i < 6; i++) {
+			lighting[i] = new Vector3f(1,1,1);
+		}
 	}
 	
 	public String getName() {
@@ -65,8 +77,10 @@ public abstract class Entity {
 		mat.translate(pos);
 		mat.rotate(rot);
 		mat.scale(scale);
-		Vector3f targetLight = scene.getArcHandler().getArchitecture().getLightAtPosition(pos, rot);
-		lighting = Vector3f.lerp(targetLight, lighting, 10f * Window.deltaTime);
+		Vector3f[] targetLight = scene.getArcHandler().getArchitecture().getLightsAt(pos);
+		for(int i = 0; i < 6; i++) {
+			lighting[i] = Vector3f.lerp(targetLight[i], lighting[i], 10f * Window.deltaTime);
+		}
 	}
 	
 	public Model getModel() {
@@ -97,5 +111,9 @@ public abstract class Entity {
 		if (animator != null) {
 			animator.destroy();
 		}
+	}
+
+	public BspLeaf getLeaf() {
+		return leaf;
 	}
 }

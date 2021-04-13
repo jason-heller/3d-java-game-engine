@@ -41,6 +41,10 @@ public class Bsp {
 	// The children[] members are the two children of this node; if positive, they are node indices; if negative, 
 	// the value (-1-child) is the index into the leaf array (e.g., the value -100 would reference leaf 99). 
 	public BspLeaf walk(Vector3f position) {
+		return walk(position, 0);
+	}
+	
+	public BspLeaf walk(Vector3f position, Integer id) {
 		int nextNode = 0;
 		BspNode node;
 		
@@ -54,7 +58,9 @@ public class Bsp {
 			}
 		}
 		
-		return leaves[-1-nextNode];
+		id = -1-nextNode;
+		
+		return leaves[id];
 	}
 	
 	public List<ArcFace> getFaces(List<BspLeaf> leaves) {

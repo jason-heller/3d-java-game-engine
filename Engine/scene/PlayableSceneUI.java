@@ -78,10 +78,7 @@ public class PlayableSceneUI {
 				CROSSHAIR_COLOR);
 		if (Input.isPressed(Controls.get("pause"))) {
 			if (!paused) {
-				PlayerHandler.disable();
-				Input.requestMouseRelease();
-				paused = true;
-				AudioHandler.pause();
+				pause();
 			} else {
 				unpause();
 			}
@@ -99,7 +96,14 @@ public class PlayableSceneUI {
 	
 	}
 
-	private void unpause() {
+	public void pause() {
+		PlayerHandler.disable();
+		Input.requestMouseRelease();
+		paused = true;
+		AudioHandler.pause();
+	}
+
+	public void unpause() {
 		if (options.isFocused()) {
 			options.setFocus(false);
 			Settings.grabData();

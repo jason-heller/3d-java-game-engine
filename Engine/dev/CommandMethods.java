@@ -14,6 +14,7 @@ import map.architecture.ArchitectureHandler;
 import scene.PlayableScene;
 import scene.entity.Entity;
 import scene.entity.EntityHandler;
+import scene.entity.SpawnHandler;
 import scene.entity.hostile.TestHostileEntity;
 import scene.entity.util.PlayerEntity;
 import scene.entity.util.PlayerHandler;
@@ -66,8 +67,25 @@ public class CommandMethods {
 		}
 	}
 	
-	public static void spawn_monster(float x, float y, float z) {
-		TestHostileEntity.spawnViaCommand(x, y ,z);
+	public static void spawn(String name, String cmd) {
+		PlayableScene PlayableScene;
+		if (!(Application.scene instanceof PlayableScene)) {
+			Console.log("Cannot use this command outside gameplay");
+			return;
+		} else {
+			PlayableScene = (PlayableScene)Application.scene;
+		}
+		
+		/*if (!cmd.contains("\"")) {
+			Console.log("Usage: spawn <name> \"arg0 arg1 ... argn\"");
+			return;
+		}*/
+		
+		String parse = name + "\t" + cmd.replaceAll(" ", "\t");
+		// HACK: Using \t allows name to have spaces
+		String[] args = parse.split("\t");
+		
+		SpawnHandler.spawn(PlayableScene.getArcHandler().getArchitecture(), PlayableScene.getCamera(), args);
 	}
 	
 	public static void kill() {
@@ -159,33 +177,39 @@ public class CommandMethods {
 		
 		Camera camera = playableScene.getCamera();
 		camera.setPosition(entity.pos);
+		playableScene.getArcHandler().update(camera);
 	}
 	
-	public static void tp_rel(String _x, String _y, String _z) {
+	public static void tp_rel(String a, String b, String c, String d) {
 		if (!(Application.scene instanceof PlayableScene)) {
 			Console.log("Cannot use this command outside gameplay");
 			return;
 		}
 		PlayableScene playableScene = (PlayableScene)Application.scene;
-		PlayerEntity player = playableScene.getPlayer();
+		Entity entity = null;
+		
+		if (a.startsWith("@")) {
+			entity = EntityHandler.getEntity(a.substring(1));
+			
+			if (entity == null) {
+				Console.log("No such entity: \"" + a.substring(1) + "\"");
+				return;
+			}
 
-		if (_x.startsWith("-")) {
-			player.pos.x -= Float.parseFloat(_x.substring(1));
+			entity.pos.x += Float.parseFloat(b);
+			entity.pos.y += Float.parseFloat(c);
+			entity.pos.z += Float.parseFloat(d);
 		} else {
-			player.pos.x += Float.parseFloat(_x);
+			entity = playableScene.getPlayer();
+
+			entity.pos.x += Float.parseFloat(a);
+			entity.pos.y += Float.parseFloat(b);
+			entity.pos.z += Float.parseFloat(c);
 		}
 		
-		if (_y.startsWith("-")) {
-			player.pos.y -= Float.parseFloat(_y.substring(1));
-		} else {
-			player.pos.y += Float.parseFloat(_y);
-		}
-		
-		if (_z.startsWith("-")) {
-			player.pos.z -= Float.parseFloat(_z.substring(1));
-		} else {
-			player.pos.z += Float.parseFloat(_z);
-		}
+		Camera camera = playableScene.getCamera();
+		camera.setPosition(entity.pos);
+		playableScene.getArcHandler().update(camera);
 	}
 	
 	public static void shadow_quality(int quality) {

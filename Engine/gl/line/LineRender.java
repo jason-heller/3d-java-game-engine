@@ -35,7 +35,7 @@ public class LineRender {
 		shader = new LineShader();
 		points = new ArrayList<Vector3f>();
 		colors = new ArrayList<Vector3f>();
-		GL11.glLineWidth(3f);
+		GL11.glLineWidth(2f);
 		makeLineVao();
 		
 		vbo = createEmptyVbo(INSTANCE_DATA_LENGTH * MAX_LINES);

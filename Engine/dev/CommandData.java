@@ -6,6 +6,7 @@ import static dev.CommandType.SETTER;
 import core.Application;
 import gl.Camera;
 import gl.Window;
+import gl.map.architecture.render.ArcRender;
 import io.Controls;
 import map.architecture.ArchitectureHandler;
 import scene.entity.util.PhysicsEntity;
@@ -17,7 +18,7 @@ enum CommandData {
 	quit(false),
 	exit(false),
 	noclip(true),
-	spawn_monster(true),
+	spawn(true, "name", "\"args\""),
 	map(false, ArchitectureHandler.validMaps),
 	nextmap(false),
 	volume(false),
@@ -77,7 +78,8 @@ enum CommandData {
 	phys_gravity_max("maxGravity", PhysicsEntity.class, SETTER, true),
 	phys_friction("friction", PhysicsEntity.class, SETTER, true),
 	phys_friction_air("airFriction", PhysicsEntity.class, SETTER, true),
-	god("god", Debug.class, SETTER, true);
+	god("god", Debug.class, SETTER, true),
+	fullrender("fullRender", ArcRender.class, SETTER, false);
 
 	Command command;
 	

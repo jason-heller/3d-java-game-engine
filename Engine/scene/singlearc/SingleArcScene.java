@@ -9,6 +9,7 @@ import gl.Camera;
 import gl.skybox.Skybox2D;
 import io.Input;
 import scene.PlayableScene;
+import scene.entity.EntityHandler;
 import scene.entity.util.PlayerEntity;
 import scene.entity.util.PlayerHandler;
 
@@ -20,10 +21,11 @@ public class SingleArcScene extends PlayableScene {
 		super();
 		Application.scene = this;		// Hack to make the variable update before constructors runs
 		camera.setPosition(new Vector3f(0,10,0));
-
-		player = new PlayerEntity(camera);
 		
+		player = new PlayerEntity(camera);
 		arcHandler.load(this, new Vector3f(), PlayableScene.currentMap);
+		EntityHandler.addEntity(player);
+		arcHandler.getArchitecture().callCommand("spawn_player");
 		
 		if (arcHandler.isSkyboxEnabled())
 			skybox = new Skybox2D();

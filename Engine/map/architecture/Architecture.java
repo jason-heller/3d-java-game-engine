@@ -11,7 +11,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
 
 import core.Resources;
-import dev.Console;
 import dev.Debug;
 import gl.Camera;
 import gl.Render;
@@ -68,6 +67,9 @@ public class Architecture {
 	public ArcLightCube[] ambientLightCubes;
 	public boolean hasSkybox = false;
 	
+	//private List<BspLeaf> unloaded = new ArrayList<>();
+	//private List<BspLeaf> loaded = new ArrayList<>();
+	
 	public Architecture(Scene scene) {
 		this.scene = scene;	
 		funcHandler = new ArcFuncHandler();
@@ -76,6 +78,11 @@ public class Architecture {
 	}
 	
 	public void determineVisibleLeafs(Camera camera) {
+		//unloaded.clear();
+		//loaded.clear();
+		//List<BspLeaf> renderedNew = new ArrayList<>();
+		//int lastSameVis = 0;
+		
 		BspLeaf cameraLeaf = bsp.walk(camera.getPosition());
 		if (cameraLeaf.clusterId != -1 && cameraLeaf != currentLeaf) {
 			currentLeaf = cameraLeaf;
@@ -86,7 +93,22 @@ public class Architecture {
 			for(int i = 0; i < bsp.leaves.length; i++) {
 				BspLeaf leaf = bsp.leaves[i];
 				if (leaf.clusterId == -1) continue;
-				if (vis[leaf.clusterId] == 0) continue;
+				if (vis[leaf.clusterId] == 0 && !ArcRender.fullRender) {
+					// Not in VIS, check if renderedLeaves contains this leaf, if so, add it to removed
+					/*if (renderedLeaves.size() > lastSameVis + 1 && renderedLeaves.get(lastSameVis + 1) == leaf) {
+						unloaded.add(leaf);
+					} else {
+						lastSameVis = i;
+					}*/
+					continue;
+				}
+				
+				// Is in VIS, check if renderedLeaves did not contain this leaf, if so, add to to new
+				/*if (renderedLeaves.size() <= lastSameVis + 1 || renderedLeaves.get(lastSameVis + 1) != leaf) {
+					loaded.add(leaf);
+				} else {
+					lastSameVis = i;
+				}*/
 				renderedLeaves.add(leaf);
 			}	
 			
@@ -102,11 +124,16 @@ public class Architecture {
 					renderedLeaves.add(leaf);
 				}	
 			}
+			
+			//renderedLeaves.clear();
+			//renderedLeaves.addAll(renderedNew);
 		}
 	}
 	
 	public void render(Camera camera, float clipX, float clipY, float clipZ, float clipDist) {
 		bsp.objects.render(camera, this);
+		
+		ArcRender.startRender(camera, clipX, clipY, clipZ, clipDist);
 		
 		for(BspLeaf leaf : renderedLeaves) {
 			
@@ -122,17 +149,15 @@ public class Architecture {
 				}
 			}
 			
-			ArcRender.startRender(camera, clipX, clipY, clipZ, clipDist);
-			
 			for(TexturedModel visObj : leaf.getMeshes()) {
 				
 				if (!camera.getFrustum().containsBoundingBox(leaf.max, leaf.min)) {continue;}
 
 				ArcRender.render(camera, this, visObj);
 			}
-			
-			ArcRender.finishRender();
 		}
+		
+		ArcRender.finishRender();
 		
 		for (ParticleEmitter pe : emitters) {
 			pe.generateParticles(camera);
@@ -175,12 +200,12 @@ public class Architecture {
 		}
 	}
 	
-	public Vector3f getLightAtPosition(Vector3f position, Vector3f direction) {
+	public Vector3f[] getLightsAt(Vector3f position) {
 		BspLeaf leaf = bsp.walk(position);
-		return getLightAtPosition(position, direction, leaf);
+		return getLightsAt(position, leaf);
 	}
 	
-	private Vector3f getLightAtPosition(Vector3f position, Vector3f direction, BspLeaf leaf) {
+	private Vector3f[] getLightsAt(Vector3f position, BspLeaf leaf) {
 		ArcLightCube nearestCube = null;//ambientLightCubes[leaf.firstAmbientSample];
 		float nearest = Float.POSITIVE_INFINITY;//Vector3f.distanceSquared(ambientLightCubes[leaf.firstAmbientSample].getPosition(leaf), position);
 		
@@ -196,10 +221,10 @@ public class Architecture {
 		}
 		
 		if (nearestCube == null) {
-			return new Vector3f();
+			return ArcLightCube.NO_LIGHT;
 		}
 		
-		return nearestCube.applyLighting(direction);
+		return nearestCube.getLighting();
 	}
 
 	public void passAssetsToOpenGL() {
@@ -322,5 +347,13 @@ public class Architecture {
 			GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL14.GL_TEXTURE_LOD_BIAS, Render.defaultBias);
 		}
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
-	} 
+	}
+
+	/*public List<BspLeaf> getLoadedLeafs() {
+		return loaded;
+	}
+
+	public List<BspLeaf> getUnloadedLeafs() {
+		return unloaded;
+	}*/
 }

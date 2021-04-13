@@ -3,15 +3,23 @@ package scene.entity.hostile;
 import org.joml.Vector3f;
 
 import core.Application;
-import gl.res.Model;
 import map.architecture.components.ArcNavigation;
 import scene.PlayableScene;
 import scene.entity.EntityHandler;
+import scene.entity.Spawnable;
 import scene.entity.util.NavigableEntity;
 import scene.entity.util.PlayerEntity;
 
-public class TestHostileEntity extends NavigableEntity {
+public class TestHostileEntity extends NavigableEntity implements Spawnable {
 	private PlayerEntity player;
+	
+	public TestHostileEntity() {
+		super("test_monster", new Vector3f(4f, 10f, 4f));
+		this.setModel(EntityHandler.billboard);
+		this.setTextureUnique("entity01_test", "entity/clown.png");
+		scale = 5;
+		speed = 80;
+	}
 	
 	public TestHostileEntity(PlayerEntity player) {
 		super("test_monster", new Vector3f(4f, 10f, 4f));
@@ -32,22 +40,16 @@ public class TestHostileEntity extends NavigableEntity {
 			player.takeDamage(2, 2);
 		}
 	}
-	
-	public static String spawnViaCommand(float x, float y, float z) {
-		if (!(Application.scene instanceof PlayableScene)) {
-			return "must be in playable scene";
-		}
-		
+
+	@Override
+	public boolean spawn(Vector3f pos, Vector3f rot, String... args) {
 		PlayableScene scene = (PlayableScene)Application.scene;
 		ArcNavigation navigation = scene.getArcHandler().getArchitecture().getNavigation();
 		
-		//Vector3f pos = Application.scene.getCamera().getPosition();
-		TestHostileEntity entity = new TestHostileEntity(scene.getPlayer());
-		entity.pos.set(x,y,z);
-		entity.initNavigation(navigation);
-		entity.setTarget(scene.getPlayer().pos);
-		EntityHandler.addEntity(entity);
-		
-		return null;
+		player = scene.getPlayer();
+		this.pos.set(pos);
+		initNavigation(navigation);
+		setTarget(scene.getPlayer().pos);
+		return true;
 	}
 }
