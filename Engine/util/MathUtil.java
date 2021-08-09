@@ -150,17 +150,6 @@ public class MathUtil {
 	public static Vector3f directionVectorToEuler(Vector3f dirNormalized, Vector3f up) {
 		final Vector3f side = new Vector3f(dirNormalized).cross(up).normalize();
 		up = new Vector3f(side).cross(dirNormalized);
-
-		/*final Matrix4f matrix = new Matrix4f();
-		matrix.m00 = side.x;
-		matrix.m01 = side.y;
-		matrix.m02 = side.z;
-		matrix.m10 = up.x;
-		matrix.m11 = up.y;
-		matrix.m12 = up.z;
-		matrix.m20 = -forward.x;
-		matrix.m21 = -forward.y;
-		matrix.m22 = -forward.z;*/
 		
 		float sqr = (float)Math.sqrt((up.z*up.z) + (dirNormalized.z*dirNormalized.z));
 		

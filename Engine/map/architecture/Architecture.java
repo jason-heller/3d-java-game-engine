@@ -15,6 +15,7 @@ import org.lwjgl.opengl.GL14;
 import core.Resources;
 import dev.Debug;
 import geom.AxisAlignedBBox;
+import geom.CollideUtils;
 import gl.Camera;
 import gl.Render;
 import gl.TexturedModel;
@@ -38,6 +39,8 @@ import map.architecture.components.GhostPoi;
 import map.architecture.functions.ArcFuncHandler;
 import map.architecture.functions.ArcFunction;
 import map.architecture.functions.commands.CamView;
+import map.architecture.util.ArcUtil;
+import map.architecture.util.BspRaycast;
 import map.architecture.vis.Bsp;
 import map.architecture.vis.BspLeaf;
 import map.architecture.vis.Pvs;
@@ -407,10 +410,11 @@ public class Architecture {
 	/** Raycasts against the visible geometry
 	 * @param pos the ray's origin
 	 * @param dir the ray's direction
-	 * @return the distance the ray traveled
+	 * @return the distance the ray traveled and face, or null if nothing was hit
 	 */
-	public float raycast(Vector3f org, Vector3f dir) {
+	public BspRaycast raycast(Vector3f org, Vector3f dir) {
 		float shortestDist = Float.POSITIVE_INFINITY;
+		ArcFace collidedFace = null;
 
 		for(BspLeaf leaf : renderedLeaves) {
 			
@@ -419,7 +423,7 @@ public class Architecture {
 			
 			float distLeaf = new AxisAlignedBBox(center, bounds).collide(org, dir);
 			
-			if (Float.isNaN(distLeaf))
+			if (Float.isInfinite(distLeaf))
 				continue;
 			
 			if (distLeaf < shortestDist) {
@@ -427,26 +431,17 @@ public class Architecture {
 				ArcFace[] faces = bsp.getFaces(leaf);
 				for(ArcFace face : faces) {
 					
-					final float distPlane = (bsp.planes[face.planeId].collide(org, dir));
+					ArcTextureData texData = packedAssets.getTextureData()[face.texId];
+					if (texData.textureId == -1) continue;
 					
-					if (distPlane < shortestDist) {
-
-						Vector3f posOnPlane = Vector3f.add(org, Vector3f.mul(dir, distPlane));
-						if (ArcUtil.faceContainsPoint(bsp, face, posOnPlane)) {
-							shortestDist = distPlane;
-						}
+					float dist = CollideUtils.convexPolygonRay(bsp, face, org, dir);
+					if (dist < shortestDist) {
+						shortestDist = dist;
+						collidedFace = face;
 					}
 				}
 			}
 		}
-		return shortestDist;
+		return collidedFace == null ? null : new BspRaycast(collidedFace, shortestDist);
 	}
-
-	/*public List<BspLeaf> getLoadedLeafs() {
-		return loaded;
-	}
-
-	public List<BspLeaf> getUnloadedLeafs() {
-		return unloaded;
-	}*/
 }

@@ -51,7 +51,7 @@ public abstract class HoldableEntity extends PhysicsEntity {
 				release();
 			} else {
 				float ray = bbox.collide(player.pos, camVec);
-				if (!Float.isNaN(ray) && ray <= 256f) {
+				if (!Float.isInfinite(ray) && ray <= 256f) {
 					if (PlayerHandler.holding == null || Vector3f.distanceSquared(PlayerHandler.holding.pos, player.pos) < ray * ray ) {
 						
 						if (PlayerHandler.holding != null)

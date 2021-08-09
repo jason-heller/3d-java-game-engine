@@ -8,9 +8,12 @@ import org.lwjgl.input.Keyboard;
 import audio.AudioHandler;
 import audio.Source;
 import core.Application;
+import dev.Console;
 import io.Input;
 import scene.mapscene.item.CameraItem;
 import scene.mapscene.item.Item;
+import scene.mapscene.item.MotionSensorItem;
+import scene.mapscene.item.PhysPropSpawnerItem;
 import scene.mapscene.item.SpiritBoxItem;
 import scene.viewmodel.ViewModelHandler;
 
@@ -31,6 +34,8 @@ public class ItemHandler {
 
 		addItem(new SpiritBoxItem(scene));
 		addItem(new CameraItem(scene));
+		addItem(new MotionSensorItem(scene));
+		addItem(new PhysPropSpawnerItem(scene));
 		currentItem = null;
 	}
 	
@@ -58,7 +63,7 @@ public class ItemHandler {
 	}
 	
 	public void update() {
-		
+		if (Console.isVisible()) return;
 		if (Input.isPressed(Keyboard.KEY_1)) {
 			if (getCurrentItem() != getItem(0)) {
 				unequipItem();
@@ -73,15 +78,29 @@ public class ItemHandler {
 			}
 		}
 		
-		if (Input.isPressed("interact")) {
+		if (Input.isPressed(Keyboard.KEY_3)) {
+			if (getCurrentItem() != getItem(2)) {
+				unequipItem();
+				equipItem(2);
+			}
+		}
+		
+		if (Input.isPressed(Keyboard.KEY_4)) {
+			if (getCurrentItem() != getItem(3)) {
+				unequipItem();
+				equipItem(3);
+			}
+		}
+		
+		if (Input.isPressed(Input.KEY_LMB)) {
 			onInteractPress();
 		}
 		
-		if (Input.isDown("interact")) {
+		if (Input.isDown(Input.KEY_LMB)) {
 			onInteractHeld();
 		}
 		
-		if (Input.isReleased("interact")) {
+		if (Input.isReleased(Input.KEY_LMB)) {
 			onInteractRelease();
 		}
 		

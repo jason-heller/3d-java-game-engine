@@ -131,7 +131,7 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 		Vector3f to = Vector3f.sub(player.pos, pos);
 		float toLen = to.length();
 		to.div(toLen);
-		float dist = arc.raycast(pos, to);
+		float dist = arc.raycast(pos, to).getDistance();
 		
 		return (dist >= toLen + 1);
 	}

@@ -1,4 +1,4 @@
-package map.architecture;
+package map.architecture.util;
 
 import org.joml.Vector3f;
 

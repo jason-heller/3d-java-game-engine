@@ -25,9 +25,13 @@ public class AssetPool {
 		addSound("cicadas", "ambient/cicadas.ogg");
 		addSound("spiritbox", "tool/spiritbox.ogg");
 		addSound("camera_snap", "tool/camera_snap.ogg");
+		addSound("place", "tool/place_wall.ogg");
 		
 		addModel("spiritbox", "models/spiritbox.mod");
 		addModel("camera", "models/camera.mod");
+		
+		Resources.addObjModel("trash", "entity/prop/trash.obj");
+		addTexture("trash", "entity/prop/trash.png");
 	}
 
 	private static void addModel(String key, String val) {

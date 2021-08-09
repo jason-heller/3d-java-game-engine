@@ -20,6 +20,7 @@ import map.architecture.components.ArcFace;
 import map.architecture.components.ArcNavNode;
 import map.architecture.components.ArcNavigation;
 import map.architecture.read.ArcLoader;
+import map.architecture.util.ArcUtil;
 import map.architecture.vis.Bsp;
 import scene.PlayableScene;
 import scene.Scene;

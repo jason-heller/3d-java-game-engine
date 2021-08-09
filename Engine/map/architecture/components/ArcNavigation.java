@@ -9,7 +9,7 @@ import org.joml.Vector3f;
 
 import core.Application;
 import dev.Console;
-import map.architecture.ArcUtil;
+import map.architecture.util.ArcUtil;
 import map.architecture.vis.Bsp;
 import scene.PlayableScene;
 import scene.entity.util.NavigableEntity;

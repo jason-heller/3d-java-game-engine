@@ -90,13 +90,13 @@ public class AxisAlignedBBox {
 		// if tmax < 0, ray (line) is intersecting AABB, but whole AABB is behing us
 		if (tmax < 0) {
 		    t = tmax;
-		    return Float.NaN;
+		    return Float.POSITIVE_INFINITY;
 		}
 
 		// if tmin > tmax, ray doesn't intersect AABB
 		if (tmin > tmax) {
 		    t = tmax;
-		    return Float.NaN;
+		    return Float.POSITIVE_INFINITY;
 		}
 
 		t = tmin;
