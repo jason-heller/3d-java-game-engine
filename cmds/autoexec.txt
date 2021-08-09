@@ -1,0 +1,7 @@
+version
+debug
+os_name
+os_arch
+natives_path
+bind r noclip
+bind k kill

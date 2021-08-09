@@ -1,0 +1,13 @@
+"$model"
+{
+	"$texture" "spiritbox"
+	"$scale" "1/8"
+}
+
+"$text"
+{
+	"$field" "freq"
+	"$offset" "58, -12, 0"
+	"$scale" "20"
+	"$rotation" "0, 90, 0"
+}

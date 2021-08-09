@@ -1,0 +1,8 @@
+#JSGF V1.0;
+grammar grammar;
+
+public <location>  = ( where are you | where did you die );
+public <yesno>  = ( are you dead | are you a ghost | are you a spirit | is this place haunted | are you there | are you here );
+public <antagonize>  = ( show yourself | go to hell | fuck you | reveal yourself | go fuck yourself );
+public <questions>  = (who are you | what is your name | why are you here );
+public <ignore>  = ( a | you );

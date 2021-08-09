@@ -1,0 +1,26 @@
+.mld (ModeL Data) file format reference
+
+Syntax:
+"$structure"
+{
+	"$tag" "value"
+}
+
+NOTE: structure and tags always start with "$"
+
+Structure: this is a data structure that defines something within the model, or even the model itself (see: $model)
+Tag: A key to some part of the structure
+
+List of structures:
+$model					- the model itself, should only be used once
+$text					- defines a GUI text object that will be associated to this mesh
+$image					- defines a GUI image object that will be associated to this mesh
+
+References will not use all tags, some tags will be ignored
+
+List of tags:
+$field					- defines a reference to a model field (basically a hashmap of strings)
+$texture				- defines a texture to the structure, or a default texture to use if defined in $model
+$scale					- defines a scale for the structure, relative to the mesh's scale in worldspace
+$offset					- defines a position for the structure, relative to the mesh's position in worldspace
+$nolighting				- to be used in $model only, if set to 1 the model will ignore the ambient lightmap
