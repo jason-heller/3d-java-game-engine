@@ -7,10 +7,8 @@ import java.util.Locale;
 import javax.swing.JOptionPane;
 
 import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.GLContext;
 
 import audio.AudioHandler;
-import audio.recognition.SpeechRecognizer;
 import dev.Console;
 import gl.Render;
 import gl.Window;
@@ -74,7 +72,7 @@ public class Application {
 		
 		Console.send("run autoexec");
 		
-		SpeechRecognizer.init();
+		//SpeechRecognizer_Old.init();
 
 		while ((!Display.isCloseRequested() && !forceClose)) {
 			
@@ -116,7 +114,7 @@ public class Application {
 		scene.cleanUp();
 		Render.cleanUp();
 
-		SpeechRecognizer.cleanUp();
+		//SpeechRecognizer_Old.cleanUp();
 		
 		// Thread.sleep(50);
 		Resources.cleanUp();

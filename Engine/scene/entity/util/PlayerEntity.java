@@ -34,6 +34,7 @@ public class PlayerEntity extends PhysicsEntity {
 	public PlayerEntity(Camera camera) {
 		super("player", new Vector3f(3.5f, 7f, 3.5f));
 		this.camera = camera;
+		camera.setFocus(this);
 		PlayerHandler.setEntity(this);
 		
 	}
@@ -45,7 +46,7 @@ public class PlayerEntity extends PhysicsEntity {
 		super.update(scene);
 		
 		if (submerged) {
-			fullySubmerged = scene.getCamera().getPosition().y < leaf.max.y;
+			fullySubmerged = camera.getPosition().y < leaf.max.y;
 			PostProcessing.underwater = this.isFullySubmerged();
 		} else {
 			PostProcessing.underwater = false;

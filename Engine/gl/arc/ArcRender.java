@@ -94,7 +94,7 @@ public class ArcRender {
 		
 		switch(material) {
 		case CAMERA:
-			arc.callCommand("camview_render index=0");
+			arc.callCommand("camview_render index=0");		// Tells the map to request a render at id 0
 			renderCamView(tMesh);
 			break;
 		default:
@@ -107,8 +107,17 @@ public class ArcRender {
 		}
 	}
 	
+	public static void finishRender() {
+		GL20.glDisableVertexAttribArray(0);
+		GL20.glDisableVertexAttribArray(1);
+		GL20.glDisableVertexAttribArray(2);
+		GL30.glBindVertexArray(0);
+		arcShader.stop();
+		lastTexture = null;
+	}
+	
 	private static void renderDefault(TexturedModel tMesh) {
-		bindIfDiff(tMesh.getTexture());
+		bindUnique(tMesh.getTexture());
 
 		tMesh.getModel().bind(0,1,2);
 		arcShader.modelMatrix.loadMatrix(tMesh.getMatrix());
@@ -116,7 +125,7 @@ public class ArcRender {
 		Render.drawCalls++;
 	}
 	
-	private static void bindIfDiff(Texture texture) {
+	private static void bindUnique(Texture texture) {
 		if (lastTexture != texture) {
 			lastTexture = texture;
 			(Debug.ambientOnly ? Resources.getTexture("none") : texture).bind(0);
@@ -131,15 +140,6 @@ public class ArcRender {
 		arcShader.modelMatrix.loadMatrix(tMesh.getMatrix());
 		GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, tMesh.getModel().getVertexCount());
 		Render.drawCalls++;
-	}
-	
-	public static void finishRender() {
-		GL20.glDisableVertexAttribArray(0);
-		GL20.glDisableVertexAttribArray(1);
-		GL20.glDisableVertexAttribArray(2);
-		GL30.glBindVertexArray(0);
-		arcShader.stop();
-		lastTexture = null;
 	}
 
 	public static void renderWater(Camera camera, Vector3f max, Vector3f min) {
@@ -168,6 +168,10 @@ public class ArcRender {
 		
 		GL11.glDisable(GL11.GL_ALPHA);
 		waterShader.stop();
+	}
+	
+	public static void renderShadows(Camera camera, List<BspLeaf> renderedLeaves, DynamicLight[] lights) {
+		shadowRender.render(lights, renderedLeaves);
 	}
 	
 	public static void renderHeightmaps(Camera camera, Architecture arc, List<ArcHeightmap> heightmaps, Vector4f clipPlane, boolean hasLightmap, DynamicLight[] lights) {
@@ -243,7 +247,7 @@ public class ArcRender {
 		shadowRender.cleanUp();
 	}
 
-	public static void renderShadows(Camera camera, List<BspLeaf> renderedLeaves, DynamicLight[] lights) {
-		shadowRender.render(lights, renderedLeaves);
+	public static Matrix4f getShadowProjectionMatrix() {
+		return shadowRender.getLightProjectionMatrix();
 	}
 }

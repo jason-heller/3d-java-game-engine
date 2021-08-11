@@ -1,5 +1,7 @@
 package util;
 
+import java.util.Random;
+
 import org.joml.Vector3f;
 
 public class Colors {
@@ -88,6 +90,12 @@ public class Colors {
 	private static Vector3f spectrum(float saturation, float value) {
 		float hue = (System.currentTimeMillis() % SPECTRUM_SPEED_MS / (float) SPECTRUM_SPEED_MS);
 		return hsvToRgb(hue, saturation, value);
+	}
+	
+	public static Vector3f random(int seed) {
+		Random r = new Random();
+		r.setSeed(seed);
+		return new Vector3f(r.nextFloat(), r.nextFloat(), r.nextFloat());
 	}
 
 	public static Vector3f hsvToRgb(float hue, float saturation, float value) {

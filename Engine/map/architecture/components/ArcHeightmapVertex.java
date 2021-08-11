@@ -1,13 +1,11 @@
 package map.architecture.components;
 
-import org.joml.Vector3f;
-
 public class ArcHeightmapVertex {
-	public final Vector3f vertex;
+	public final float offset;
 	private float blend;
 	
-	public ArcHeightmapVertex(float x, float y, float z, float blend) {
-		vertex = new Vector3f(x, y, z);
+	public ArcHeightmapVertex(float offset, float blend) {
+		this.offset = offset;
 		this.blend = blend;
 	}
 	

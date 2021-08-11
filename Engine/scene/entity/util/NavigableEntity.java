@@ -27,7 +27,7 @@ public abstract class NavigableEntity extends PhysicsEntity {
 	protected float thinkInterval = .5f;
 	
 	protected float speed = 25f;
-	protected Vector3f navTarget = new Vector3f();
+	protected Vector3f navTarget = new Vector3f(), dir = new Vector3f();
 	
 	public NavigableEntity(String name, Vector3f bounds) {
 		super(name, bounds);
@@ -117,10 +117,13 @@ public abstract class NavigableEntity extends PhysicsEntity {
 		}
 	
 		if (navStep != null) {
-			Vector3f dir = Vector3f.sub(navStep, pos);	//  TODO: This needs to stay on the current & next face
-			float len = dir.length();
-			if (len > .001f) {
-				dir.set(dir.x, 0f, dir.z).div(len);
+			Vector3f newDir = Vector3f.sub(navStep, pos);
+			float len = newDir.length();
+			if (len > 2f) {
+				dir.set(newDir.x, 0f, newDir.z).div(len);
+			}
+			
+			if (Vector3f.distanceSquared(pos, navTarget) > 3f) {
 				this.accelerate(dir, speed);
 			}
 		}

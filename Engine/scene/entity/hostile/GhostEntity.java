@@ -6,14 +6,17 @@ import audio.AudioHandler;
 import audio.Source;
 import core.Application;
 import dev.Console;
+import dev.Debug;
 import gl.Window;
+import gl.entity.EntityRender;
+import gl.line.LineRender;
 import map.architecture.Architecture;
 import map.architecture.components.ArcNavigation;
 import map.architecture.components.ArcRoom;
 import map.architecture.components.GhostPoi;
+import map.architecture.util.BspRaycast;
 import map.architecture.vis.Bsp;
 import scene.PlayableScene;
-import scene.entity.EntityHandler;
 import scene.entity.Spawnable;
 import scene.entity.util.NavigableEntity;
 import scene.entity.util.PlayerEntity;
@@ -35,6 +38,8 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 
 	private static final float BBOX_WIDTH = 2f;
 	private static final float BBOX_HEIGHT = 6f;
+
+	private static final int MAX_FAILED_CHECKS = 4 * 20;
 	
 	private int actionsSinceLastAttack = 0;
 	
@@ -42,7 +47,7 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 	
 	public GhostEntity() {
 		super("ghost", new Vector3f(BBOX_WIDTH, BBOX_HEIGHT, BBOX_WIDTH));
-		this.setModel(EntityHandler.billboard);
+		this.setModel(EntityRender.billboard);
 		//this.setTexture("default");
 		this.setTextureUnique("entity01_test", "entity/cute_lad.png");
 		scale = 5;
@@ -55,7 +60,7 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 		super("ghost", new Vector3f(BBOX_WIDTH, BBOX_HEIGHT, BBOX_WIDTH));
 		this.player = player;
 		this.setNavigation(nav);
-		this.setModel(EntityHandler.billboard);
+		this.setModel(EntityRender.billboard);
 		//this.setTexture("default");
 		this.setTextureUnique("entity01_test", "entity/cute_lad.png");
 		scale = 5;
@@ -66,12 +71,15 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 
 	@Override
 	public void update(PlayableScene scene) {	
-		UI.drawString((int)aggression + ", " + (int)(nextActionTime-this.actionTimer), 1f, true, this.getMatrix()).markAsTemporary();
+		//UI.drawString((int)aggression + ", " + (int)(nextActionTime-this.actionTimer), 1f, true, this.getMatrix()).markAsTemporary();
 		super.update(scene);
+		
+		LineRender.drawLine(pos, scene.getPlayer().pos);
 		
 		source.setPosition(pos);
 		
 		this.visible = corporeal ? (System.currentTimeMillis() % 2000 < 1000) : false;
+		this.solid = corporeal;
 		
 		Architecture arc = scene.getArchitecture();
 		if (attacking) {
@@ -86,12 +94,13 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 				if (canSeePlayer) {
 					// We can see the player
 					navTarget.set(player.pos);
+					failedLookChecks = 0;
 					
 				} else {
 					// Raycast didn't reach player, treat it as not seeing them
 					failedLookChecks++;
 					
-					if (failedLookChecks > 19 && actionTimer > 40) {
+					if (failedLookChecks > MAX_FAILED_CHECKS && actionTimer > 40) {
 						endAttack();
 					}
 				}
@@ -103,7 +112,7 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 			
 			// If target is reached (meaning player wasn't found) choose a random room to search
 			
-			if (player.getBBox().intersects(bbox)) {
+			if (player.getBBox().intersects(bbox) && PlayerEntity.getHp() > 0 && !Debug.god) {
 				player.takeDamage(15);
 				AudioHandler.play("fall");
 			}
@@ -131,7 +140,8 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 		Vector3f to = Vector3f.sub(player.pos, pos);
 		float toLen = to.length();
 		to.div(toLen);
-		float dist = arc.raycast(pos, to).getDistance();
+		BspRaycast ray = arc.raycast(pos, to);
+		float dist = ray == null ? Float.POSITIVE_INFINITY : ray.getDistance();
 		
 		return (dist >= toLen + 1);
 	}
@@ -166,7 +176,6 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 		int roomId = 1 + (int)(Math.random() * (bsp.rooms.length - 1));
 		ArcRoom room = bsp.rooms[roomId];
 		int poiId = (int)(Math.random() * room.getGhostPois().length);
-		Console.log(room.getGhostPois()[poiId].getPosition());
 		return room.getGhostPois()[poiId];
 	}
 

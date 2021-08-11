@@ -96,7 +96,7 @@ public class Camera {
 		}
 	}
 
-	public void focusOn(Entity focus) {
+	public void setFocus(Entity focus) {
 		this.focus = focus;
 		if (focus == null) {
 			lookAt = null;
@@ -324,10 +324,6 @@ public class Camera {
 		this.rawPitch = pitch;
 	}
 
-	public void setPosition(Vector3f position) {
-		this.position.set(position);
-	}
-
 	public void setRoll(float roll) {
 		this.rawRoll = roll;
 	}
@@ -436,5 +432,9 @@ public class Camera {
 		m.rotateY(90);
 		
 		return m;
+	}
+
+	public Entity getFocus() {
+		return focus;
 	}
 }

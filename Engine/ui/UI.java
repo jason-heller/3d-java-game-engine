@@ -1,8 +1,8 @@
 package ui;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +26,7 @@ public class UI {
 	public static final Model quad = Resources.QUAD2D;
 	public static final int DEPTH_SEQUENTIAL = 0;
 	private static List<Component> components = new ArrayList<>();
-	private static Map<Matrix4f, Component> worldSpaceComponents = new HashMap<>();
+	private static Map<Matrix4f, Component> worldSpaceComponents = new LinkedHashMap<>();
 	private static float opacity = 1f;
 	
 	public static final float width = 1280;
@@ -315,15 +315,15 @@ public class UI {
 		
 		worldSpaceShader.start();
 		worldSpaceShader.projectionViewMatrix.loadMatrix(scene.getCamera().getProjectionViewMatrix());
-		
-		quad.bind(0, 1);
 
+		quad.bind(0, 1);
 		for (final Matrix4f matrix : worldSpaceComponents.keySet()) {
 			final Component component = worldSpaceComponents.get(matrix);
 			
 			worldSpaceShader.worldMatrix.loadMatrix(matrix);
 			
 			if (component instanceof Image) {
+				GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 				final Image image = (Image) component;
 				image.gfx.bind(0);
 				GL11.glDisable(GL11.GL_CULL_FACE);	// HACK: Since FBOs render upside down
@@ -355,10 +355,10 @@ public class UI {
 					worldSpaceShader.centered.loadBoolean(image.isCentered());
 					worldSpaceShader.rotation.loadFloat(image.getRotation());
 					GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
+					
 				}
 			}
 		}
-
 		quad.unbind(0, 1);
 
 		worldSpaceShader.stop();

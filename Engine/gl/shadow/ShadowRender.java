@@ -8,13 +8,15 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 
 import core.Application;
-import dev.Console;
 import gl.Camera;
 import gl.Render;
 import gl.TexturedModel;
 import gl.light.DynamicLight;
 import gl.light.DynamicLightHandler;
+import gl.res.Model;
 import map.architecture.vis.BspLeaf;
+import scene.entity.Entity;
+import scene.entity.EntityHandler;
 
 public class ShadowRender {
 	private static final float MAX_SHADOW_RENDER_DIST_SQR = 300 * 300;
@@ -54,7 +56,7 @@ public class ShadowRender {
 			light.getFbo().bind();
 			
 			GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-			GL11.glCullFace(GL11.GL_FRONT);
+			//GL11.glCullFace(GL11.GL_BACK);
 			
 			shader.start();
 			shader.lightSpaceMatrix.loadMatrix(lightSpaceMatrix);
@@ -67,11 +69,27 @@ public class ShadowRender {
 					GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, tModel.getModel().getVertexCount());
 					Render.drawCalls++;
 				}
+				
+				List<Entity> entities = EntityHandler.getEntities(leaf);
+				if (entities != null) {
+					//GL11.glCullFace(GL11.GL_FRONT);
+					for(Entity ent : entities) {
+						Model model = ent.getModel();
+						if (model == null || !ent.visible)
+							continue;
+						model.bind(0);
+						shader.modelMatrix.loadMatrix(ent.getMatrix());
+						GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, model.getVertexCount());
+						Render.drawCalls++;
+					
+					}
+					//GL11.glCullFace(GL11.GL_BACK);
+				}
 			}
 			
 			shader.stop();
 			
-			GL11.glCullFace(GL11.GL_BACK);
+			//GL11.glCullFace(GL11.GL_BACK);
 			
 			light.getFbo().unbind();
 		}

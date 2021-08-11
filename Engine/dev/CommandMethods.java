@@ -170,7 +170,7 @@ public class CommandMethods {
 		}
 		
 		Camera camera = playableScene.getCamera();
-		camera.setPosition(entity.pos);
+		camera.getPosition().set(entity.pos);
 		playableScene.getArcHandler().update(camera);
 	}
 	
@@ -202,7 +202,7 @@ public class CommandMethods {
 		}
 		
 		Camera camera = playableScene.getCamera();
-		camera.setPosition(entity.pos);
+		camera.getPosition().set(entity.pos);
 		playableScene.getArcHandler().update(camera);
 	}
 	

@@ -7,24 +7,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import core.Application;
 import dev.Console;
 import dev.Debug;
 import gl.Camera;
+import gl.Render;
 import gl.arc.ArcRender;
+import gl.fbo.FrameBuffer;
 import gl.line.LineRender;
 import map.architecture.components.ArcFace;
 import map.architecture.components.ArcNavNode;
 import map.architecture.components.ArcNavigation;
+import map.architecture.components.ArcRoom;
+import map.architecture.components.GhostPoi;
 import map.architecture.read.ArcLoader;
 import map.architecture.util.ArcUtil;
 import map.architecture.vis.Bsp;
-import scene.PlayableScene;
 import scene.Scene;
 import util.Colors;
+import util.MathUtil;
 
 public class ArchitectureHandler {
 	
@@ -82,14 +86,53 @@ public class ArchitectureHandler {
 		architecture.cleanUp();
 		ArcRender.cleanUp();
 	}
-
-	public void render(Camera camera, Vector4f clipPlane) {
-		boolean hasLighting = architecture.getLightmap().isActive();
-		architecture.pollTriggers();
-		architecture.render(camera, clipPlane, hasLighting);
+	
+	public void debugRender(Camera camera) {
+		Bsp bsp = architecture.bsp;
+		ArcNavigation navigation = architecture.getNavigation();
 		
-		Bsp bsp = ((PlayableScene)Application.scene).getArchitecture().bsp;
-
+		if (Debug.viewNavNode) {
+			ArcNavNode node = navigation.getNodeAt(camera.getPosition(), bsp);
+			if (node != null) {
+				for(int id : node.getFaceIds()) {
+					ArcFace face = bsp.faces[id];
+					ArcUtil.drawFaceHighlight(bsp, face, Colors.alertColor());
+				}
+				
+				for(int nid : node.getNeighbors()) {
+					ArcNavNode node2 = navigation.getNode(nid);
+					
+					int x = 0;
+					int z = 0;
+					for(int id : node2.getFaceIds()) {
+						ArcFace face = bsp.faces[id];
+						ArcUtil.drawFaceHighlight(bsp, face, Colors.random(z++));
+					}
+					
+					for(int i = 0; i < node.getEdges().length; i++) {
+						int edge = node.getEdges()[i];
+						Vector3f p1 = bsp.vertices[bsp.edges[edge].start];
+						Vector3f p2 = bsp.vertices[bsp.edges[edge].end];
+						Vector3f center = Vector3f.add(p1, p2).div(2f).add(Vector3f.Y_AXIS);
+						Vector3f cross = Vector3f.sub(p2, p1).cross(Vector3f.Y_AXIS).normalize();
+						LineRender.drawLine(Vector3f.add(center, cross),
+								Vector3f.add(center, Vector3f.negate(cross)), Colors.random(i));
+					}
+				}
+			}
+		}
+		
+		if (Debug.viewNavPois) {
+			for(int i = 1; i < bsp.rooms.length; i++) {
+				ArcRoom room = bsp.rooms[i];
+				for(GhostPoi poi : room.getGhostPois()) {
+					Vector3f pos = Vector3f.add(poi.getPosition(), Vector3f.Y_AXIS);
+					LineRender.drawPoint(poi.getPosition());
+					LineRender.drawLine(pos, Vector3f.add(pos, MathUtil.eulerToVectorDeg(poi.getRotation().x, poi.getRotation().y)));
+				}
+			}
+		}
+		
 		if (Debug.viewNavMesh) {
 			ArcNavigation nav = architecture.getNavigation();
 			for(ArcNavNode node : nav.getNavFaces()) {
@@ -99,8 +142,7 @@ public class ArchitectureHandler {
 					ArcUtil.drawFaceHighlight(bsp, face, Colors.YELLOW);
 				}
 				
-				int i = 0;
-				for(short s : node.getNeighbors()) {
+				for(int i = 0; i < node.getEdges().length; i++) {
 					int edge = node.getEdges()[i];
 					Vector3f p1 = bsp.vertices[bsp.edges[edge].start];
 					Vector3f p2 = bsp.vertices[bsp.edges[edge].end];
@@ -108,10 +150,15 @@ public class ArchitectureHandler {
 					Vector3f cross = Vector3f.sub(p2, p1).cross(Vector3f.Y_AXIS).normalize();
 					LineRender.drawLine(Vector3f.add(center, cross),
 							Vector3f.add(center, Vector3f.negate(cross)), Colors.WHITE);
-					i++;
 				}
 			}
 		}
+	}
+
+	public void render(Camera camera, Vector4f clipPlane) {
+		boolean hasLighting = architecture.getLightmap().isActive();
+		architecture.pollTriggers();
+		architecture.render(camera, clipPlane, hasLighting);
 	}
 
 	public Architecture getArchitecture() {

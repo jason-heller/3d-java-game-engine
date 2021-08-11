@@ -4,6 +4,7 @@ import org.joml.Vector3f;
 import org.lwjgl.input.Keyboard;
 
 import audio.AudioHandler;
+import core.Application;
 import gl.Camera;
 import gl.Window;
 import gl.light.DynamicLight;
@@ -72,8 +73,7 @@ public class PlayerHandler {
 		Architecture arc = ((PlayableScene)scene).getArchitecture();
 		
 		if (light != null) {
-			light.getRotation().set(camera.getPitch(), camera.getYaw(), 0);
-			light.getPosition().set(camera.getPosition());
+			setLightPos(light);
 			if (threatened) {
 				flickerTimer += Window.deltaTime;
 				if (flickerTimer > .75f) {
@@ -96,8 +96,8 @@ public class PlayerHandler {
 				arc.removeLight(light);
 				light = null;
 			} else {
-				light = arc.addLight(new Vector3f(camera.getPosition()),
-						new Vector3f(camera.getPitch(), camera.getYaw(), 0), lightStrength);
+				light = arc.addLight(new Vector3f(), new Vector3f(), lightStrength);
+				setLightPos(light);
 			}
 			
 			AudioHandler.play("click");
@@ -186,8 +186,10 @@ public class PlayerHandler {
 		
 		
 		if (camera.getControlStyle() == Camera.FIRST_PERSON) {
-			camera.getPosition().set(getEntity().pos.x, getEntity().pos.y + Camera.offsetY,
-					getEntity().pos.z);
+			if (camera.getFocus() == entity) {
+				camera.getPosition().set(getEntity().pos.x, getEntity().pos.y + Camera.offsetY,
+						getEntity().pos.z);
+			}
 		} else {
 			Vector3f oldCamPos = camera.getPrevPosition();
 			//entity.vel.set(Vector3f.sub(camera.getPosition(), oldCamPos).div(Window.deltaTime));
@@ -198,6 +200,15 @@ public class PlayerHandler {
 		
 	}
 	
+	private static void setLightPos(DynamicLight light2) {
+		Camera camera = Application.scene.getCamera();
+		Vector3f lookVec = camera.getDirectionVector();
+		Vector3f pos = new Vector3f(camera.getPosition());
+		pos.add(Vector3f.mul(Vector3f.cross(lookVec, Vector3f.Y_AXIS), 1f));
+		light.getRotation().set(camera.getPitch(), camera.getYaw()-1, 0);
+		light.getPosition().set(pos);
+	}
+
 	private static void climbingPhysics(Scene scene) {
 		float pitch = scene.getCamera().getPitch();
 		

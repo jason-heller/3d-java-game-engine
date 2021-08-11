@@ -25,6 +25,7 @@ enum CommandData {
 	run(false),
 	bind(Controls.class, false, "key", "action"),
 	unbind(Controls.class, false, "key"),
+	dump_heap(MemDebug.class, true),
 	log(false, "message"),
 	tp(true, "X, Y, Z"),
 	tp_rel(true, "+-X, +-Y, +-Z"),

@@ -28,8 +28,8 @@ public class AudioHandler {
 	private static Map<SoundEffects, SoundEffect> effects = new HashMap<SoundEffects, SoundEffect>();
 	private static Map<SoundFilters, Integer> filters = new HashMap<SoundFilters, Integer>();
 	
-	private static final int MAX_SOURCES = 64;
-	private static final int MAX_STATIC_SOURCES = 16;
+	private static final int MAX_SOURCES = 80;
+	private static final int MAX_STATIC_SOURCES = 32;
 	private static final int MAX_LOOPING_SOURCES = 8;
 	private static Source[] sources = new Source[MAX_SOURCES];
 	private static int sourcePtr = 0, sourceLoopPtr = MAX_STATIC_SOURCES - MAX_LOOPING_SOURCES, sourceCheckoutPtr = MAX_STATIC_SOURCES;

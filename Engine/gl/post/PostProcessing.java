@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 
 import gl.Render;
+import gl.fbo.FrameBuffer;
 import gl.res.Model;
 
 public class PostProcessing {
@@ -24,8 +25,11 @@ public class PostProcessing {
 	public static final GaussianHBlur H_BLUR_SHADER = new GaussianHBlur();
 	public static final GaussianVBlur V_BLUR_SHADER = new GaussianVBlur();
 	public static final CombineShader COMBINE_SHADER = new CombineShader();
+	public static final NightVisionShader NIGHT_VISION = new NightVisionShader();
 	public static final DefaultShader DEFAULT_SHADER = new DefaultShader();
 
+	private static final FrameBuffer[] fbos = new FrameBuffer[] {Render.screen, Render.screenPong};
+	
 	private static void addShader(PostShader shader) {
 		shaders.put(shader, false);
 	}
@@ -72,10 +76,11 @@ public class PostProcessing {
 		addShader(V_BLUR_SHADER);
 		addShader(COMBINE_SHADER);
 		addShader(DEFAULT_SHADER);
+		addShader(NIGHT_VISION);
 
-		enable(H_BLUR_SHADER);
+		/*enable(H_BLUR_SHADER);
 		enable(V_BLUR_SHADER);
-		enable(COMBINE_SHADER);
+		enable(COMBINE_SHADER);*/
 		enable(DEFAULT_SHADER);
 	}
 
@@ -84,11 +89,26 @@ public class PostProcessing {
 		quad.bind(0, 1);
 		GL13.glActiveTexture(GL13.GL_TEXTURE0);
 		GL11.glDisable(GL11.GL_DEPTH_TEST);
-
-		if (PostProcessing.underwater ) {
-			WAVE_SHADER.render(Render.screen);
-		} else {
-			DEFAULT_SHADER.render(Render.screen);
+		
+		int fboId = 1;
+		int shaderCount = 0;
+		for(PostShader shader : shaders.keySet()) {
+			boolean active = shaders.get(shader);
+			
+			if (active) {
+				shaderCount++;
+				
+				if (shaderCount != numActiveShaders) {
+					fbos[fboId].bind();
+					
+					shader.render(fbos[1 - fboId]);
+					
+					fbos[fboId].unbind();
+					fboId = 1 - fboId;
+				} else {
+					shader.render(fbos[1 - fboId]);
+				}
+			}
 		}
 
 		GL11.glEnable(GL11.GL_DEPTH_TEST);

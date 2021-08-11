@@ -7,12 +7,14 @@ import org.lwjgl.input.Mouse;
 
 import dev.Debug;
 import gl.Camera;
+import gl.Render;
 import gl.TexturedModel;
 import gl.Window;
 import map.architecture.Architecture;
 import map.architecture.ArchitectureHandler;
 import scene.entity.EntityHandler;
 import scene.entity.util.PlayerEntity;
+import scene.mapscene.AssetPool;
 import scene.viewmodel.ViewModelHandler;
 import ui.Text;
 import ui.UI;
@@ -88,8 +90,9 @@ public abstract class PlayableScene implements Scene {
 		Architecture arc = arcHandler.getArchitecture();
 		Vector3f[] targetLight = arc.getLightsAt(camera.getPosition());
 
+		arcHandler.debugRender(camera);
 		arcHandler.render(camera, clipPlane);
-		entityHandler.render(camera, arc);
+		entityHandler.render(camera, arc, clipPlane);
 	}
 	
 	@Override

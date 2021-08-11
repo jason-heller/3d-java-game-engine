@@ -10,6 +10,7 @@ import gl.Render;
 import gl.TexturedModel;
 import gl.res.Model;
 import gl.res.Texture;
+import gl.res.mesh.MeshData;
 import scene.PlayableScene;
 
 public class ViewModelHandler {
@@ -20,11 +21,17 @@ public class ViewModelHandler {
 	
 	public ViewModelHandler() {
 		drawnModels = new ViewModel[MAX_MODELS];
+		
+		MeshData.setField("screen", "screen");
 	}
 	
 	public void render(PlayableScene scene) {
 
 		Camera camera = Application.scene.getCamera();
+		
+		if (camera.getFocus() != scene.getPlayer()) {
+			return;
+		}
 		
 		Matrix4f m = new Matrix4f();
 		float len = Vector3f.distanceSquared(camera.getPosition(), lastCamPos);

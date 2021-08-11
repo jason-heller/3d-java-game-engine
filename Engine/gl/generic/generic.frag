@@ -9,7 +9,7 @@ uniform vec4 color;
 
 out vec4 out_color;
 
-const float ambientFactor = .7;
+const float ambientFactor = .9;
 const float baseAmbient = 1.0 - ambientFactor;
 
 void main(void) {

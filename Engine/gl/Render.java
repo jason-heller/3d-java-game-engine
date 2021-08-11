@@ -11,6 +11,7 @@ import dev.Debug;
 import gl.fbo.FboUtils;
 import gl.fbo.FrameBuffer;
 import gl.generic.GenericShader;
+import gl.light.LightShader;
 import gl.line.LineRender;
 import gl.particle.ParticleHandler;
 import gl.post.PostProcessing;
@@ -22,8 +23,10 @@ import ui.UI;
 
 public class Render {
 	//private static FrameBuffer screenMultisampled;
-	public static FrameBuffer screen;
+	public static FrameBuffer screen, screenPong;
 	private static GenericShader genericShader;
+	private static LightShader lightShader;
+	
 	public static int shadowQuality = 1;
 	public static float defaultBias = -1f;
 	
@@ -37,6 +40,7 @@ public class Render {
 	
 	public static void cleanUp() {
 		genericShader.cleanUp();
+		lightShader.cleanUp();
 		LineRender.cleanUp();
 		Resources.cleanUp();
 		//EntityControl.cleanUp();
@@ -45,6 +49,7 @@ public class Render {
 		PostProcessing.cleanUp();
 		//screenMultisampled.cleanUp();
 		screen.cleanUp();
+		screenPong.cleanUp();
 		reflection.cleanUp();
 		refraction.cleanUp();
 	}
@@ -57,14 +62,16 @@ public class Render {
 		LineRender.init();
 
 		screen = new FrameBuffer(1280, 720, true, true, false, false, 1);// FboUtils.createTextureFbo(1280, 720);
+		screenPong = new FrameBuffer(1280, 720, true, true, false, false, 1);
 		reflection = new FrameBuffer(320 * waterQuality, 180 * waterQuality, true, true, false, false, 1);
 		refraction = new FrameBuffer(320 * waterQuality, 180 * waterQuality, true, true, true, false, 1);
-
+		
 		PostProcessing.init();
 
 		Resources.addTexture("skybox", "default.png");
 		Resources.addTexture("default", "default.png");
 		Resources.addTexture("none", "flat.png");
+		Resources.addTexture("noise", "noise.png");
 		Resources.addObjModel("cube", "cube.obj", true);
 		Resources.addSound("click", "lighter_click.ogg");
 		
@@ -73,6 +80,7 @@ public class Render {
 		initGuiTextures();
 		
 		genericShader = new GenericShader();
+		lightShader = new LightShader();
 	}
 
 	private static void initGuiTextures() {
@@ -244,6 +252,10 @@ public class Render {
 	public static GenericShader getGenericShader() {
 		return genericShader;
 	}
+	
+	public static LightShader getLightShader() {
+		return lightShader;
+	}
 
 	public static float getTimer() {
 		return timer;
@@ -267,7 +279,7 @@ public class Render {
 		camera.setYaw(rot.x);
 		camera.setPitch(rot.y);
 		camera.setRoll(rot.z);
-		camera.setPosition(pos);
+		camera.getPosition().set(pos);
 		camera.updateViewMatrix();
 		GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 		scene.render(new Vector4f(0, 1, 0, Float.POSITIVE_INFINITY));
@@ -276,7 +288,7 @@ public class Render {
 		camera.setPitch(pitch);
 		camera.setYaw(yaw);
 		camera.setRoll(roll);
-		camera.setPosition(origPos);
+		camera.getPosition().set(origPos);
 		camera.updateViewMatrix();
 	}
 }

@@ -2,7 +2,7 @@ package scene.mapscene.item;
 
 import org.joml.Vector3f;
 
-import audio.recognition.SpeechRecognizer;
+import audio.recognition.Speech;
 import dev.Console;
 import scene.entity.hostile.GhostEntity;
 import scene.mapscene.MapScene;
@@ -31,13 +31,13 @@ public class SpiritBoxItem extends Item {
 		GhostEntity ghost = scene.getGhost();
 		float distToPlayerSqr = Vector3f.distanceSquared(ghost.pos, scene.getPlayer().pos);
 		if (distToPlayerSqr <= RANGE_SQR) {// && ghost.raycastToPlayer(scene.getArchitecture())
-			String last = SpeechRecognizer.getLastHypothesis();
+			String last = Speech.getResultText();
 			if (!last.equals("<unk>")) {
 				Console.log("Heard: "+ last);
 			}
 			
 			processVoice(ghost, last);
-			SpeechRecognizer.clearLastHypothesis();
+			Speech.clearResultText();
 		} else {
 			Console.log(distToPlayerSqr, RANGE_SQR);
 		}
@@ -82,14 +82,12 @@ public class SpiritBoxItem extends Item {
 
 	@Override
 	public void equip() {
-		SpeechRecognizer.start();
 		source.setLooping(true);
 		source.play("spiritbox");
 	}
 
 	@Override
 	public void unequip() {
-		SpeechRecognizer.stop();
 		source.setLooping(false);
 	}
 

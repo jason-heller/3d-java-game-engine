@@ -218,6 +218,10 @@ public class Window {
 		final long currentFrameTime = getCurrentTime();
 		deltaTime = (currentFrameTime - lastFrameTime) / 1000f * timeScale;
 		lastFrameTime = currentFrameTime;
+		
+		if (deltaTime > 0.1f) {
+			deltaTime = 1f/maxFramerate;
+		}
 
 		// Get framerate
 		if (currentFrameTime - lastFramerate > 1000) {
@@ -240,9 +244,6 @@ public class Window {
 		else
 			deltaTime = 0f;
 		
-		if (deltaTime > 0.25f) {
-			deltaTime = 1f/framerate;
-		}
 		lastFrameTime = currentFrameTime;
 	}
 	

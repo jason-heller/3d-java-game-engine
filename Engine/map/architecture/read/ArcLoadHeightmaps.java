@@ -18,7 +18,7 @@ public class ArcLoadHeightmaps {
 		ArcHeightmapVertex[] heightmapVerts = new ArcHeightmapVertex[numHeightVerts];
 		
 		for(int i = 0; i < numHeightVerts; i++) {
-			heightmapVerts[i] = new ArcHeightmapVertex(in.readFloat(), in.readFloat(), in.readFloat(), in.readFloat());
+			heightmapVerts[i] = new ArcHeightmapVertex(in.readFloat(), in.readFloat());
 		}
 		
 		final int numHeightMaps = in.readInt();

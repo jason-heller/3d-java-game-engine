@@ -15,6 +15,7 @@ import scene.mapscene.item.Item;
 import scene.mapscene.item.MotionSensorItem;
 import scene.mapscene.item.PhysPropSpawnerItem;
 import scene.mapscene.item.SpiritBoxItem;
+import scene.mapscene.item.TripodCameraItem;
 import scene.viewmodel.ViewModelHandler;
 
 public class ItemHandler {
@@ -35,6 +36,7 @@ public class ItemHandler {
 		addItem(new SpiritBoxItem(scene));
 		addItem(new CameraItem(scene));
 		addItem(new MotionSensorItem(scene));
+		addItem(new TripodCameraItem(scene));
 		addItem(new PhysPropSpawnerItem(scene));
 		currentItem = null;
 	}
@@ -64,31 +66,12 @@ public class ItemHandler {
 	
 	public void update() {
 		if (Console.isVisible()) return;
-		if (Input.isPressed(Keyboard.KEY_1)) {
-			if (getCurrentItem() != getItem(0)) {
-				unequipItem();
-				equipItem(0);
-			}
-		}
-		
-		if (Input.isPressed(Keyboard.KEY_2)) {
-			if (getCurrentItem() != getItem(1)) {
-				unequipItem();
-				equipItem(1);
-			}
-		}
-		
-		if (Input.isPressed(Keyboard.KEY_3)) {
-			if (getCurrentItem() != getItem(2)) {
-				unequipItem();
-				equipItem(2);
-			}
-		}
-		
-		if (Input.isPressed(Keyboard.KEY_4)) {
-			if (getCurrentItem() != getItem(3)) {
-				unequipItem();
-				equipItem(3);
+		for(int i = 0; i < 5; i++) {
+			if (Input.isPressed(Keyboard.KEY_1 + i)) {
+				if (getCurrentItem() != getItem(i)) {
+					unequipItem();
+					equipItem(i);
+				}
 			}
 		}
 		

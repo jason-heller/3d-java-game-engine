@@ -2,9 +2,9 @@ package scene.mapscene;
 
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.lwjgl.input.Keyboard;
 
 import audio.AudioHandler;
+import audio.recognition.Speech;
 import core.Application;
 import dev.Console;
 import gl.Camera;
@@ -23,10 +23,11 @@ public class MapScene extends PlayableScene {
 	private ItemHandler itemHandler;
 	private GhostEntity ghost;
 	
+	private Speech speech;
+	
 	public MapScene() {
 		super();
 		Application.scene = this;		// Hack to make the variable update before constructors runs
-		camera.setPosition(new Vector3f(0,10,0));
 		
 		player = new PlayerEntity(camera);
 		arcHandler.load(this, new Vector3f(), PlayableScene.currentMap);
@@ -47,6 +48,9 @@ public class MapScene extends PlayableScene {
 			skybox = new Skybox2D();
 		
 		itemHandler = new ItemHandler(this, viewModelHandler);
+		
+		speech = new Speech();
+		speech.start();
 	}
 
 	@Override
@@ -57,6 +61,7 @@ public class MapScene extends PlayableScene {
 	@Override
 	public void cleanUp() {
 		super.cleanUp();
+		speech.stop();
 		if (arcHandler.isSkyboxEnabled())
 			skybox.cleanUp();
 	}

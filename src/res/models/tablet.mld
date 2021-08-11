@@ -1,0 +1,38 @@
+"$model"
+{
+	"$texture" "tablet"
+	"$scale" "1/8"
+	"$offset" "5, 0, 0"
+}
+
+"$image"
+{
+	"$field" "tabletView"
+	"$offset" "56.5, -23, 0"
+	"$image_viewport" "0, 0, 4000, 3500"
+	"$scale" "4"
+	"$image_uvoffset" "0, 0, 1, 1"
+	"$color" "1/255, 130/255, 129/255"
+	"$centered" "true"
+}
+
+"$text"
+{
+	"$field" "tabletCamTitle"
+	"$offset" "45.5, -4, 0"
+	"$scale" "17"
+}
+
+"$text"
+{
+	"$field" "tabletCamInfo1"
+	"$offset" "45.5, -12, 0"
+	"$scale" "17"
+}
+
+"$text"
+{
+	"$field" "tabletCamInfo2"
+	"$offset" "45.5, -16, 0"
+	"$scale" "17"
+}

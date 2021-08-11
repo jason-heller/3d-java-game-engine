@@ -9,6 +9,7 @@ import org.joml.Vector3f;
 
 import core.Application;
 import dev.Console;
+import geom.Plane;
 import map.architecture.util.ArcUtil;
 import map.architecture.vis.Bsp;
 import scene.PlayableScene;
@@ -32,20 +33,31 @@ public class ArcNavigation {
 	}
 	
 	private int nodeIdAt(Vector3f pos, Bsp bsp) {
+		float nearestY = Float.POSITIVE_INFINITY;
+		int id = -1;
 		
 		for(int i = 0; i < navMesh.length; i++) {
 			final int[] faceIds = navMesh[i].getFaceIds();
 			
 			for(int faceId : faceIds) {
+				Plane plane = bsp.planes[bsp.faces[faceId].planeId];
+				Vector3f projPos = plane.projectPoint(pos);
+				if (projPos.y >= pos.y)
+					continue;
+				
 				boolean outside = faceContainsPointProjXZ(bsp, bsp.faces[faceId], pos);
 				
 				if (!outside) {
-					return i;
+					float dist = Vector3f.distanceSquared(pos, projPos);
+					if (dist < nearestY) {
+						nearestY = dist;
+						id = i;
+					}
 				}
 			}
 		}
 		
-		return -1;
+		return id;
 	}
 	
 	public boolean navigateTo(NavigableEntity entity, Vector3f target) {

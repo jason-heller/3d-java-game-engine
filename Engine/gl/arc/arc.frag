@@ -29,8 +29,8 @@ float ShadowCalculation(vec4 projLightSpace, int i) {
     float closestDepth = texture(shadowMap[i], projCoords.xy).r; 
     float currentDepth = projCoords.z;
    
-    float bias = max(0.0001 * (1.0 - dot(-pass_normals, lightDir[i])), 0.00001);  
-    float shadow = currentDepth + bias > closestDepth ? 1.0 : 0.0;
+	float bias = max(0.005 * (1.0 - dot(pass_normals, lightDir[i])), 0.01);  
+    float shadow = currentDepth < closestDepth + bias ? 0.0 : 1.0;
 
     return shadow;
 } 

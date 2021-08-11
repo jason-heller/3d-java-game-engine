@@ -89,10 +89,10 @@ public class Debug {
 		String vx = String.format("%.1f", player.vel.x);
 		String vy = String.format("%.1f", player.vel.y);
 		String vz = String.format("%.1f", player.vel.z);
-		String rx = String.format("%.1f", camera.getYaw());
+		/*String rx = String.format("%.1f", camera.getYaw());
 		String ry = String.format("%.1f", camera.getPitch());
-		String rz = String.format("%.1f", camera.getRoll());
-		String spd = String.format("%.1f", player.vel.length());
+		String rz = String.format("%.1f", camera.getRoll());*/
+		String spd = String.format("%.1f", new Vector3f(player.vel.x, player.vel.z, 0f).length());
 
 		UI.drawString(
 				 "\n#rX: " + cx + " #gY: " + cy + " #bZ: " + cz
@@ -101,10 +101,11 @@ public class Debug {
 				+ "\n" + "tex swaps: " + Render.textureSwaps
 				+ "\n" + "VX: " + vx + " VY: " + vy + " VZ: " + vz
 				+ "\n" + "speed: " + spd
-				+ "\n" + "yaw: " + rx + " pitch: " + ry + " roll: " + rz
-				+ "\ngrounded:" + player.isGrounded() + ", prev: " + player.previouslyGrounded 
+				+ "\n" + MemDebug.memoryInfo()
 				+ "\n",
 				5, 5, .25f, false);
+		
+		MemDebug.visualizeInfo();
 		
 		if (showCurrentRoom) {
 			ArcRoom room = bsp.rooms[player.getLeaf().room];

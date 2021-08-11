@@ -11,10 +11,12 @@ import ui.UI;
 public class TextTag extends MeshTag {
 	
 	private String field;
+	private boolean centered;
 	
-	public TextTag(String field, Vector3f offset, float scale) {
+	public TextTag(String field, Vector3f offset, float scale, boolean centered) {
 		this.setOffset(offset);
 		this.setScale(scale);
+		this.centered = centered;
 		this.field = field;
 	}
 
@@ -28,7 +30,7 @@ public class TextTag extends MeshTag {
 		if (str == null)
 			str = "Missing Value";
 		
-		Text text = UI.drawString(str, scale, true, m);
+		Text text = UI.drawString(str, scale, centered, m);
 		text.markAsTemporary();
 	}
 

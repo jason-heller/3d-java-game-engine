@@ -13,6 +13,7 @@ import org.joml.Vector4f;
 import gl.res.mesh.ImageTag;
 import gl.res.mesh.MeshData;
 import gl.res.mesh.TextTag;
+import util.Colors;
 
 public class ModDataFileLoader {
 	
@@ -33,33 +34,25 @@ public class ModDataFileLoader {
 	}
 
 	private static void addTextTag(Map<String, String> tags) {
-		String offsetTag = tags.get("$offset");
-		String scaleTag = tags.get("$scale");
-		//String rotationTag = tags.get("$rotation");
-		String fieldTag = tags.get("$field");
-		Vector3f offset = offsetTag == null ? new Vector3f() : parseVec3(offsetTag);
-		float scale = scaleTag == null ? 1f : parseReal(scaleTag);
-		String field = fieldTag == null ? "" : fieldTag;
-		//Vector3f rotation = rotationTag == null ? new Vector3f() : parseVec3(offsetTag);
-		meshData.addTag(new TextTag(field, offset, scale));
+		Vector3f offset = getVec3Tag(tags, "offset", new Vector3f());
+		float scale = getRealTag(tags, "scale", 1f);
+		String field = getStringTag(tags, "field", "");
+		boolean centered = getBoolTag(tags, "centered", false);
+		meshData.addTag(new TextTag(field, offset, scale, centered));
 	}
 
 	private static void addImageTag(Map<String, String> tags) {
-		String offsetTag = tags.get("$offset");
-		String scaleTag = tags.get("$scale");
-		String viewportTag = tags.get("$image_viewport");
-		String fieldTag = tags.get("$field");
-		String uvOffsetTag = tags.get("$image_uvoffset");
-
-		Vector3f offset = offsetTag == null ? new Vector3f() : parseVec3(offsetTag);
-		String field = fieldTag == null ? "" : fieldTag;
-		Vector4f viewport = viewportTag == null ? new Vector4f(0, 0, 1280, 720) : parseVec4(viewportTag);
-		float scale = scaleTag == null ? 1f : parseReal(scaleTag);
-		float[] uvOffset = uvOffsetTag == null ? new float[] { 0, 0, 1, 1 } : parseVec(uvOffsetTag, 4);
+		Vector3f offset = getVec3Tag(tags, "offset",new Vector3f());
+		String field = getStringTag(tags, "field", "");
+		Vector4f viewport = getVec4Tag(tags, "image_viewport", new Vector4f(0, 0, 1280, 720));
+		Vector3f color = getVec3Tag(tags, "color", Colors.WHITE);
+		float scale = getRealTag(tags, "scale", 1f);
+		boolean centered = getBoolTag(tags, "centered", false);
+		float[] uvOffset = getVecTag(tags, "image_uvoffset", new float[] { 0, 0, 1, 1 }, 4);
 
 		viewport.mul(scale);
 		int[] viewportArr = new int[] { (int) viewport.x, (int) viewport.y, (int) viewport.z, (int) viewport.w };
-		meshData.addTag(new ImageTag(field, offset, viewportArr, uvOffset));
+		meshData.addTag(new ImageTag(field, offset, viewportArr, uvOffset, color, centered));
 	}
 
 	private static void processModelTags(Map<String, String> tags) {
@@ -86,6 +79,36 @@ public class ModDataFileLoader {
 	    }
 	}
 	
+	private static Vector3f getVec3Tag(Map<String, String> tags, String name, Vector3f nullResult) {
+		String tag = tags.get("$" + name);
+		return tag == null ? nullResult : parseVec3(tag);
+	}
+	
+	private static Vector4f getVec4Tag(Map<String, String> tags, String name, Vector4f nullResult) {
+		String tag = tags.get("$" + name);
+		return tag == null ? nullResult : parseVec4(tag);
+	}
+	
+	private static float[] getVecTag(Map<String, String> tags, String name, float[] nullResult, int length) {
+		String tag = tags.get("$" + name);
+		return tag == null ? nullResult : parseVec(tag, length);
+	}
+	
+	private static float getRealTag(Map<String, String> tags, String name, float nullResult) {
+		String tag = tags.get("$" + name);
+		return tag == null ? nullResult : parseReal(tag);
+	}
+	
+	private static String getStringTag(Map<String, String> tags, String name, String nullResult) {
+		String tag = tags.get("$" + name);
+		return tag == null ? nullResult : tag;
+	}
+	
+	private static boolean getBoolTag(Map<String, String> tags, String name, boolean nullResult) {
+		String tag = tags.get("$" + name);
+		return tag == null ? nullResult : (tag.toLowerCase().equals("false") ? false : true);
+	}
+	
 	private static Vector3f parseVec3(String value) {
 		float[] arr = parseVec(value, 3);
 		return new Vector3f(arr[0], arr[1], arr[2]);
@@ -99,7 +122,6 @@ public class ModDataFileLoader {
 	private static float[] parseVec(String value, int length) {
 		String[] values = value.split(",");
 		float[] v = new float[length];
-		System.err.println(value);
 		for(int i = 0; i < length; i++) {
 			v[i] = parseReal(values[i].replaceAll(" ", ""));
 			

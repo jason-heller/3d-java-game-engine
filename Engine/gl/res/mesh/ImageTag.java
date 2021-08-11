@@ -13,13 +13,17 @@ public class ImageTag extends MeshTag {
 	private String field;
 	private int[] viewport;
 	private float[] uvOffset;
+	private Vector3f color;
+	private boolean centered;
 	
-	public ImageTag(String field, Vector3f offset, int[] viewport, float[] uvOffset) {
+	public ImageTag(String field, Vector3f offset, int[] viewport, float[] uvOffset, Vector3f color, boolean centered) {
 		this.setOffset(offset);
 		this.setScale(scale);
 		this.field = field;
 		this.viewport = viewport;
 		this.uvOffset = uvOffset;
+		this.color = color;
+		this.centered = centered;
 	}
 
 	@Override
@@ -28,8 +32,10 @@ public class ImageTag extends MeshTag {
 		m.set(matrix);
 		m.translate(offset);
 		
-		Image image = UI.drawImage(field, viewport[0], viewport[1], viewport[2], -viewport[3], m);
+		Image image = UI.drawImage(MeshData.getField(field), viewport[0], viewport[1], viewport[2], -viewport[3], m);
 		image.setUvOffset(uvOffset[0], uvOffset[1], uvOffset[2], uvOffset[3]);
+		image.setColor(color);
+		image.setCentered(centered);
 		image.markAsTemporary();
 	}
 

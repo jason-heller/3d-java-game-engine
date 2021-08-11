@@ -2,14 +2,9 @@ package map.architecture.components;
 
 import org.joml.Vector3f;
 
-import core.Application;
 import geom.AxisAlignedBBox;
 import geom.Plane;
-import gl.line.LineRender;
 import gl.res.Model;
-import map.architecture.vis.Bsp;
-import scene.mapscene.MapScene;
-import util.Colors;
 import util.MathUtil;
 
 /**
@@ -108,7 +103,7 @@ public class ArcHeightmap {
 				vertexCounterZ++;
 			}
 			
-			vert.add(hVert.vertex);
+			vert.y += hVert.offset;
 			
 			verts[v++] = vert.x;
 			verts[v++] = vert.y;
@@ -211,16 +206,16 @@ public class ArcHeightmap {
 		}
 		
 		p1 = Vector3f.add(right, bottom);
-		p1.add(vertices[brVertIndex].vertex);
+		p1.y += (vertices[brVertIndex].offset);
 		p2 = Vector3f.add(left, top);
-		p2.add(vertices[tlVertIndex].vertex);
+		p2.y += (vertices[tlVertIndex].offset);
 		
 		if ((p2.x - p1.x) * (pz - p1.z) - (p2.z - p1.z) * (px - p1.x) > 0f) {
 			p3 = Vector3f.add(left, bottom);
-			p3.add(vertices[blVertIndex].vertex);
+			p3.y += (vertices[blVertIndex].offset);
 		} else {
 			p3 = Vector3f.add(right, top);
-			p3.add(vertices[trVertIndex].vertex);
+			p3.y += (vertices[trVertIndex].offset);
 		}
 		
 		return MathUtil.barycentric(px, pz, p1, p2, p3) + origin.y;

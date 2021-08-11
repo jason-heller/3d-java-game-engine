@@ -3,9 +3,9 @@ package scene.entity.hostile;
 import org.joml.Vector3f;
 
 import core.Application;
+import gl.entity.EntityRender;
 import map.architecture.components.ArcNavigation;
 import scene.PlayableScene;
-import scene.entity.EntityHandler;
 import scene.entity.Spawnable;
 import scene.entity.util.NavigableEntity;
 import scene.entity.util.PlayerEntity;
@@ -15,7 +15,7 @@ public class TestHostileEntity extends NavigableEntity implements Spawnable {
 	
 	public TestHostileEntity() {
 		super("test_monster", new Vector3f(3f, 6f, 3f));
-		this.setModel(EntityHandler.billboard);
+		this.setModel(EntityRender.billboard);
 		this.setTextureUnique("entity01_test", "entity/clown.png");
 		scale = 5;
 		speed = 80;
@@ -24,7 +24,7 @@ public class TestHostileEntity extends NavigableEntity implements Spawnable {
 	public TestHostileEntity(PlayerEntity player) {
 		super("test_monster", new Vector3f(2f, 6f,2f));
 		this.player = player;
-		this.setModel(EntityHandler.billboard);
+		this.setModel(EntityRender.billboard);
 		this.setTextureUnique("entity01_test", "entity/clown.png");
 		scale = 5;
 		speed = 80;

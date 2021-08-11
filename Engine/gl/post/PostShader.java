@@ -1,5 +1,8 @@
 package gl.post;
 
+import org.lwjgl.opengl.GL11;
+
+import gl.Render;
 import gl.Window;
 import gl.fbo.FboUtils;
 import gl.fbo.FrameBuffer;
@@ -35,6 +38,17 @@ public abstract class PostShader extends ShaderProgram {
 	}
 
 	public abstract void loadUniforms();
+	
+	public void render(FrameBuffer frameBuffer) {
+		start();
+		loadUniforms();
+
+		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+		frameBuffer.bindTextureBuffer(0);
+		GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
+		Render.drawCalls++;
+		stop();
+	}
 
 	public void unbindFbo() {
 		fbo.unbind();

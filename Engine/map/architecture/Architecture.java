@@ -29,17 +29,13 @@ import map.architecture.components.ArcClip;
 import map.architecture.components.ArcFace;
 import map.architecture.components.ArcHeightmap;
 import map.architecture.components.ArcLightCube;
-import map.architecture.components.ArcNavNode;
 import map.architecture.components.ArcNavigation;
 import map.architecture.components.ArcPackedAssets;
-import map.architecture.components.ArcRoom;
 import map.architecture.components.ArcTextureData;
 import map.architecture.components.ArcTriggerClip;
-import map.architecture.components.GhostPoi;
 import map.architecture.functions.ArcFuncHandler;
 import map.architecture.functions.ArcFunction;
 import map.architecture.functions.commands.CamView;
-import map.architecture.util.ArcUtil;
 import map.architecture.util.BspRaycast;
 import map.architecture.vis.Bsp;
 import map.architecture.vis.BspLeaf;
@@ -47,8 +43,6 @@ import map.architecture.vis.Pvs;
 import scene.Scene;
 import scene.entity.Entity;
 import scene.entity.util.PhysicsEntity;
-import util.Colors;
-import util.MathUtil;
 
 public class Architecture {
 
@@ -147,31 +141,9 @@ public class Architecture {
 		
 		List<ArcHeightmap> heightmaps = new LinkedList<>();
 		
-		ArcRender.renderHeightmaps(camera, this, renderedHeightmaps, clipPlane, hasLighting, dynamicLightHandler.getLights());
-
-		if (Debug.viewNavNode) {
-			ArcNavNode node = navigation.getNodeAt(camera.getPosition(), bsp);
-			if (node != null) {
-				for(int id : node.getFaceIds()) {
-					ArcFace face = bsp.faces[id];
-					ArcUtil.drawFaceHighlight(bsp, face, Colors.alertColor());
-				}
-			}
-		}
-		
-		if (Debug.viewNavPois) {
-			for(int i = 1; i < bsp.rooms.length; i++) {
-				ArcRoom room = bsp.rooms[i];
-				for(GhostPoi poi : room.getGhostPois()) {
-					Vector3f pos = Vector3f.add(poi.getPosition(), Vector3f.Y_AXIS);
-					LineRender.drawPoint(poi.getPosition());
-					LineRender.drawLine(pos, Vector3f.add(pos, MathUtil.eulerToVectorDeg(poi.getRotation().x, poi.getRotation().y)));
-				}
-			}
-		}
-		
+		// Other stuff
 		ArcRender.renderShadows(camera, renderedLeaves, dynamicLightHandler.getLights());
-		
+		ArcRender.renderHeightmaps(camera, this, renderedHeightmaps, clipPlane, hasLighting, dynamicLightHandler.getLights());
 		bsp.objects.render(camera, this);
 		
 		ArcRender.startRender(camera, clipPlane, hasLighting, dynamicLightHandler.getLights());
@@ -217,7 +189,6 @@ public class Architecture {
 				LineRender.drawLine(pos, Vector3f.add(pos, new Vector3f(0,0,1)), lightCube.getColor(5));
 			}
 		}
-		
 	}
 	
 	public void pollTriggers() {
@@ -242,7 +213,7 @@ public class Architecture {
 	}
 	
 	public Vector3f[] getLightsAt(Vector3f position) {
-		if (lightmap.isActive()) {
+		if (lightmap.isActive() && !Debug.fullbright) {
 			BspLeaf leaf = bsp.walk(position);
 			return getLightsAt(position, leaf);
 		}
@@ -443,5 +414,9 @@ public class Architecture {
 			}
 		}
 		return collidedFace == null ? null : new BspRaycast(collidedFace, shortestDist);
+	}
+
+	public DynamicLightHandler getDynamicLightHandler() {
+		return this.dynamicLightHandler;
 	}
 }
