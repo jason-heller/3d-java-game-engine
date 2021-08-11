@@ -2,14 +2,12 @@ package scene.entity.object;
 
 import org.joml.Vector3f;
 
-import dev.Console;
 import geom.AxisAlignedBBox;
-import gl.line.LineRender;
 import gl.post.NightVisionShader;
 import scene.PlayableScene;
 import scene.entity.Entity;
 import scene.mapscene.MapScene;
-import util.Colors;
+import scene.mapscene.item.TripodCameraItem;
 
 public class TripodCameraEntity extends Entity {
 
@@ -37,7 +35,7 @@ public class TripodCameraEntity extends Entity {
 		super.update(scene);
 		if (bbox.intersects(((MapScene)scene).getGhost().getBBox())) {
 			this.damaged = true;
-			NightVisionShader.noiseAmplifier = 10f;
+			NightVisionShader.noiseAmplifier = TripodCameraItem.STATIC_BROKEN_AMPLIFIER;
 		}
 		
 	}

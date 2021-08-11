@@ -38,6 +38,8 @@ public class TripodCameraItem extends Item {
 	private boolean isViewingCams = false;
 	private static final int MAX_CAMERAS = 2;
 	
+	public static final float STATIC_BROKEN_AMPLIFIER = 5f;
+	
 	private Camera camera;
 	
 	public TripodCameraItem(MapScene scene) {
@@ -157,7 +159,7 @@ public class TripodCameraItem extends Item {
 	}
 
 	private void setCamera() {
-		noiseAmplifier = cameras[visCam].isDamaged() ? 10f : 2.5f;
+		noiseAmplifier = cameras[visCam].isDamaged() ? STATIC_BROKEN_AMPLIFIER : 2.5f;
 		NightVisionShader.noiseAmplifier = noiseAmplifier;
 		
 		AudioHandler.play("click");
