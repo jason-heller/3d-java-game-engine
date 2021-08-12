@@ -3,7 +3,7 @@ package map.architecture.functions.commands;
 import org.joml.Vector3f;
 
 import core.Application;
-import dev.Console;
+import dev.cmd.Console;
 import map.architecture.functions.ArcFunction;
 import scene.PlayableScene;
 import scene.entity.DummyEntity;

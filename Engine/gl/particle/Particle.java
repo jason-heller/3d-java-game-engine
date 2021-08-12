@@ -3,7 +3,7 @@ package gl.particle;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-import dev.Console;
+import dev.cmd.Console;
 import gl.Camera;
 import gl.Window;
 import gl.res.Texture;

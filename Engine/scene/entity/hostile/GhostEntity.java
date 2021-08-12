@@ -1,40 +1,51 @@
 package scene.entity.hostile;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SplittableRandom;
+
 import org.joml.Vector3f;
 
 import audio.AudioHandler;
 import audio.Source;
 import core.Application;
-import dev.Console;
 import dev.Debug;
+import dev.cmd.Console;
 import gl.Window;
 import gl.entity.EntityRender;
-import gl.line.LineRender;
 import map.architecture.Architecture;
 import map.architecture.components.ArcNavigation;
 import map.architecture.components.ArcRoom;
 import map.architecture.components.GhostPoi;
 import map.architecture.util.BspRaycast;
 import map.architecture.vis.Bsp;
+import map.architecture.vis.BspLeaf;
 import scene.PlayableScene;
+import scene.entity.Entity;
+import scene.entity.EntityHandler;
 import scene.entity.Spawnable;
+import scene.entity.object.TripodCameraEntity;
 import scene.entity.util.NavigableEntity;
+import scene.entity.util.PhysicsEntity;
 import scene.entity.util.PlayerEntity;
 import scene.entity.util.PlayerHandler;
-import ui.UI;
+import scene.mapscene.MapScene;
 
 public class GhostEntity extends NavigableEntity implements Spawnable {
 	private PlayerEntity player;
 	
-	private float actionTimer = 0f, lookTimer = 0f;
-	private float nextActionTime = 0f;
+	private float movementTimer = 0f, lookTimer = 0f;
+	private float nextMoveTime = 0f;
+	private float actionTimer = ACTION_INTERVAL;
+	
+	private static final float ACTION_INTERVAL = 5f;
 	
 	private int failedLookChecks = 0;
 	
 	private boolean corporeal = false;
 	
 	public float aggression = 0f;
-	private boolean attacking = false;
+	private boolean attacking = false, preAttack = false;
 
 	private static final float BBOX_WIDTH = 2f;
 	private static final float BBOX_HEIGHT = 6f;
@@ -49,7 +60,8 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 		super("ghost", new Vector3f(BBOX_WIDTH, BBOX_HEIGHT, BBOX_WIDTH));
 		this.setModel(EntityRender.billboard);
 		//this.setTexture("default");
-		this.setTextureUnique("entity01_test", "entity/cute_lad.png");
+		//this.setTextureUnique("entity01_test", "entity/cute_lad.png");
+		this.setTextureUnique("entity01_test", "entity/clown.png");
 		scale = 5;
 		speed = 80;
 		source = AudioHandler.checkoutSource();
@@ -62,7 +74,7 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 		this.setNavigation(nav);
 		this.setModel(EntityRender.billboard);
 		//this.setTexture("default");
-		this.setTextureUnique("entity01_test", "entity/cute_lad.png");
+		this.setTextureUnique("entity01_test", "entity/clown.png");
 		scale = 5;
 		speed = 80;
 		source = AudioHandler.checkoutSource();
@@ -74,14 +86,21 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 		//UI.drawString((int)aggression + ", " + (int)(nextActionTime-this.actionTimer), 1f, true, this.getMatrix()).markAsTemporary();
 		super.update(scene);
 		
-		LineRender.drawLine(pos, scene.getPlayer().pos);
-		
 		source.setPosition(pos);
 		
 		this.visible = corporeal ? (System.currentTimeMillis() % 2000 < 1000) : false;
 		this.solid = corporeal;
 		
 		Architecture arc = scene.getArchitecture();
+		
+		if (actionTimer > 0) {
+			actionTimer -= Window.deltaTime;
+			
+			if (actionTimer <= 0) {
+				doAction();
+			}
+		}
+		
 		if (attacking) {
 			// Try to find player and kill them
 			lookTimer += Window.deltaTime;
@@ -100,7 +119,7 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 					// Raycast didn't reach player, treat it as not seeing them
 					failedLookChecks++;
 					
-					if (failedLookChecks > MAX_FAILED_CHECKS && actionTimer > 40) {
+					if (failedLookChecks > MAX_FAILED_CHECKS && movementTimer > 40) {
 						endAttack();
 					}
 				}
@@ -117,25 +136,83 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 				AudioHandler.play("fall");
 			}
 		} else {
-			if (actionTimer > nextActionTime) {
-				// TODO: Attacks should be more based on anger
-				if (Math.random() < aggression*.08 && actionsSinceLastAttack > 0) {
+			
+			if (movementTimer > nextMoveTime) {
+				if (Math.random() < (aggression + .4f)*.08f && actionsSinceLastAttack > 0) {
 					startAttack();
 				} else {
-					nextActionTime = 15f + ((float)Math.random() * 30f);
-					actionTimer = 0f;
+					nextMoveTime = 15f + ((float)Math.random() * 30f);
+					movementTimer = 0f;
 					changeTarget();
-					if (scene.getArchitecture().isLeafAudible(this.getLeaf())) {
-						source.play("ghost_voice");
-					}
 				}
 				
 				actionsSinceLastAttack++;
 			}
 		}
-		actionTimer += Window.deltaTime;
+		movementTimer += Window.deltaTime;
 	}
 	
+	public void doAction() {
+		if (preAttack) {
+			attacking = true;
+			preAttack = false;
+
+			navTarget.set(player.pos);
+			return;
+		}
+		
+		if (attacking) {
+			return;
+		}
+		
+		SplittableRandom r = new SplittableRandom();
+		Architecture arc = ((MapScene)Application.scene).getArchitecture();
+
+		List<Entity> entities = new ArrayList<>();
+		
+		for(BspLeaf leaf : arc.getCluster(this.leaf)) {
+			List<Entity> ents = EntityHandler.getEntities(leaf);
+			if (ents != null) {
+				entities.addAll(ents);
+			}
+		}
+		
+		if (entities.size() > 0) {
+			int randEnt = r.nextInt(entities.size());
+			
+			Entity entity = entities.get(randEnt);
+			Console.log(entity);
+			
+			if (entity == this) return;
+			
+			if (entity instanceof PlayerEntity) {
+				int event = r.nextInt(4);
+				switch(event) {
+				case 0:	// idk spook
+					EntityHandler.addEntity(new ApparitionEntity(model, texture, pos, rot, scale));
+					break;
+				default:
+					source.play("ghost_voice");
+				}
+			}
+			else if (entity instanceof PhysicsEntity) {
+				PhysicsEntity physEnt = (PhysicsEntity)entity;
+
+				float rx = ((float)r.nextDouble()-0.5f)*2f;
+				float rz = ((float)r.nextDouble()-0.5f)*2f;
+				Vector3f randDir = new Vector3f(rx, 5f, rz);
+				physEnt.accelerate(randDir, 900f);
+			} else {
+				if (entity instanceof TripodCameraEntity) {
+					TripodCameraEntity tripod = (TripodCameraEntity)entity;
+					tripod.breakTripod();
+				}
+			}
+		}
+		
+		actionTimer = ACTION_INTERVAL + (float)r.nextDouble(ACTION_INTERVAL/2f);
+	}
+
 	public boolean raycastToPlayer(Architecture arc) {
 		Vector3f to = Vector3f.sub(player.pos, pos);
 		float toLen = to.length();
@@ -146,16 +223,16 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 		return (dist >= toLen + 1);
 	}
 
-	private void startAttack() {
+	public void startAttack() {
 		// nextActionTime = 120;
-		attacking = true;
+		preAttack = true;
 		corporeal = true;
-		navTarget.set(player.pos);
-		PlayerHandler.setThreatened(true);
 		Console.log("Time 2 kill");
+		actionTimer = 3f;
+		PlayerHandler.setThreatened(true);
 	}
 	
-	private void endAttack() {
+	public void endAttack() {
 		failedLookChecks = 0;
 		lookTimer = 0f;
 		corporeal = false;
@@ -164,6 +241,10 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 		Console.log("Time 2 vibe");
 		actionsSinceLastAttack = 0;
 		aggression = (int)(aggression / 2.5f);
+	}
+	
+	public boolean isAttacking() {
+		return attacking || preAttack;
 	}
 
 	public void changeTarget() {
@@ -188,7 +269,6 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 		this.pos.set(pos);
 		setNavigation(navigation);
 		changeTarget();
-		//setTarget(scene.getPlayer().pos);
 		return true;
 	}
 }

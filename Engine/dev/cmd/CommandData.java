@@ -1,9 +1,12 @@
-package dev;
+package dev.cmd;
 
-import static dev.CommandType.GETTER;
-import static dev.CommandType.SETTER;
+import static dev.cmd.CommandType.GETTER;
+import static dev.cmd.CommandType.SETTER;
 
 import core.Application;
+import dev.Debug;
+import dev.MemDebug;
+import dev.ModelDataEditor;
 import gl.Camera;
 import gl.Window;
 import gl.arc.ArcRender;
@@ -40,6 +43,10 @@ enum CommandData {
 	water_quality(false, "0-4"),
 	look(false, "yaw", "pitch", "roll"),
 	shake(false, "time", "intensity"),
+	ghost_force_move(true),
+	ghost_force_action(true),
+	ghost_force_hunt(true),
+	viewmodel_edit(true),
 	
 	// Getters
 	version("VERSION", Application.class, GETTER, false),

@@ -132,4 +132,8 @@ public abstract class PlayableScene implements Scene {
 	public Architecture getArchitecture() {
 		return arcHandler.getArchitecture();
 	}
+
+	public ViewModelHandler getViewModelHandler() {
+		return viewModelHandler;
+	}
 }

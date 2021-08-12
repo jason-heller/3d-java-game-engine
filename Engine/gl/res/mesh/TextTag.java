@@ -33,6 +33,22 @@ public class TextTag extends MeshTag {
 		Text text = UI.drawString(str, scale, centered, m);
 		text.markAsTemporary();
 	}
+	
+	public String getField() {
+		return field;
+	}
+
+	public void setField(String field) {
+		this.field = field;
+	}
+
+	public boolean isCentered() {
+		return centered;
+	}
+
+	public void setCentered(boolean centered) {
+		this.centered = centered;
+	}
 
 	@Override
 	public void cleanUp() {

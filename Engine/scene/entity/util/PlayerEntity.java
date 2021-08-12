@@ -32,7 +32,7 @@ public class PlayerEntity extends PhysicsEntity {
 	private float bloodDmgIndicator = 0f;
 	
 	public PlayerEntity(Camera camera) {
-		super("player", new Vector3f(3.5f, 7f, 3.5f));
+		super("player", new Vector3f(3.5f, PlayerHandler.BBOX_HEIGHT, 3.5f));
 		this.camera = camera;
 		camera.setFocus(this);
 		PlayerHandler.setEntity(this);

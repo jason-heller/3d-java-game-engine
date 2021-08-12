@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import core.Resources;
-import dev.Console;
+import dev.cmd.Console;
 import gl.res.Texture;
 import map.architecture.Architecture;
 import map.architecture.vis.Bsp;

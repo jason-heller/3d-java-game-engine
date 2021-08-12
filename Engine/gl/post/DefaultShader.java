@@ -2,7 +2,7 @@ package gl.post;
 
 import org.lwjgl.opengl.GL11;
 
-import dev.Console;
+import dev.cmd.Console;
 import gl.Render;
 import gl.fbo.FrameBuffer;
 

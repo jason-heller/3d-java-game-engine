@@ -6,7 +6,7 @@ import org.joml.Vector4f;
 import audio.AudioHandler;
 import audio.recognition.Speech;
 import core.Application;
-import dev.Console;
+import dev.cmd.Console;
 import gl.Camera;
 import gl.skybox.Skybox2D;
 import io.Input;

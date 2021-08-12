@@ -331,4 +331,10 @@ public class MathUtil {
 	public static Vector3f rgb(float r, float g, float b) {
 		return new Vector3f(r/255f, g/255f, b/255f);
 	}
+
+	public static float angleDifference(float angle1, float angle2) {
+		float phi = Math.abs(angle2 - angle1) % 360;
+		float distance = phi > 180f ? 360f - phi : phi;
+        return distance;
+	}
 }

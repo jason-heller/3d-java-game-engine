@@ -3,7 +3,7 @@ package scene.mapscene.item;
 import org.joml.Vector3f;
 
 import audio.recognition.Speech;
-import dev.Console;
+import dev.cmd.Console;
 import scene.entity.hostile.GhostEntity;
 import scene.mapscene.MapScene;
 import scene.viewmodel.ViewModel;

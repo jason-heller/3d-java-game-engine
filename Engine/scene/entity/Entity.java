@@ -19,8 +19,8 @@ public abstract class Entity {
 	
 	public boolean visible = true;
 	
-	private Model model;
-	private Texture texture;
+	protected Model model;
+	protected Texture texture;
 	private Animator animator;
 	
 	protected String name;
@@ -54,6 +54,10 @@ public abstract class Entity {
 	
 	public void setModel(String model) {
 		this.model = Resources.getModel(model);
+	}
+	
+	public void setTexture(Texture texture) {
+		this.texture = texture;
 	}
 	
 	public void setTexture(String texture) {

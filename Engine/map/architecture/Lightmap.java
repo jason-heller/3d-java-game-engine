@@ -8,7 +8,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 import core.Resources;
-import dev.Console;
+import dev.cmd.Console;
 import gl.Render;
 import gl.res.Texture;
 import gl.res.TextureUtils;

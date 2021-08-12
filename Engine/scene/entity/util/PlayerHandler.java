@@ -10,6 +10,7 @@ import gl.Window;
 import gl.light.DynamicLight;
 import io.Input;
 import map.architecture.Architecture;
+import map.architecture.util.BspRaycast;
 import scene.PlayableScene;
 import scene.Scene;
 import scene.entity.object.HoldableEntity;
@@ -24,10 +25,10 @@ public class PlayerHandler {
 	public static float runSpeedMultiplier = 24f;
 	public static float maxSpeed = 15f, maxAirSpeed = 15f, maxWaterSpeed = 35f;
 	public static float accelSpeed = 85f, airAccel = 5f, waterAccel = 32f;
-	public static float maxSpeedCrouch = 4f;
+	public static float maxSpeedCrouch = 12f;
 	
 	public static final float CAMERA_STANDING_HEIGHT = 5f;
-	public static final float CAMERA_CROUCHING_HEIGHT = 3f;
+	public static final float CAMERA_CROUCHING_HEIGHT = 2f;
 	private static float lightStrength = 21f;
 	
 	private static float accel = accelSpeed;
@@ -41,6 +42,10 @@ public class PlayerHandler {
 	
 	private static DynamicLight light = null;
 	private static float flickerTimer = 0f;
+	
+	private static boolean crouching = false;
+	
+	public static final float BBOX_HEIGHT = 7f, BBOX_CROUCH_DIFF = (CAMERA_STANDING_HEIGHT - CAMERA_CROUCHING_HEIGHT);
 	
 	public static PhysicsEntity getEntity() {
 		return entity;
@@ -175,15 +180,46 @@ public class PlayerHandler {
 		}
 	
 		if (CTRL) {
-			Camera.offsetY -= Window.deltaTime * maxSpeedCrouch;
-			if (Camera.offsetY < CAMERA_CROUCHING_HEIGHT)
-				Camera.offsetY = CAMERA_CROUCHING_HEIGHT;
-		} else {
-			Camera.offsetY += Window.deltaTime * maxSpeedCrouch;
-			if (Camera.offsetY > CAMERA_STANDING_HEIGHT)
-				Camera.offsetY = CAMERA_STANDING_HEIGHT;
+			crouching = true;
+			if (Camera.offsetY > CAMERA_CROUCHING_HEIGHT) {
+				Camera.offsetY -= Window.deltaTime * maxSpeedCrouch;
+				
+				if (Camera.offsetY <= CAMERA_CROUCHING_HEIGHT) {
+					Camera.offsetY = CAMERA_CROUCHING_HEIGHT;
+					if (entity.getBBox().getBounds().y == BBOX_HEIGHT) {
+						entity.getBBox().getBounds().y -= BBOX_CROUCH_DIFF;
+						entity.getBBox().getCenter().y -= BBOX_CROUCH_DIFF/2f;
+						entity.pos.y -= BBOX_CROUCH_DIFF/2f;
+						if (entity.getBBox().getBounds().y == BBOX_HEIGHT - BBOX_CROUCH_DIFF)
+							Camera.offsetY += BBOX_CROUCH_DIFF;
+					}
+				}
+			}
+		} else if (crouching) {
+			if (entity.getBBox().getBounds().y == BBOX_HEIGHT - BBOX_CROUCH_DIFF) {
+
+				if (entityBspRayAbove(arc) > BBOX_HEIGHT + BBOX_CROUCH_DIFF + 4f) {
+					if (Camera.offsetY < CAMERA_STANDING_HEIGHT + BBOX_CROUCH_DIFF) {
+						Camera.offsetY += Window.deltaTime * maxSpeedCrouch;
+						if (Camera.offsetY >= CAMERA_STANDING_HEIGHT + BBOX_CROUCH_DIFF) {
+							Camera.offsetY = CAMERA_STANDING_HEIGHT;
+							entity.getBBox().getBounds().y += BBOX_CROUCH_DIFF;
+							entity.getBBox().getCenter().y += BBOX_CROUCH_DIFF/2f;
+							entity.pos.y += BBOX_CROUCH_DIFF/2f;
+							crouching = false;
+						}
+					}
+				}
+			} else {
+				if (Camera.offsetY < CAMERA_STANDING_HEIGHT) {
+					Camera.offsetY += Window.deltaTime * maxSpeedCrouch;
+					if (Camera.offsetY >= CAMERA_STANDING_HEIGHT) {
+						Camera.offsetY = CAMERA_STANDING_HEIGHT;
+						crouching = false;
+					}
+				}
+			}
 		}
-		
 		
 		if (camera.getControlStyle() == Camera.FIRST_PERSON) {
 			if (camera.getFocus() == entity) {
@@ -200,6 +236,19 @@ public class PlayerHandler {
 		
 	}
 	
+	private static float entityBspRayAbove(Architecture arc) {
+		final float bx = entity.bbox.getBounds().x;
+		final float bz = entity.bbox.getBounds().z;
+		BspRaycast tl = arc.raycast(new Vector3f(entity.pos.x - bx, entity.pos.y, entity.pos.z - bz), Vector3f.Y_AXIS);
+		BspRaycast tr = arc.raycast(new Vector3f(entity.pos.x - bx, entity.pos.y, entity.pos.z + bz), Vector3f.Y_AXIS);
+		BspRaycast bl = arc.raycast(new Vector3f(entity.pos.x + bx, entity.pos.y, entity.pos.z - bz), Vector3f.Y_AXIS);
+		BspRaycast br = arc.raycast(new Vector3f(entity.pos.x + bx, entity.pos.y, entity.pos.z + bz), Vector3f.Y_AXIS);
+		return 	Math.min(tl == null ? Float.POSITIVE_INFINITY : tl.getDistance(), 
+				Math.min(tr == null ? Float.POSITIVE_INFINITY : tr.getDistance(),
+				Math.min(bl == null ? Float.POSITIVE_INFINITY : bl.getDistance(),
+						br == null ? Float.POSITIVE_INFINITY : br.getDistance())));
+	}
+
 	private static void setLightPos(DynamicLight light2) {
 		Camera camera = Application.scene.getCamera();
 		Vector3f lookVec = camera.getDirectionVector();
@@ -224,7 +273,7 @@ public class PlayerHandler {
 			entity.accelerate(Vector3f.Y_AXIS, accel * (pitch <= 0 ? -1 : 1));
 		}
 		
-		if (JUMP) {
+		if (JUMP && !crouching) {
 			Vector3f dir = new Vector3f(scene.getCamera().getDirectionVector());
 			entity.vel.x = dir.x * entity.vel.y;
 			entity.vel.z = dir.z * entity.vel.y;

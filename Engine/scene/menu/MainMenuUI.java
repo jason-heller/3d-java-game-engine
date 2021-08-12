@@ -8,7 +8,7 @@ import audio.SoundFilters;
 import audio.Source;
 import core.Application;
 import core.Resources;
-import dev.Console;
+import dev.cmd.Console;
 import gl.res.Texture;
 import io.Input;
 import io.Settings;

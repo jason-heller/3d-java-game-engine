@@ -16,6 +16,7 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL15;
 
+import dev.cmd.Console;
 import geom.CollideUtils;
 import gl.Camera;
 import gl.Render;
@@ -54,6 +55,8 @@ public class Debug {
 	public static boolean god;
 	public static boolean velocityVectors;
 
+	public static ModelDataEditor mdEditor = new ModelDataEditor();
+	
 	public static void checkVbo(Vbo vbo) {
 		vbo.bind();
 		int id = vbo.getId();
@@ -121,6 +124,8 @@ public class Debug {
 			UI.drawImage("shadow0", 1280 - 512, 720, 512, -512, Colors.WHITE);
 		}
 
+		mdEditor.update();
+		
 		if (faceInfo) {
 			int faceId = -1;
 			List<BspLeaf> allVisible = arc.getRenderedLeaves();

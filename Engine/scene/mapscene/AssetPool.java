@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import core.Resources;
-import dev.Console;
+import dev.cmd.Console;
 
 public class AssetPool {
 	private static Queue<String> loadedTextures = new LinkedList<>();

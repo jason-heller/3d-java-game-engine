@@ -190,7 +190,7 @@ public class Render {
 	public static void renderViewModel(Model model, Texture texture, Matrix4f matrix, Vector3f[] lights) {
 		Camera camera = Application.scene.getCamera();
 		genericShader.start();
-		genericShader.projectionViewMatrix.loadMatrix(camera.getProjectionMatrix());
+		genericShader.projectionViewMatrix.loadMatrix(camera.getProjectionViewMatrix());
 		
 		genericShader.lights.loadVec3(lights);
 		genericShader.color.loadVec4(1, 1, 1, 1);
@@ -201,8 +201,8 @@ public class Render {
 		} else {
 			texture.bind(0);
 		}
-
-		genericShader.modelMatrix.loadMatrix(matrix);
+		
+		genericShader.modelMatrix.loadMatrix(Matrix4f.mul(camera.getViewModelMatrix(), matrix, null));
 		model.bind(0, 1, 2);
 		GL11.glDrawElements(GL11.GL_TRIANGLES, model.getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
 		drawCalls++;

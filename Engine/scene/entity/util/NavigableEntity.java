@@ -87,7 +87,7 @@ public abstract class NavigableEntity extends PhysicsEntity {
 				// Code for traversing a node
 				
 				// If heading directly to the edge is viable, it should be done
-				float bboxWidSqr = 66;
+				/*float bboxWidSqr = 66;
 				// Get length of edge we must cross
 				float edgeLenSqr = edgeVec.dot(edgeVec);
 				// Get hueristic of edge's center to position
@@ -97,10 +97,11 @@ public abstract class NavigableEntity extends PhysicsEntity {
 				Vector3f directPos = Vector3f.add(p1, Vector3f.mul(edgeVec, ptProjLen / edgeLenSqr));
 				float hueristicB = Vector3f.distanceSquared(pos, directPos);
 				// If this projection falls on the edge
+				
 				if (hueristicA > hueristicB && ptProjLen >= bboxWidSqr && ptProjLen < edgeLenSqr - bboxWidSqr) {
 
 					navStep = directPos;
-				}
+				}*/
 				
 				// If the difference between navStep and the edge are too similar, head towards node center
 				/*Vector3f movementVec = Vector3f.sub(navStep, pos);
@@ -118,12 +119,10 @@ public abstract class NavigableEntity extends PhysicsEntity {
 	
 		if (navStep != null) {
 			Vector3f newDir = Vector3f.sub(navStep, pos);
+			newDir.y = 0;
 			float len = newDir.length();
-			if (len > 2f) {
+			if (len >= 1f) {
 				dir.set(newDir.x, 0f, newDir.z).div(len);
-			}
-			
-			if (Vector3f.distanceSquared(pos, navTarget) > 3f) {
 				this.accelerate(dir, speed);
 			}
 		}

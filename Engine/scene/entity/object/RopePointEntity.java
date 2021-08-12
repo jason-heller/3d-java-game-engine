@@ -2,7 +2,7 @@ package scene.entity.object;
 
 import org.joml.Vector3f;
 
-import dev.Console;
+import dev.cmd.Console;
 import gl.Window;
 import gl.line.LineRender;
 import scene.PlayableScene;

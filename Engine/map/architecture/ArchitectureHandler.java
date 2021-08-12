@@ -11,8 +11,8 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import dev.Console;
 import dev.Debug;
+import dev.cmd.Console;
 import gl.Camera;
 import gl.Render;
 import gl.arc.ArcRender;

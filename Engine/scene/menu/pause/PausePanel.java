@@ -1,6 +1,6 @@
 package scene.menu.pause;
 
-import dev.Console;
+import dev.cmd.Console;
 import ui.menu.GuiMenu;
 import ui.menu.GuiPanel;
 import ui.menu.listener.MenuListener;

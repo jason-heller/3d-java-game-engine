@@ -1,4 +1,4 @@
-package dev;
+package dev.cmd;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -7,8 +7,8 @@ import java.util.Set;
 
 import org.joml.Vector3f;
 import org.lwjgl.input.Keyboard;
-
 import core.Application;
+import dev.Debug;
 import io.Input;
 import ui.Font;
 import ui.Image;

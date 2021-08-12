@@ -3,7 +3,7 @@ package scene.entity;
 import org.joml.Vector3f;
 
 import core.Application;
-import dev.Console;
+import dev.cmd.Console;
 import geom.CollideUtils;
 import gl.Camera;
 import map.architecture.Architecture;

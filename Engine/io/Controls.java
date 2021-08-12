@@ -12,7 +12,7 @@ import java.util.Map;
 
 import org.lwjgl.input.Keyboard;
 
-import dev.Console;
+import dev.cmd.Console;
 
 public class Controls {
 

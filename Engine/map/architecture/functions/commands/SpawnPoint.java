@@ -3,7 +3,7 @@ package map.architecture.functions.commands;
 import org.joml.Vector3f;
 
 import core.Application;
-import dev.Console;
+import dev.cmd.Console;
 import gl.Camera;
 import map.architecture.functions.ArcFunction;
 import scene.entity.util.PhysicsEntity;

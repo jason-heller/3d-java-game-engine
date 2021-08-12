@@ -36,7 +36,8 @@ float ShadowCalculation(vec4 projLightSpace, int i) {
 void main(void){
 	vec4 color, light;
 	color = texture(diffuse, pass_textureCoords.xy);
-	
+	if (color.a < 0.5)
+		discard;
 	// Spotlight
 	float intensity = 0.0;
 	float shadow = 0.0;

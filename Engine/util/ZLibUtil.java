@@ -6,7 +6,7 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
-import dev.Console;
+import dev.cmd.Console;
 
 public class ZLibUtil {
 

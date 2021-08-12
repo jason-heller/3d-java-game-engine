@@ -2,7 +2,7 @@ package geom;
 
 import org.joml.Vector3f;
 
-import dev.Console;
+import dev.cmd.Console;
 
 public class AxisAlignedBBox {
 	private Vector3f center;

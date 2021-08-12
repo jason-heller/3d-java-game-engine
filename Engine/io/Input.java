@@ -7,7 +7,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
-import dev.Console;
+import dev.cmd.Console;
 import gl.Window;
 import ui.UI;
 

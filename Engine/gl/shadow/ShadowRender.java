@@ -11,6 +11,7 @@ import core.Application;
 import gl.Camera;
 import gl.Render;
 import gl.TexturedModel;
+import gl.entity.EntityRender;
 import gl.light.DynamicLight;
 import gl.light.DynamicLightHandler;
 import gl.res.Model;
@@ -75,11 +76,11 @@ public class ShadowRender {
 					//GL11.glCullFace(GL11.GL_FRONT);
 					for(Entity ent : entities) {
 						Model model = ent.getModel();
-						if (model == null || !ent.visible)
+						if (model == null || !ent.visible || model == EntityRender.billboard)
 							continue;
 						model.bind(0);
 						shader.modelMatrix.loadMatrix(ent.getMatrix());
-						GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, model.getVertexCount());
+						GL11.glDrawElements(GL11.GL_TRIANGLES, model.getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
 						Render.drawCalls++;
 					
 					}

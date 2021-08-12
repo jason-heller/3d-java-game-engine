@@ -1,7 +1,7 @@
 
 package ui.menu;
 
-import dev.Console;
+import dev.cmd.Console;
 import io.Controls;
 import io.Input;
 import ui.UI;

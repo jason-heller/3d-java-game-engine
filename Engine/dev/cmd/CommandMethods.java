@@ -1,4 +1,4 @@
-package dev;
+package dev.cmd;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,6 +7,7 @@ import java.util.List;
 
 import audio.AudioHandler;
 import core.Application;
+import dev.Debug;
 import gl.Camera;
 import gl.Render;
 import gl.Window;
@@ -225,6 +226,36 @@ public class CommandMethods {
 	public static void water_quality(int quality) {
 		Render.setWaterQuality(quality);
 	}
+	
+	public static void ghost_force_action() {
+		if (Application.scene instanceof MapScene) {
+			MapScene s = (MapScene)Application.scene;
+			s.getGhost().doAction();
+		}
+	}
+	
+	public static void ghost_force_move() {
+		if (Application.scene instanceof MapScene) {
+			MapScene s = (MapScene)Application.scene;
+			s.getGhost().changeTarget();
+		}
+	}
+	
+	public static void ghost_force_hunt() {
+		if (Application.scene instanceof MapScene) {
+			MapScene s = (MapScene)Application.scene;
+			if (!s.getGhost().isAttacking()) {
+				s.getGhost().startAttack();
+			} else {
+				s.getGhost().endAttack();
+			}
+		}
+	}
+	
+	public static void viewmodel_edit() {
+		Debug.mdEditor.toggle();
+	}
+	
 	
 	public static void fov(int fov) {
 		Camera.fov = fov;

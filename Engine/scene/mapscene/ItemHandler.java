@@ -8,7 +8,7 @@ import org.lwjgl.input.Keyboard;
 import audio.AudioHandler;
 import audio.Source;
 import core.Application;
-import dev.Console;
+import dev.cmd.Console;
 import io.Input;
 import scene.mapscene.item.CameraItem;
 import scene.mapscene.item.Item;

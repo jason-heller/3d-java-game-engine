@@ -4,7 +4,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import core.Resources;
-import dev.Console;
+import dev.cmd.Console;
 import gl.fbo.FrameBuffer;
 
 public class DynamicLight {

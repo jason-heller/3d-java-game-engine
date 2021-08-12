@@ -8,7 +8,7 @@ import java.util.TreeMap;
 import org.joml.Vector3f;
 
 import core.Application;
-import dev.Console;
+import dev.cmd.Console;
 import geom.Plane;
 import map.architecture.util.ArcUtil;
 import map.architecture.vis.Bsp;

@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.joml.Vector3f;
 
 import core.Resources;
-import dev.Console;
+import dev.cmd.Console;
 import io.FileUtils;
 import map.architecture.Architecture;
 import map.architecture.components.ArcNavigation;

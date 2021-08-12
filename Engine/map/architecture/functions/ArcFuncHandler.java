@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.joml.Vector3f;
 
-import dev.Console;
+import dev.cmd.Console;
 import util.StrUtils;
 
 public class ArcFuncHandler {

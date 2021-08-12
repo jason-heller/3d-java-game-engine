@@ -1,6 +1,6 @@
 package audio.recognition;
 
-import dev.Console;
+import dev.cmd.Console;
 import edu.cmu.sphinx.frontend.util.Microphone;
 import edu.cmu.sphinx.recognizer.Recognizer;
 import edu.cmu.sphinx.result.Result;

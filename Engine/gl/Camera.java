@@ -7,7 +7,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
-import dev.Console;
+import dev.cmd.Console;
 import geom.Frustum;
 import io.Input;
 import scene.entity.Entity;
@@ -51,6 +51,8 @@ public class Camera {
 	private Matrix4f projectionMatrix;
 	private final Matrix4f projectionViewMatrix = new Matrix4f();
 	private final Matrix4f viewMatrix = new Matrix4f();
+	private final Matrix4f viewModelMatrix = new Matrix4f();
+	
 	private final Vector3f position = new Vector3f();
 	private final Vector3f prevPosition = new Vector3f();
 	private final Frustum frustum = new Frustum();
@@ -377,6 +379,12 @@ public class Camera {
 		Matrix4f.mul(projectionMatrix, viewMatrix, projectionViewMatrix);
 
 		frustum.update(projectionViewMatrix);
+		
+		viewModelMatrix.identity();
+		viewModelMatrix.translate(position);
+		viewModelMatrix.rotateZ(-effectedRoll);
+		viewModelMatrix.rotateY(-effectedYaw);
+		viewModelMatrix.rotateX(-effectedPitch);
 	}
 	
 	public Matrix4f createModelMatrix() {
@@ -422,16 +430,8 @@ public class Camera {
 		flinchDir.set(new Vector3f(sideFlinch, forwardFlinch, altFlinch));
 	}
 	
-	public Matrix4f getViewModelMatrix(boolean ignorePitch) {
-		Matrix4f m = new Matrix4f();
-		
-		if (ignorePitch)
-			m.rotateX(getPitch());
-		m.translate(0f, -2f-offsetY, -.5f + (float)Math.sin(movementCounter) * .15f);
-		m.scale(2f);
-		m.rotateY(90);
-		
-		return m;
+	public Matrix4f getViewModelMatrix() {
+		return viewModelMatrix;
 	}
 
 	public Entity getFocus() {

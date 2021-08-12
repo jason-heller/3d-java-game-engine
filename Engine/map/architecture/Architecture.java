@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
@@ -137,6 +138,25 @@ public class Architecture {
 		}
 	}
 	
+	public List<BspLeaf> getCluster(BspLeaf originLeaf) {
+		List<BspLeaf> leaves = new ArrayList<>();
+		if (originLeaf.clusterId != -1) {
+			int[] vis = pvs.getData(originLeaf, 0);
+			
+			for(int i = 0; i < bsp.leaves.length; i++) {
+				BspLeaf leaf = bsp.leaves[i];
+				if (leaf.clusterId == -1) continue;
+				
+				if (vis[leaf.clusterId] == 0) {
+					continue;
+				}
+				
+				leaves.add(leaf);
+			}
+		}
+		return leaves;
+	}
+	
 	public void render(Camera camera, Vector4f clipPlane, boolean hasLighting) {
 		
 		List<ArcHeightmap> heightmaps = new LinkedList<>();
@@ -181,12 +201,10 @@ public class Architecture {
 			for(int i = currentLeaf.firstAmbientSample; i < len; i++) {
 				ArcLightCube lightCube = ambientLightCubes[i];
 				Vector3f pos = lightCube.getPosition(currentLeaf);
-				LineRender.drawLine(pos, Vector3f.add(pos, new Vector3f(-1,0,0)), lightCube.getColor(0));
-				LineRender.drawLine(pos, Vector3f.add(pos, new Vector3f(1,0,0)), lightCube.getColor(1));
-				LineRender.drawLine(pos, Vector3f.add(pos, new Vector3f(0,-1,0)), lightCube.getColor(2));
-				LineRender.drawLine(pos, Vector3f.add(pos, new Vector3f(0,1,0)), lightCube.getColor(3));
-				LineRender.drawLine(pos, Vector3f.add(pos, new Vector3f(0,0,-1)), lightCube.getColor(4));
-				LineRender.drawLine(pos, Vector3f.add(pos, new Vector3f(0,0,1)), lightCube.getColor(5));
+				Matrix4f matrix = new Matrix4f();
+				matrix.translate(pos);
+				matrix.scale(2f);
+				Render.renderModel(Resources.getModel("cube"), Resources.getTexture("none"), matrix, lightCube.getLighting());
 			}
 		}
 	}

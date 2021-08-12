@@ -8,8 +8,8 @@
 "$image"
 {
 	"$field" "tabletView"
-	"$offset" "56.5, -23, 0"
-	"$image_viewport" "0, 0, 4000, 3500"
+	"$offset" "2.1525, -1.459, 0"
+	"$image_viewport" "0, 0, 100, 75"
 	"$scale" "4"
 	"$image_uvoffset" "0, 0, 1, 1"
 	"$color" "1/255, 130/255, 129/255"
@@ -19,20 +19,20 @@
 "$text"
 {
 	"$field" "tabletCamTitle"
-	"$offset" "45.5, -4, 0"
-	"$scale" "17"
+	"$offset" "1.8862227, -1.0862688, 0"
+	"$scale" ".34999776"
 }
 
 "$text"
 {
 	"$field" "tabletCamInfo1"
-	"$offset" "45.5, -12, 0"
-	"$scale" "17"
+	"$offset" "1.8987426, -1.2187443, 0"
+	"$scale" ".34999776"
 }
 
 "$text"
 {
 	"$field" "tabletCamInfo2"
-	"$offset" "45.5, -16, 0"
-	"$scale" "17"
+	"$offset" "1.8987426, -1.3177415, 0"
+	"$scale" ".34999776"
 }

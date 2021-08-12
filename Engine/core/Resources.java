@@ -11,7 +11,7 @@ import org.lwjgl.openal.AL10;
 import org.lwjgl.opengl.GL11;
 
 import audio.AudioHandler;
-import dev.Console;
+import dev.cmd.Console;
 import gl.anim.Animation;
 import gl.fbo.FrameBuffer;
 import gl.res.Model;

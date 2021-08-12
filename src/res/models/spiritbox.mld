@@ -7,8 +7,7 @@
 "$text"
 {
 	"$field" "freq"
-	"$offset" "58, -12, 0"
-	"$scale" "20"
-	"$rotation" "0, 90, 0"
+	"$offset" "2.183123, -1.22837, 0"
+	"$scale" ".39999992"
 	"$centered" "true"
 }

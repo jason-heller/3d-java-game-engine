@@ -5,15 +5,12 @@ import org.joml.Vector3f;
 
 import audio.AudioHandler;
 import core.Application;
-import dev.Console;
 import gl.Camera;
 import gl.Window;
 import gl.post.NightVisionShader;
 import gl.post.PostProcessing;
 import gl.res.mesh.MeshData;
 import io.Input;
-import map.architecture.Architecture;
-import map.architecture.functions.commands.CamView;
 import map.architecture.util.BspRaycast;
 import scene.entity.Entity;
 import scene.entity.EntityHandler;
@@ -22,7 +19,6 @@ import scene.entity.util.PlayerHandler;
 import scene.mapscene.MapScene;
 import scene.viewmodel.ViewModel;
 import ui.UI;
-import util.Colors;
 
 public class TripodCameraItem extends Item {
 	
@@ -38,14 +34,14 @@ public class TripodCameraItem extends Item {
 	private boolean isViewingCams = false;
 	private static final int MAX_CAMERAS = 2;
 	
-	public static final float STATIC_BROKEN_AMPLIFIER = 5f;
+	public static final float STATIC_BROKEN_AMPLIFIER = 7f;
 	
 	private Camera camera;
 	
 	public TripodCameraItem(MapScene scene) {
 		super(scene);
 		MeshData.setField("tabletView", "none");
-		MeshData.setField("tabletCamTitle", "===CAMERA FEEDS===");
+		MeshData.setField("tabletCamTitle", "====CAMERA FEEDS====");
 		MeshData.setField("tabletCamInfo1", "#SCAM01: READY");
 		MeshData.setField("tabletCamInfo2", "#SCAM02: READY");
 		cameras = new TripodCameraEntity[MAX_CAMERAS];
@@ -120,6 +116,11 @@ public class TripodCameraItem extends Item {
 		
 		if (isViewingCams) {
 			UI.drawString("CAM0" + (1 + visCam), 640, 30, .4f, true);
+			/*Image jumpscare = UI.drawImage("entity01_test", 640, 360 + 512);
+			jumpscare.setCentered(true);
+			jumpscare.setColor(new Vector3f(.2f, .2f, .2f));
+			jumpscare.w *= 8;
+			jumpscare.h *= 8;*/
 		}
 		
 		if (noiseAmplifier > 1f && !cameras[visCam].isDamaged()) {

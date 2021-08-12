@@ -9,7 +9,7 @@ import javax.swing.JOptionPane;
 import org.lwjgl.opengl.Display;
 
 import audio.AudioHandler;
-import dev.Console;
+import dev.cmd.Console;
 import gl.Render;
 import gl.Window;
 import io.Controls;

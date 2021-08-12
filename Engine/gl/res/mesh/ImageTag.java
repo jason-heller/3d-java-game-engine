@@ -39,8 +39,36 @@ public class ImageTag extends MeshTag {
 		image.markAsTemporary();
 	}
 
+	public String getField() {
+		return field;
+	}
+
+	public void setField(String field) {
+		this.field = field;
+	}
+
+	public boolean isCentered() {
+		return centered;
+	}
+
+	public void setCentered(boolean centered) {
+		this.centered = centered;
+	}
+	
 	@Override
 	public void cleanUp() {
+	}
+
+	public int[] getViewport() {
+		return viewport;
+	}
+	
+	public void setViewport(int[] viewport) {
+		this.viewport = viewport;
+	}
+
+	public float[] getUvOffsets() {
+		return uvOffset;
 	}
 
 }

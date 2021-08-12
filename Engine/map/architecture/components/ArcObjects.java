@@ -8,7 +8,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
 import core.Resources;
-import dev.Console;
+import dev.cmd.Console;
 import gl.Camera;
 import gl.Render;
 import gl.generic.GenericShader;

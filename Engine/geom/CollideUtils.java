@@ -5,7 +5,7 @@ import java.util.List;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-import dev.Console;
+import dev.cmd.Console;
 import map.architecture.components.ArcEdge;
 import map.architecture.components.ArcFace;
 import map.architecture.vis.Bsp;

@@ -33,10 +33,6 @@ public class TripodCameraEntity extends Entity {
 	@Override
 	public void update(PlayableScene scene) {
 		super.update(scene);
-		if (bbox.intersects(((MapScene)scene).getGhost().getBBox())) {
-			this.damaged = true;
-			NightVisionShader.noiseAmplifier = TripodCameraItem.STATIC_BROKEN_AMPLIFIER;
-		}
 		
 	}
 
@@ -46,5 +42,10 @@ public class TripodCameraEntity extends Entity {
 
 	public boolean isDamaged() {
 		return damaged;
+	}
+
+	public void breakTripod() {
+		this.damaged = true;
+		NightVisionShader.noiseAmplifier = TripodCameraItem.STATIC_BROKEN_AMPLIFIER;
 	}
 }
