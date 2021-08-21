@@ -66,7 +66,7 @@ public class Source {
 			setPitch(.8f + (float) Math.random() * .4f);
 			setGain(1f);
 			// if (soundHasAlternatives(buffer)) {
-			buffer -= (int) (Math.random() * (((buffer >> 16) & 0xf) + 1));
+			//buffer -= (int) (Math.random() * (((buffer >> 16) & 0xf) + 1));
 			// }
 			AL10.alSourcei(sourceId, AL10.AL_BUFFER, (buffer & 0xffff));
 			AL10.alSourcePlay(sourceId);
@@ -74,7 +74,7 @@ public class Source {
 		} else {
 			setPitch(1f);
 			setGain(1f);
-			buffer -= (int) (Math.random() * (((buffer >> 16) & 0xf) + 1));
+			//buffer -= (int) (Math.random() * (((buffer >> 16) & 0xf) + 1));
 			AL10.alSourcei(sourceId, AL10.AL_BUFFER, (buffer & 0xffff));
 			AL10.alSourcePlay(sourceId);
 			
@@ -135,7 +135,7 @@ public class Source {
 	}
 
 	public void stop() {
-		AL10.alSourcePause(sourceId);
+		//AL10.alSourcePause(sourceId);
 		//bufferOffset = AL10.alGetSourcei(sourceId, AL11.AL_SAMPLE_OFFSET);
 		// soundId = AL10.alGetSourcei(sourceId, AL10.AL_BUFFER);
 		AL10.alSourceStop(sourceId);

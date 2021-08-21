@@ -38,8 +38,6 @@ public class SpiritBoxItem extends Item {
 			
 			processVoice(ghost, last);
 			Speech.clearResultText();
-		} else {
-			Console.log(distToPlayerSqr, RANGE_SQR);
 		}
 	}
 

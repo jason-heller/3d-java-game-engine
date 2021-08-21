@@ -3,12 +3,14 @@ package scene.mapscene;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import audio.AudioHandler;
 import audio.recognition.Speech;
 import core.Application;
 import dev.cmd.Console;
 import gl.Camera;
+import gl.skybox.Skybox;
 import gl.skybox.Skybox2D;
+import gl.skybox._3d.Skybox3D;
+import gl.skybox._3d.SkyboxCamera;
 import io.Input;
 import map.architecture.components.GhostPoi;
 import scene.PlayableScene;
@@ -19,7 +21,7 @@ import scene.entity.util.PlayerHandler;
 
 public class MapScene extends PlayableScene {
 	
-	private Skybox2D skybox;
+	private Skybox skybox;
 	private ItemHandler itemHandler;
 	private GhostEntity ghost;
 	
@@ -33,6 +35,7 @@ public class MapScene extends PlayableScene {
 		arcHandler.load(this, new Vector3f(), PlayableScene.currentMap);
 		EntityHandler.addEntity(player);
 		arcHandler.getArchitecture().callCommand("spawn_player");
+		arcHandler.getArchitecture().callCommand(player, "trigger_soundscape");
 		
 		ghost = new GhostEntity(player, arcHandler.getArchitecture().getNavigation());
 		EntityHandler.addEntity(ghost);
@@ -42,10 +45,16 @@ public class MapScene extends PlayableScene {
 		ghost.changeTarget();
 		
 		//AudioHandler.loop("white_noise");
-		AudioHandler.loop("cicadas");
+		//AudioHandler.loop("cicadas");
 		
-		if (arcHandler.isSkyboxEnabled())
-			skybox = new Skybox2D();
+		if (arcHandler.isSkyboxEnabled()) {
+			SkyboxCamera skyCam = arcHandler.getArchitecture().getSkyCamera();
+			if (skyCam != null) {
+				skybox = new Skybox3D(skyCam, arcHandler.getArchitecture().bsp, arcHandler.getArchitecture().pvs);
+			} else {
+				skybox = new Skybox2D();
+			}
+		}
 		
 		itemHandler = new ItemHandler(this, viewModelHandler);
 		
@@ -99,9 +108,11 @@ public class MapScene extends PlayableScene {
 
 	@Override
 	public void render(Vector4f clipPlane) {
-		super.render(clipPlane);
 		if (arcHandler.isSkyboxEnabled())
-			skybox.render(camera, Vector3f.Y_AXIS);
+			skybox.render(arcHandler.getArchitecture(), camera);
+		
+		super.render(clipPlane);
+		
 	}
 	
 	@Override

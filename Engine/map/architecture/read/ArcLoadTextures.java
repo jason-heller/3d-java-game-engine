@@ -2,84 +2,112 @@ package map.architecture.read;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
+import core.Resources;
+import gl.res.Texture;
+import gl.res.TextureUtils;
 import gr.zdimensions.jsquish.Squish;
 import io.FileUtils;
-import map.architecture.Architecture;
-import map.architecture.components.ArcPackedAssets;
-import map.architecture.components.ArcPackedTexture;
 import map.architecture.components.ArcTextureData;
+import map.architecture.components.ArcTextureMapping;
+import map.architecture.vis.Bsp;
 
 public class ArcLoadTextures {
 
-	static void readTextureInfo(ArcPackedAssets packedAssets, DataInputStream in,
+	static void readTextureInfo(Bsp bsp, ArcTextureData textureData, DataInputStream in,
 			boolean hasBakedLighting) throws IOException {
 		
 		String skybox = FileUtils.readString(in);
-		packedAssets.skybox = skybox;
+		textureData.setSkybox(skybox);
 
-		ArcTextureData[] texData = new ArcTextureData[in.readInt()];
-		for (int i = 0; i < texData.length; ++i) {
-			texData[i] = new ArcTextureData();
-			texData[i].textureId = in.readInt();
-			texData[i].texels[0][0] = in.readFloat();
-			texData[i].texels[0][1] = in.readFloat();
-			texData[i].texels[0][2] = in.readFloat();
-			texData[i].texels[0][3] = in.readFloat();
-			texData[i].texels[1][0] = in.readFloat();
-			texData[i].texels[1][1] = in.readFloat();
-			texData[i].texels[1][2] = in.readFloat();
-			texData[i].texels[1][3] = in.readFloat();
+		ArcTextureMapping[] texMappings = new ArcTextureMapping[in.readInt()];
+		for (int i = 0; i < texMappings.length; ++i) {
+			texMappings[i] = new ArcTextureMapping();
+			texMappings[i].textureId = in.readInt();
+			texMappings[i].texels[0][0] = in.readFloat();
+			texMappings[i].texels[0][1] = in.readFloat();
+			texMappings[i].texels[0][2] = in.readFloat();
+			texMappings[i].texels[0][3] = in.readFloat();
+			texMappings[i].texels[1][0] = in.readFloat();
+			texMappings[i].texels[1][1] = in.readFloat();
+			texMappings[i].texels[1][2] = in.readFloat();
+			texMappings[i].texels[1][3] = in.readFloat();
+			
 			if (hasBakedLighting) {
-				texData[i].lmVecs[0][0] = in.readFloat();
-				texData[i].lmVecs[0][1] = in.readFloat();
-				texData[i].lmVecs[0][2] = in.readFloat();
-				texData[i].lmVecs[0][3] = in.readFloat();
-				texData[i].lmVecs[1][0] = in.readFloat();
-				texData[i].lmVecs[1][1] = in.readFloat();
-				texData[i].lmVecs[1][2] = in.readFloat();
-				texData[i].lmVecs[1][3] = in.readFloat();
+				texMappings[i].lmVecs[0][0] = in.readFloat();
+				texMappings[i].lmVecs[0][1] = in.readFloat();
+				texMappings[i].lmVecs[0][2] = in.readFloat();
+				texMappings[i].lmVecs[0][3] = in.readFloat();
+				texMappings[i].lmVecs[1][0] = in.readFloat();
+				texMappings[i].lmVecs[1][1] = in.readFloat();
+				texMappings[i].lmVecs[1][2] = in.readFloat();
+				texMappings[i].lmVecs[1][3] = in.readFloat();
 			}
 		}
 
-		packedAssets.setTextureData(texData);
+		bsp.setTextureMappings(texMappings);
 	}
 
-	static void readTextureList(ArcPackedAssets packedAssets, DataInputStream in) throws IOException {
+	private static final Squish.CompressionType compType = Squish.CompressionType.DXT1;
+	
+	static void readTextureList(ArcTextureData packedAssets, DataInputStream in) throws IOException {
 		String[] textures = new String[in.readInt()];
-		for (int i = 0; i < textures.length; ++i) {
-			textures[i] = '%' + FileUtils.readString(in);
-			/*
-			 * STRING name BYTE compression BYTE material SHORT width SHORT height INT
-			 * dataLen BYTE[] data
-			 */
-			byte compression = in.readByte();
-			if (compression != 0) {
+		int i = 0;
+		List<Texture> textureDatas = new LinkedList<>();
+		
+		while(i < textures.length) {
+			String textureName = FileUtils.readString(in);
+			byte flags = in.readByte();
+			//boolean translucent = (flags % 1) != 0;
+			boolean noDataPresent = (flags & 2) != 0;
+			boolean hasBumpMap = (flags & 4) != 0;
+			boolean hasSpecMap = (flags & 8) != 0;
+			
+			if (!noDataPresent) {
 				byte material = in.readByte();
 				int width = in.readShort();
 				int height = in.readShort();
-				int dataLen = in.readInt();
-				byte[] textureData = new byte[dataLen];
-				for (int l = 0; l < dataLen; l++) {
-					textureData[l] = in.readByte();
+				byte[] textureData = readBytes(in, in.readInt());
+				String diffuseName = '$' + textureName;
+				textures[i++] = diffuseName;
+				byte[] diffuseData = Squish.decompressImage(null, width, height, textureData, compType);
+				Texture t = TextureUtils.createTexture(diffuseData, material, width, height, true);
+				textureDatas.add(t);
+
+				if (hasBumpMap) {
+					textureData = readBytes(in, in.readInt());
+					byte[] bumpMapData = Squish.decompressImage(null, width, height, textureData, compType);
+					String bumpTexName = '%' + textureName;
+					textures[i++] = bumpTexName;
+					t = TextureUtils.createTexture(bumpMapData, material, width, height, true);
+					textureDatas.add(t);
 				}
-				Squish.CompressionType compType;
-				switch (compression) {
-				case 1:
-					compType = Squish.CompressionType.DXT1;
-					break;
-				case 3:
-					compType = Squish.CompressionType.DXT3;
-					break;
-				default:
-					compType = Squish.CompressionType.DXT5;
+				
+				if (hasSpecMap) {
+					textureData = readBytes(in, in.readInt());
+					byte[] specMapData = Squish.decompressImage(null, width, height, textureData, compType);
+					String specTexName = '&' + textureName;
+					textures[i++] = specTexName;
+					t = TextureUtils.createTexture(specMapData, material, width, height, true);
+					textureDatas.add(t);
 				}
-				byte[] decompressedData = Squish.decompressImage(null, width, height, textureData, compType);
-				ArcPackedTexture t = new ArcPackedTexture(textures[i], material, decompressedData, width, height);
-				packedAssets.add(textures[i], t);
 			} else {
+				textures[i++] = textureName;
 				packedAssets.numToolTextures++;
+				textureDatas.add(Resources.DEFAULT);
 			}
+			
+			packedAssets.setTextureData(textureDatas, textures);
 		}
+	}
+
+	private static byte[] readBytes(DataInputStream in, int dataLen) throws IOException {
+		byte[] data = new byte[dataLen];
+		for (int l = 0; l < dataLen; l++) {
+			data[l] = in.readByte();
+		}
+		return data;
 	}
 }

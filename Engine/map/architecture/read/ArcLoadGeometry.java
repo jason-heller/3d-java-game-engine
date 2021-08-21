@@ -54,7 +54,7 @@ public class ArcLoadGeometry {
 			faces[i].planeId = in.readShort();
 			faces[i].firstEdge = in.readInt();
 			faces[i].numEdges = in.readShort();
-			faces[i].texId = in.readShort();
+			faces[i].texMapping = in.readShort();
 			faces[i].lmIndex = in.readInt();
 			faces[i].lmMins = new float[] {in.readFloat(), in.readFloat()};
 			faces[i].lmSizes = new float[] {in.readFloat(), in.readFloat()};

@@ -10,7 +10,6 @@ import org.joml.Vector4f;
 
 import gl.Camera;
 import gl.entity.EntityRender;
-import gl.light.DynamicLight;
 import map.architecture.Architecture;
 import map.architecture.vis.BspLeaf;
 import scene.PlayableScene;

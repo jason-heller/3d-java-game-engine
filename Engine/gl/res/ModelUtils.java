@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.joml.Vector3f;
 
+import dev.cmd.Console;
 import io.FileUtils;
 
 public class ModelUtils {
@@ -19,8 +20,6 @@ public class ModelUtils {
 		model.createAttribute(2, normals, 3);
 		model.createIndexBuffer(indices);
 		model.unbind();
-
-		model.setVertexData(indices, vertices);
 
 		return model;
 	}
@@ -53,7 +52,7 @@ public class ModelUtils {
 	}
 
 	@Deprecated
-	public static Model loadObj(String path, boolean saveData) {
+	public static Model loadObj(String path) {
 
 		final List<float[]> vertices = new ArrayList<float[]>();
 		final List<float[]> uvs = new ArrayList<float[]>();
@@ -206,16 +205,12 @@ public class ModelUtils {
 			model.createAttribute(0, vertexArray, 3);
 			model.createAttribute(1, uvArray, 2);
 			model.createAttribute(2, normalArray, 3);
-			model.max = max;
-			model.min = min;
+			model.setBounds(max, min);
+
 			if (boneArray.length > 0) {
 				model.createAttribute(3, boneArray, 1);
 			}
 			model.unbind();
-
-			if (saveData) {
-				model.setVertexData(indexArray, vertexArray);
-			}
 
 			return model;
 		} catch (final FileNotFoundException e) {

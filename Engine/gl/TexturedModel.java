@@ -31,11 +31,8 @@ public class TexturedModel {
 	public TexturedModel(Model model, String texture) {
 		this.model = model;
 		this.matrix = new Matrix4f();
-		if (texture.equals("default")) {
-			this.texture = Resources.getTexture(this.model.getMeshData().getDefaultTexture());
-		} else {
-			this.texture = Resources.getTexture(texture);
-		}
+		
+		this.texture = Resources.getTexture(texture);
 	}
 
 	public Model getModel() {

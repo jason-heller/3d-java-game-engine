@@ -23,6 +23,8 @@ public class AssetPool {
 		addSound("fall", "player/fall.ogg");
 		
 		addSound("cicadas", "ambient/cicadas.ogg");
+		addSound("white_noise", "ambient/white_noise.ogg");
+		
 		addSound("spiritbox", "tool/spiritbox.ogg");
 		addSound("camera_snap", "tool/camera_snap.ogg");
 		addSound("place", "tool/place_wall.ogg");

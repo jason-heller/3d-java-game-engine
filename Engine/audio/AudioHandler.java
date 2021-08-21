@@ -20,7 +20,6 @@ import org.newdawn.slick.openal.OggDecoder;
 
 import core.Resources;
 import gl.Camera;
-import gl.Window;
 import io.FileUtils;
 
 public class AudioHandler {
@@ -161,11 +160,6 @@ public class AudioHandler {
 				s.pause();
 			}
 		}
-	}
-
-	public static void setListenerData(Vector3f pos) {
-		AL10.alListener3f(AL10.AL_POSITION, pos.x, pos.y, pos.z);
-		// AL10.alListener3f(AL10.AL_VELOCITY, vel.x, vel.y, vel.z);
 	}
 
 	private static void setupEffects() {

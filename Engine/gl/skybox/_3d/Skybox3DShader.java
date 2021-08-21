@@ -20,7 +20,5 @@ public class Skybox3DShader extends ShaderProgram {
 	public Skybox3DShader() {
 		super(VERTEX_SHADER, FRAGMENT_SHADER, "in_position", "in_textureCoords", "in_normals");
 		super.storeAllUniformLocations(projectionMatrix, viewMatrix, modelMatrix, lightmap, sampler, scale);
-		sampler.loadTexUnit(0);
-		lightmap.loadTexUnit(1);
 	}
 }

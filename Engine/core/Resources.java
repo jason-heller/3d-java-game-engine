@@ -27,6 +27,8 @@ import map.ground.TerrainUtils;
 public class Resources {
 	public static final Model QUAD2D = ModelUtils.quad2DModel();
 
+	public static Texture DEFAULT, NO_TEXTURE;
+
 	private static Map<String, Texture> textureMap = new HashMap<String, Texture>();
 	private static Map<String, Model> modelMap = new HashMap<String, Model>();
 	private static Map<String, Animation> animationMap = new HashMap<String, Animation>();
@@ -47,7 +49,7 @@ public class Resources {
 				textureData[l] = in.readByte();
 			}
 
-			final byte[] data = Squish.decompressImage(null, width, height, textureData, Squish.CompressionType.DXT3);
+			final byte[] data = Squish.decompressImage(null, width, height, textureData, Squish.CompressionType.DXT1);
 
 			return addTexture(key, material, data, width, height, true);
 		} catch (final IOException e) {
@@ -65,8 +67,8 @@ public class Resources {
 		return null;
 	}
 
-	public static Model addModel(String key, byte[] data, boolean saveVertexData) {
-		final Model mdl = ModFileLoader.readModFile(key, data, saveVertexData);
+	public static Model addModel(String key, byte[] data) {
+		final Model mdl = ModFileLoader.readModFile(key, data);
 		modelMap.put(key, mdl);
 		return mdl;
 	}
@@ -83,25 +85,12 @@ public class Resources {
 	 * Imports a .mod model into the resource dictionary
 	 *
 	 *
-	 * @param key  the key identifying this resource
-	 * @param path the path to the resource's file
+	 * @param key            the key identifying this resource
+	 * @param path           the path to the resource's file
 	 * @return the resource
 	 */
 	public static Model addModel(String key, String path) {
-		return addModel(key, path, false);
-	}
-
-	/**
-	 * Imports a .mod model into the resource dictionary
-	 *
-	 *
-	 * @param key            the key identifying this resource
-	 * @param path           the path to the resource's file
-	 * @param saveVertexData bakes the vertex data into the resource's object
-	 * @return the resource
-	 */
-	private static Model addModel(String key, String path, boolean saveVertexData) {
-		final Model model = ModFileLoader.readModFile(key, path, saveVertexData);
+		final Model model = ModFileLoader.readModFile(key, path);
 		MeshData meshData = model.getMeshData();
 		if (!meshData.getDefaultTexture().equals("default")) {
 			Resources.addTexture(key, "models/" + meshData.getDefaultTexture() + ".png");
@@ -122,23 +111,7 @@ public class Resources {
 	 */
 	@Deprecated
 	public static Model addObjModel(String key, String path) {
-		return addObjModel(key, path, false);
-	}
-
-	/**
-	 * Imports an obj model into the resource dictionary
-	 *
-	 * @deprecated Use addModel() instead (app should only use the engine-specific
-	 *             .MOD files
-	 *
-	 * @param key            the key identifying this resource
-	 * @param path           the path to the resource's file
-	 * @param saveVertexData save vertex data into resource object
-	 * @return the resource
-	 */
-	@Deprecated
-	public static Model addObjModel(String key, String path, boolean saveVertexData) {
-		final Model mdl = ModelUtils.loadObj("res/" + path, saveVertexData);
+		final Model mdl = ModelUtils.loadObj("res/" + path);
 		modelMap.put(key, mdl);
 		return mdl;
 	}
@@ -304,6 +277,7 @@ public class Resources {
 	public static void removeTexture(String key) {
 		if (key.equals("default"))
 			return;
+		System.err.println(key);
 		textureMap.get(key).delete();
 		textureMap.remove(key);
 	}
@@ -338,5 +312,15 @@ public class Resources {
 
 	public static void removeModel(String key) {
 		modelMap.remove(key).cleanUp();
+	}
+
+	public static void initBaseResources() {
+		DEFAULT = addTexture("default", "default.png");
+		NO_TEXTURE = Resources.addTexture("none", "flat.png");
+
+		//Resources.addTexture("skybox", "default.png");
+		Resources.addTexture("noise", "noise.png");
+		Resources.addObjModel("cube", "cube.obj");
+		Resources.addSound("click", "lighter_click.ogg");
 	}
 }

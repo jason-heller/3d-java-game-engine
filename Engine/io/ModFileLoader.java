@@ -17,7 +17,7 @@ import gl.res.mesh.MeshData;
 public class ModFileLoader {
 	public static byte EXPECTED_VERSION = 1; // Version of .MOD files that this game supports
 
-	private static Model extractModelData(String key, DataInputStream is, boolean saveVertexData) throws IOException {
+	private static Model extractModelData(String key, DataInputStream is, boolean hasNavMesh) throws IOException {
 		final int vertexCount = is.readInt();
 		final int indexCount = is.readInt();
 
@@ -61,8 +61,8 @@ public class ModFileLoader {
 			indices[i] = is.readInt();
 		}
 
-		final Vector3f min = new Vector3f(is.readFloat(), is.readFloat(), is.readFloat());
 		final Vector3f max = new Vector3f(is.readFloat(), is.readFloat(), is.readFloat());
+		final Vector3f min = new Vector3f(is.readFloat(), is.readFloat(), is.readFloat());
 
 		final byte numJoints = is.readByte();
 
@@ -78,13 +78,7 @@ public class ModFileLoader {
 		model.setSkeleton(new Skeleton(numJoints, getJoints(is)));
 		model.unbind();
 
-		model.min = min;
-		model.max = max;
-		// model.getSkeleton().getRootJoint().getInverseBindTransform().rotateY(90);
-
-		if (saveVertexData) {
-			model.setVertexData(indices, vertices);
-		}
+		model.setBounds(max, min);
 
 		final byte numAnimations = is.readByte();
 		
@@ -92,10 +86,23 @@ public class ModFileLoader {
 			AniFileLoader.extractAnimationData(key, is);
 		}
 
+		Vector3f[] navMesh = null;
+		if (hasNavMesh) {
+			int numVerts = is.readShort() * 3;
+			navMesh = new Vector3f[numVerts];
+			for(int j = 0; j < numVerts; j++) {
+				navMesh[j] = new Vector3f(is.readFloat(), is.readFloat(), is.readFloat());
+			}
+		}
+		
+		if (hasNavMesh) {
+			model.setNavMesh(navMesh);
+		}
+		
 		return model;
 	}
 
-	private static Model extractStaticModelData(DataInputStream is, boolean saveVertexData) throws IOException {
+	private static Model extractStaticModelData(DataInputStream is, boolean hasNavMesh) throws IOException {
 		final int vertexCount = is.readInt();
 		final int indexCount = is.readInt();
 
@@ -124,8 +131,17 @@ public class ModFileLoader {
 			indices[i] = is.readShort();
 		}
 
-		final Vector3f min = new Vector3f(is.readFloat(), is.readFloat(), is.readFloat());
 		final Vector3f max = new Vector3f(is.readFloat(), is.readFloat(), is.readFloat());
+		final Vector3f min = new Vector3f(is.readFloat(), is.readFloat(), is.readFloat());
+		
+		Vector3f[] navMesh = null;
+		if (hasNavMesh) {
+			int numVerts = is.readShort() * 3;
+			navMesh = new Vector3f[numVerts];
+			for(int j = 0; j < numVerts; j++) {
+				navMesh[j] = new Vector3f(is.readFloat(), is.readFloat(), is.readFloat());
+			}
+		}
 
 		final Model model = Model.create();
 		model.bind();
@@ -135,12 +151,12 @@ public class ModFileLoader {
 		model.createIndexBuffer(indices);
 		model.unbind();
 
-		model.min = min;
-		model.max = max;
-
-		if (saveVertexData) {
-			model.setVertexData(indices, vertices);
+		model.setBounds(max, min);
+		
+		if (hasNavMesh) {
+			model.setNavMesh(navMesh);
 		}
+
 		return model;
 	}
 
@@ -158,8 +174,8 @@ public class ModFileLoader {
 		return joint;
 	}
 
-	public static Model readModFile(String key, byte[] data, boolean saveVertexData) {
-		return readModFile(key, new DataInputStream(new ByteArrayInputStream(data)), saveVertexData);
+	public static Model readModFile(String key, byte[] data) {
+		return readModFile(key, new DataInputStream(new ByteArrayInputStream(data)));
 	}
 
 	/**
@@ -172,10 +188,10 @@ public class ModFileLoader {
 	 *                       model
 	 * @return
 	 */
-	public static Model readModFile(String key, String path, boolean saveVertexData) {
+	public static Model readModFile(String key, String path) {
 		try {
 			String fullPath = "src/res/" + path;
-			Model model = readModFile(key, new DataInputStream(new FileInputStream(fullPath)), saveVertexData);
+			Model model = readModFile(key, new DataInputStream(new FileInputStream(fullPath)));
 			MeshData meshData = ModDataFileLoader.readMLD(fullPath.substring(0, fullPath.lastIndexOf('.')) + ".mld");
 			model.setMeshData(meshData);
 			return model;
@@ -185,7 +201,7 @@ public class ModFileLoader {
 		}
 	}
 	
-	private static Model readModFile(String key, DataInputStream is, boolean saveVertexData) {
+	private static Model readModFile(String key, DataInputStream is) {
 		Model model = null;
 
 		try {
@@ -203,8 +219,10 @@ public class ModFileLoader {
 				return null;
 			}
 
-			model = (flags & 0x01 << 0) == 1 ? extractModelData(key, is, saveVertexData)
-					: extractStaticModelData(is, saveVertexData);
+			boolean hasNavMesh = (flags & 0x02) != 0;
+			
+			model = (flags & 0x01 << 0) == 1 ? extractModelData(key, is, hasNavMesh)
+					: extractStaticModelData(is, hasNavMesh);
 
 		} catch (final IOException e) {
 			e.printStackTrace();

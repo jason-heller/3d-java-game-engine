@@ -7,12 +7,13 @@ import java.util.Map;
 
 import org.joml.Vector3f;
 
+import dev.cmd.Console;
 import geom.Plane;
-import gl.TexturedModel;
 import gl.res.Model;
 import map.architecture.components.ArcEdge;
 import map.architecture.components.ArcFace;
-import map.architecture.components.ArcTextureData;
+import map.architecture.components.ArcTextureMapping;
+import map.architecture.util.ArcUtil;
 
 public class BspLeaf {
 	
@@ -24,21 +25,21 @@ public class BspLeaf {
 	public short numAmbientSamples;
 	public boolean isUnderwater;
 
-	private TexturedModel[] texModels;
+	private Cluster[] clusters;
 	public short[] clips;		// A list of IDs to the BSP's clip array
 	public int room;			// Pointer to the bsp room array
 	public short[] heightmaps;
 
-	// Prior to CS:GO, all BSP files only have one leaf per cluster.
 	public void buildModel(Plane[] planes, ArcEdge[] edges, int[] surfEdges, Vector3f[] vertices, ArcFace[] faces,
-			short[] leafFaceIndices, ArcTextureData[] textureData, String[] textureList) {
+			short[] leafFaceIndices, ArcTextureMapping[] texMappings, String[] textureList) {
 		// Partition faces by texture
-		Map<String, List<ArcFace>> faceMap = new HashMap<String, List<ArcFace>>();
+		Map<Integer, List<ArcFace>> faceMap = new HashMap<>();
 
 		int lastFace = firstFace + numFaces;
 		for (int j = firstFace; j < lastFace; j++) {
 			ArcFace face = faces[leafFaceIndices[j]];
-			int id = textureData[face.texId].textureId;
+			if (face.texMapping == -1) continue;
+			int id = texMappings[face.texMapping].textureId;
 			if (id == -1) {
 				continue;
 			}
@@ -48,23 +49,23 @@ public class BspLeaf {
 			if (tex.equals("INVIS"))
 				continue;
 
-			if (faceMap.containsKey(tex)) {
-				faceMap.get(tex).add(face);
+			if (faceMap.containsKey(id)) {
+				faceMap.get(id).add(face);
 			} else {
 				List<ArcFace> list = new ArrayList<ArcFace>();
 				list.add(face);
-				faceMap.put(tex, list);
+				faceMap.put(id, list);
 			}
 		}
 
 		// Build model for each partition
 
-		texModels = new TexturedModel[faceMap.keySet().size()];
+		clusters = new Cluster[faceMap.keySet().size()];
 
 		int mdlIndex = 0;
-		for (String tex : faceMap.keySet()) {
+		for (int id : faceMap.keySet()) {
 			
-			List<ArcFace> partitionedFaces = faceMap.get(tex);
+			List<ArcFace> partitionedFaces = faceMap.get(id);
 			int numVerts = 0;
 			for (ArcFace face : partitionedFaces) {
 				numVerts += face.numEdges - 2;
@@ -74,13 +75,16 @@ public class BspLeaf {
 			float[] mdlVerts = new float[numVerts * 3];
 			float[] mdlTxtrs = new float[numVerts * 4];
 			float[] mdlNorms = new float[numVerts * 3];
+			float[] mdlTangents = new float[numVerts * 3];
 
-			int v = 0, t = 0, n = 0;
+			int v = 0, t = 0, n = 0, tng = 0;
 			
 			for (int i = partitionedFaces.size() - 1; i >= 0; i--) {
 				ArcFace face = partitionedFaces.get(i);
 				int lastEdge = face.firstEdge + face.numEdges;
 
+				Vector3f tangent = ArcUtil.getFaceTangent(vertices, edges, surfEdges, texMappings, face);
+				
 				for (int j = face.firstEdge + 1; j < lastEdge - 1; j++) {
 					// Gross but fast
 					Vector3f vert;
@@ -88,23 +92,22 @@ public class BspLeaf {
 					float[][] lm;
 					float ls, lt;
 					Vector3f norm = planes[face.planeId].normal;
-					mdlNorms[n++] = norm.x;
-					mdlNorms[n++] = norm.y;
-					mdlNorms[n++] = norm.z;
-					mdlNorms[n++] = norm.x;
-					mdlNorms[n++] = norm.y;
-					mdlNorms[n++] = norm.z;
-					mdlNorms[n++] = norm.x;
-					mdlNorms[n++] = norm.y;
-					mdlNorms[n++] = norm.z;
+					for(int k = 0; k < 3; k++) {
+						mdlNorms[n++] = norm.x;
+						mdlNorms[n++] = norm.y;
+						mdlNorms[n++] = norm.z;
+						mdlTangents[tng++] = tangent.x;
+						mdlTangents[tng++] = tangent.y;
+						mdlTangents[tng++] = tangent.z;
+					}
 
 					vert = determineVert(vertices, edges, surfEdges, face.firstEdge);
 					mdlVerts[v++] = vert.x;
 					mdlVerts[v++] = vert.y;
 					mdlVerts[v++] = vert.z;
 
-					texVecs = textureData[face.texId].texels;
-					lm = textureData[face.texId].lmVecs;
+					texVecs = texMappings[face.texMapping].texels;
+					lm = texMappings[face.texMapping].lmVecs;
 					
 					mdlTxtrs[t++] = ((texVecs[0][0] * vert.x + texVecs[0][1] * vert.y + texVecs[0][2] * vert.z) + texVecs[0][3]);
 					mdlTxtrs[t++] = ((texVecs[1][0] * vert.x + texVecs[1][1] * vert.y + texVecs[1][2] * vert.z) + texVecs[1][3]);
@@ -150,9 +153,15 @@ public class BspLeaf {
 			model.createAttribute(0, mdlVerts, 3);
 			model.createAttribute(1, mdlTxtrs, 4);
 			model.createAttribute(2, mdlNorms, 3);
+			model.createAttribute(3, mdlTangents, 3);
 			model.unbind();
-
-			texModels[mdlIndex] = new TexturedModel(model, tex);
+			
+			clusters[mdlIndex] = new Cluster(model, id);
+			
+			if (textureList.length - 1 != id) {
+				if (textureList[id + 1].startsWith("%")) 
+					clusters[mdlIndex].setBumpMapId(id + 1);
+			}
 			
 			mdlIndex++;
 		}
@@ -166,15 +175,11 @@ public class BspLeaf {
 		return vertices[edges[edgeId].start];
 	}
 
-	public TexturedModel[] getVisibleObjects() {
-		return texModels;
-	}
-
 	public void cleanUp() {
-		if (texModels == null)
+		if (clusters == null)
 			return;
-		for (TexturedModel texModel : texModels) {
-			texModel.getModel().cleanUp();
+		for (Cluster cluster : clusters) {
+			cluster.getModel().cleanUp();
 		}
 	}
 
@@ -189,8 +194,8 @@ public class BspLeaf {
 		return true;
 	}
 
-	public TexturedModel[] getMeshes() {
-		return this.texModels;
+	public Cluster[] getMeshes() {
+		return this.clusters;
 	}
 
 	public boolean intersects(Vector3f max2, Vector3f min2) {

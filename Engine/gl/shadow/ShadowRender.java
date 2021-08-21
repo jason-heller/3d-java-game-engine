@@ -10,12 +10,12 @@ import org.lwjgl.opengl.GL11;
 import core.Application;
 import gl.Camera;
 import gl.Render;
-import gl.TexturedModel;
 import gl.entity.EntityRender;
 import gl.light.DynamicLight;
 import gl.light.DynamicLightHandler;
 import gl.res.Model;
 import map.architecture.vis.BspLeaf;
+import map.architecture.vis.Cluster;
 import scene.entity.Entity;
 import scene.entity.EntityHandler;
 
@@ -61,13 +61,13 @@ public class ShadowRender {
 			
 			shader.start();
 			shader.lightSpaceMatrix.loadMatrix(lightSpaceMatrix);
-			
+			shader.modelMatrix.loadMatrix(new Matrix4f());
 			for(BspLeaf leaf : leaves) {
-				TexturedModel[] tModels = leaf.getMeshes();
-				for(TexturedModel tModel : tModels) {
-					tModel.getModel().bind(0);
-					shader.modelMatrix.loadMatrix(tModel.getMatrix());
-					GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, tModel.getModel().getVertexCount());
+				Cluster[] clusters = leaf.getMeshes();
+				for(Cluster cluster : clusters) {
+					cluster.getModel().bind(0);
+					// shader.modelMatrix.loadMatrix(tModel.getMatrix());
+					GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, cluster.getModel().getVertexCount());
 					Render.drawCalls++;
 				}
 				

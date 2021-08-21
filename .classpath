@@ -19,5 +19,6 @@
 	<classpathentry kind="lib" path="lib/sphinx4.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/cmudict.jar"/>
+	<classpathentry kind="lib" path="lib/kryo-2.23.1-SNAPSHOT-all-debug.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

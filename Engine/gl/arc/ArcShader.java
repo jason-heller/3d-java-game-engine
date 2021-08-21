@@ -2,6 +2,7 @@ package gl.arc;
 
 import shader.ShaderProgram;
 import shader.UniformFloatArray;
+import shader.UniformInt;
 import shader.UniformMat4Array;
 import shader.UniformMatrix;
 import shader.UniformSampler;
@@ -17,12 +18,14 @@ public class ArcShader extends ShaderProgram {
 
 	public UniformMatrix viewMatrix = new UniformMatrix("viewMatrix");
 	public UniformMatrix projectionMatrix = new UniformMatrix("projectionMatrix");
-	public UniformMatrix modelMatrix = new UniformMatrix("modelMatrix");
 	
 	protected UniformSampler sampler = new UniformSampler("sampler");
-	protected UniformSampler lightmap = new UniformSampler("lightmap");
+	public UniformSampler bumpMap = new UniformSampler("bumpMap");
+	public UniformSampler lightmap = new UniformSampler("lightmap");
 	
 	public UniformVec4 clipPlane = new UniformVec4("clipPlane");
+	
+	public UniformInt hasBumpMap = new UniformInt("hasBumpMap");
 	
 	public UniformMat4Array lightSpaceMatrix = new UniformMat4Array("lightSpaceMatrix", 4);
 	public UniformVec3Array lightPos = new UniformVec3Array("lightPos", 4);
@@ -34,10 +37,10 @@ public class ArcShader extends ShaderProgram {
 
 	public ArcShader() {
 		super(VERTEX_SHADER, FRAGMENT_SHADER, "in_position", "in_textureCoords", "in_normals");
-		super.storeAllUniformLocations(projectionMatrix, viewMatrix, modelMatrix, 
-				lightmap, sampler, 
+		super.storeAllUniformLocations(projectionMatrix, viewMatrix, 
+				lightmap, sampler, bumpMap,
 				lightPos, lightDir, cutoff, strength,
-				clipPlane,
+				clipPlane, hasBumpMap,
 				lightSpaceMatrix, shadowMap);
 		super.bindFragOutput(0, "out_color");
 		super.bindFragOutput(1, "out_brightness");

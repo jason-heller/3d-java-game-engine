@@ -62,6 +62,7 @@ public class ArcFuncHandler {
 		}
 		
 		ArcFuncCallMethod callMethod = command.getPrefCallMethod();
+
 		int index = -1;
 		float range = -1;
 
@@ -93,21 +94,23 @@ public class ArcFuncHandler {
 			break;
 		case BY_NEAREST:
 			ArcFunction closestFunc = null;	
-			range = Float.MAX_VALUE;
+			range = Float.POSITIVE_INFINITY;
 			for(ArcFunction func : funcList) {
 				float newRange = Vector3f.distanceSquared(callerPosition, func.getPosition());
 				if (newRange < range) {
 					closestFunc = func;
+					range = newRange;
 				}
 			}
 			closestFunc.trigger(args);
 			break;
 		case BY_PROXIMITY:
-			range = Float.MAX_VALUE;
+			range = Float.POSITIVE_INFINITY;
 			for(ArcFunction func : funcList) {
 				float newRange = Vector3f.distanceSquared(callerPosition, func.getPosition());
 				if (newRange < range) {
 					func.trigger(args);
+					range = newRange;
 				}
 			}
 			break;

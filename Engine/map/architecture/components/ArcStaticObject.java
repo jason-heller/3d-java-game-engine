@@ -2,6 +2,7 @@ package map.architecture.components;
 
 import org.joml.Vector3f;
 
+import geom.AxisAlignedBBox;
 import gl.res.Model;
 
 public class ArcStaticObject {
@@ -15,9 +16,15 @@ public class ArcStaticObject {
 	public byte solidity;
 	public float visRange;
 	
-	public Model getModel() {
-		// TODO Auto-generated method stub
-		return null;
+	private AxisAlignedBBox bbox;
+	
+	public void setBBox(Model model) {
+		Vector3f center = new Vector3f(pos);
+		center.y += model.bounds.y;
+		bbox = new AxisAlignedBBox(center, model.bounds);
 	}
-
+	
+	public AxisAlignedBBox getBBox() {
+		return bbox;
+	}
 }

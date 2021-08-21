@@ -2,7 +2,9 @@ package map.architecture.read;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.List;
 
+import core.Resources;
 import io.FileUtils;
 import map.architecture.components.ArcObjects;
 import map.architecture.components.ArcStaticObject;
@@ -10,7 +12,7 @@ import map.architecture.vis.Bsp;
 
 public class ArcLoadObjects {
 	
-	static void readObjects(Bsp bsp, DataInputStream in) throws IOException {
+	static void readObjects(Bsp bsp, List<ArcStaticObject> objects, DataInputStream in) throws IOException {
 		String[] objModelReference = new String[in.readShort()];
 		for(int i = 0; i < objModelReference.length; i++) {
 			objModelReference[i] = FileUtils.readString(in);
@@ -21,20 +23,23 @@ public class ArcLoadObjects {
 			objLeafResidence[i] = in.readShort();
 		}
 		
-		ArcStaticObject[] objects = new ArcStaticObject[in.readShort()];
-		for(int i = 0; i < objects.length; i++) {
+		//objects = new ArcStaticObject[in.readShort()];
+		int numObjects = in.readShort();
+		for(int i = 0; i < numObjects; i++) {
 			ArcStaticObject obj = new ArcStaticObject();
 			obj.pos = FileUtils.readVec3(in);
 			obj.rot = FileUtils.readVec3(in);
 			obj.lightingPos = FileUtils.readVec3(in);
 			obj.objLeafResIndex = in.readShort();
 			obj.numObjLeafRes = in.readByte();
+			in.readByte();		// "skin" but is unused for now
 			obj.model = in.readShort();
 			obj.solidity = in.readByte();
 			obj.visRange = in.readFloat();
-			objects[i] = obj;
+			
+			objects.add(obj);
 		}
 		
-		bsp.objects = new ArcObjects(objModelReference, objLeafResidence, objects);
+		bsp.objects = new ArcObjects(bsp.leaves, objModelReference, objLeafResidence, objects);
 	}
 }

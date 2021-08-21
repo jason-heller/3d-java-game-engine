@@ -1,7 +1,10 @@
 package map.architecture.components;
 
+import java.util.Set;
+
 import org.joml.Vector3f;
 
+import dev.cmd.Console;
 import geom.AxisAlignedBBox;
 import geom.Plane;
 import gl.res.Model;
@@ -38,49 +41,49 @@ public class ArcHeightmap {
 	}
 
 	public void buildModel(ArcHeightmapVertex[] heightmapVerts, ArcFace[] faces, Plane[] planes, ArcEdge[] edges,
-			int[] surfEdges, Vector3f[] vertices, ArcTextureData[] texData, String[] texRefsArr) {
+			int[] surfEdges, Vector3f[] vertices, ArcTextureMapping[] texData, String[] texRefsArr) {
 		ArcFace face = faces[faceId];
+
 		
 		float[] verts = new float[numVertices * 3];
 		float[] uvs = new float[numVertices * 4];
 		float[] blends = new float[numVertices];
 		int[] inds = new int[6 * (subdivisions + 1) * (subdivisions + 1)];
 		
-		float[][] texVecs = texData[face.texId].texels;
-		float[][] lmVecs = texData[face.texId].lmVecs;
+		float[][] texVecs = texData[face.texMapping].texels;
+		float[][] lmVecs = texData[face.texMapping].lmVecs;
+		
 		int v = 0, u = 0, x = 0;
 		
 		Plane plane = planes[face.planeId];
+		boolean flipNormals = false;
+		
 		int surf;
 		ArcEdge edge;
-
-		boolean flipNormals = false;
-
-		for(int i = 0; i < face.numEdges; i++) {
-			surf = surfEdges[face.firstEdge + i];
-			edge = edges[Math.abs(surf)];
-			
-			Vector3f edgeVec = Vector3f.sub(vertices[edge.end], vertices[edge.start]);
-			if (surf > 0) edgeVec.negate();
-			
-			if (plane.normal.y == 0.0f) {
-				if (edgeVec.y > Math.max(Math.abs(edgeVec.x), Math.abs(edgeVec.z))) {
-					strideZ = edgeVec;
-				} else {
-					strideX = edgeVec;
-				}
-			} else {
-				if (Math.abs(edgeVec.x) > Math.abs(edgeVec.z)) {
-					strideX = edgeVec;
-				} else {
-					strideZ = edgeVec;
-				}
-			}
-		}
 		
+		surf = surfEdges[face.firstEdge + 2];
+		edge = edges[Math.abs(surf)];
+		strideZ = Vector3f.sub(vertices[edge.end], vertices[edge.start]);
+		if (surf > 0)
+			strideZ.negate();
+		surf = surfEdges[face.firstEdge + 3];
+		edge = edges[Math.abs(surf)];
+		strideX = Vector3f.sub(vertices[edge.end], vertices[edge.start]);
+		if (surf > 0)
+			strideX.negate();
+
 		// This is awful
-		if (plane.normal.y == 0f && (plane.normal.x < 0f || plane.normal.z > 0f)) {
-			flipNormals = true;
+		if (plane.normal.y == 0f) {
+			if (plane.normal.z < 0f) {
+				flipNormals = true;
+				strideZ.mul(-1f);
+			}
+			
+			if (plane.normal.x > 0f) {
+				Vector3f temp = Vector3f.negate(strideZ);
+				strideZ.set(strideX);
+				strideX.set(temp);
+			}
 		}
 
 		strideX.div(subdivisions);
@@ -112,10 +115,12 @@ public class ArcHeightmap {
 			uvs[u++] = ((texVecs[0][0] * vert.x + texVecs[0][1] * vert.y + texVecs[0][2] * vert.z) + texVecs[0][3]);
 			uvs[u++] = ((texVecs[1][0] * vert.x + texVecs[1][1] * vert.y + texVecs[1][2] * vert.z) + texVecs[1][3]);
 
+
 			uvs[u++] = (((lmVecs[0][0] * vert.x + lmVecs[0][1] * vert.y + lmVecs[0][2] * vert.z) + lmVecs[0][3]
 					- face.lmMins[0]) / (face.lmSizes[0] + 1) * face.lightmapScaleX) + face.lightmapOffsetX;
-			uvs[u++] = (((lmVecs[1][0] * vert.x + lmVecs[1][1] * vert.y + lmVecs[1][2] * vert.z) + lmVecs[1][3]
-					- face.lmMins[1]) / (face.lmSizes[1] + 1) * face.lightmapScaleY) + face.lightmapOffsetY;
+			float uv = (((lmVecs[1][0] * vert.x + lmVecs[1][1] * vert.y + lmVecs[1][2] * vert.z) + lmVecs[1][3]
+					- face.lmMins[1]) / (face.lmSizes[1] + 1) * face.lightmapScaleY);
+			uvs[u++] = (face.lightmapOffsetY + face.lightmapScaleY) - uv;
 
 			blends[i] = hVert.getBlend();
 		}
@@ -219,6 +224,44 @@ public class ArcHeightmap {
 		}
 		
 		return MathUtil.barycentric(px, pz, p1, p2, p3) + origin.y;
+	}
+	
+	public float getBlendAt(float x, float z, ArcHeightmapVertex[] vertices) {
+		Vector3f p1, p2, p3;
+		float px = x - origin.x;
+		float pz = z - origin.z;
+		
+		int xCounter = (int) (px / strideX.x);
+		int zCounter = (int) (pz / strideZ.z);
+		
+		Vector3f left = Vector3f.mul(strideX, xCounter);
+		Vector3f right = Vector3f.mul(strideX, xCounter + 1);
+		Vector3f bottom = Vector3f.mul(strideZ, zCounter);
+		Vector3f top = Vector3f.mul(strideZ, zCounter + 1);		
+		int vertexStride = subdivisions + 1;
+		int blVertIndex = firstVertex + (xCounter + (zCounter * vertexStride));
+		int brVertIndex = blVertIndex + 1;
+		int tlVertIndex = blVertIndex + vertexStride;
+		int trVertIndex = tlVertIndex + 1;
+		
+		if (blVertIndex < 0 || trVertIndex > vertices.length) {
+			return Float.NEGATIVE_INFINITY;
+		}
+		
+		p1 = Vector3f.add(right, bottom);
+		p1.y = (vertices[brVertIndex].getBlend());
+		p2 = Vector3f.add(left, top);
+		p2.y = (vertices[tlVertIndex].getBlend());
+		
+		if ((p2.x - p1.x) * (pz - p1.z) - (p2.z - p1.z) * (px - p1.x) > 0f) {
+			p3 = Vector3f.add(left, bottom);
+			p3.y = (vertices[blVertIndex].getBlend());
+		} else {
+			p3 = Vector3f.add(right, top);
+			p3.y = (vertices[trVertIndex].getBlend());
+		}
+		
+		return MathUtil.barycentric(px, pz, p1, p2, p3);
 	}
 
 	public Model getModel() {

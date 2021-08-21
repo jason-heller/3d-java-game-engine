@@ -11,7 +11,7 @@ import dev.Debug;
 import gl.fbo.FboUtils;
 import gl.fbo.FrameBuffer;
 import gl.generic.GenericShader;
-import gl.light.LightShader;
+import gl.generic.LightGenericShader;
 import gl.line.LineRender;
 import gl.particle.ParticleHandler;
 import gl.post.PostProcessing;
@@ -25,7 +25,7 @@ public class Render {
 	//private static FrameBuffer screenMultisampled;
 	public static FrameBuffer screen, screenPong;
 	private static GenericShader genericShader;
-	private static LightShader lightShader;
+	private static LightGenericShader lightShader;
 	
 	public static int shadowQuality = 1;
 	public static float defaultBias = -1f;
@@ -67,20 +67,15 @@ public class Render {
 		refraction = new FrameBuffer(320 * waterQuality, 180 * waterQuality, true, true, true, false, 1);
 		
 		PostProcessing.init();
-
-		Resources.addTexture("skybox", "default.png");
-		Resources.addTexture("default", "default.png");
-		Resources.addTexture("none", "flat.png");
-		Resources.addTexture("noise", "noise.png");
-		Resources.addObjModel("cube", "cube.obj", true);
-		Resources.addSound("click", "lighter_click.ogg");
+		
+		Resources.initBaseResources();
 		
 		Resources.addTexture("screen", screen, false);
 
 		initGuiTextures();
 		
 		genericShader = new GenericShader();
-		lightShader = new LightShader();
+		lightShader = new LightGenericShader();
 	}
 
 	private static void initGuiTextures() {
@@ -253,7 +248,7 @@ public class Render {
 		return genericShader;
 	}
 	
-	public static LightShader getLightShader() {
+	public static LightGenericShader getLightShader() {
 		return lightShader;
 	}
 

@@ -9,6 +9,8 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
+import dev.cmd.Console;
+import geom.AxisAlignedBBox;
 import gl.anim.component.Skeleton;
 import gl.res.mesh.MeshData;
 
@@ -28,15 +30,20 @@ public class Model {
 	private Vbo indexVbo;
 	private int indexCount;
 	private int vertexCount;
-	private float[] vertices = null;
+	private Vector3f[] navMesh = null;
 
 	private float height;
-	public Vector3f min, max;
+	public Vector3f center, bounds;
 	
 	private Skeleton skeleton;
 
 	private Model(int id) {
 		this.id = id;
+	}
+	
+	public void setBounds(Vector3f max, Vector3f min) {
+		center = Vector3f.add(max, min).div(2f);
+		bounds = Vector3f.sub(max, min).div(2f);
 	}
 
 	private void bind() {
@@ -152,26 +159,18 @@ public class Model {
 		return vertexCount;
 	}
 
-	public float[] getVertices() {
-		return vertices;
-	}
-
 	public void setHeight(float height) {
 		this.height = height;
 	}
 
-	public void setVertexData(int[] indices, float[] vertices) {
-		this.vertices = new float[indices.length * 3];
-		int j = 0;
-
-		for (final int indice : indices) {
-			this.vertices[j] = vertices[indice * 3];
-			this.vertices[j + 1] = vertices[indice * 3 + 1];
-			this.vertices[j + 2] = vertices[indice * 3 + 2];
-			j += 3;
-		}
+	public void setNavMesh(Vector3f[] navMesh) {
+		this.navMesh = navMesh;
 	}
 
+	public Vector3f[] getNavMesh() {
+		return navMesh;
+	}
+	
 	private void unbind() {
 		GL30.glBindVertexArray(0);
 	}

@@ -3,6 +3,7 @@
 in vec3 in_position;
 in vec4 in_textureCoords;
 in vec3 in_normals;
+in vec3 in_tangents;
 
 out vec4 pass_textureCoords;
 out vec3 pass_normals;
@@ -30,6 +31,7 @@ void main(void){
 	
 	pass_textureCoords = in_textureCoords;
 	pass_normals = in_normals;
+	
 	pass_worldPos = worldPos.xyz;
 	
 	for(int i = 0; i < 4; i++) {

@@ -17,21 +17,22 @@ import core.Resources;
 import dev.Debug;
 import geom.AxisAlignedBBox;
 import geom.CollideUtils;
+import geom.MTV;
+import geom.Plane;
 import gl.Camera;
 import gl.Render;
-import gl.TexturedModel;
-import gl.arc.ArcRender;
+import gl.arc.ArcRenderLightGeneric;
+import gl.arc.ArcRenderMaster;
 import gl.light.DynamicLight;
 import gl.light.DynamicLightHandler;
-import gl.line.LineRender;
 import gl.particle.ParticleEmitter;
 import gl.res.Texture;
-import map.architecture.components.ArcClip;
+import gl.skybox._3d.SkyboxCamera;
 import map.architecture.components.ArcFace;
 import map.architecture.components.ArcHeightmap;
 import map.architecture.components.ArcLightCube;
 import map.architecture.components.ArcNavigation;
-import map.architecture.components.ArcPackedAssets;
+import map.architecture.components.ArcTextureMapping;
 import map.architecture.components.ArcTextureData;
 import map.architecture.components.ArcTriggerClip;
 import map.architecture.functions.ArcFuncHandler;
@@ -67,20 +68,20 @@ public class Architecture {
 	public ArcFace[] faces;
 	
 	private List<ParticleEmitter> emitters = new ArrayList<ParticleEmitter>();
-	private Texture[] mapSpecificTextures;
-
-	private Vector3f sunVector;
-	private String[] mapSpecTexRefs;
 	
-	private ArcPackedAssets packedAssets;
+	private ArcTextureData textureData;
+	
 	private ArcFuncHandler funcHandler;
 	private Lightmap lightmap;
 	public ArcLightCube[] ambientLightCubes;
+	
 	public boolean hasSkybox = false;
+	private SkyboxCamera skyCamera = null;
 	
 	private LinkedList<BspLeaf> audible = new LinkedList<>();
 	
 	private List<ArcHeightmap> renderedHeightmaps = new ArrayList<>();
+	
 	
 	public Architecture(Scene scene) {
 		this.scene = scene;	
@@ -110,7 +111,7 @@ public class Architecture {
 					audible.add(leaf);
 				}
 				
-				if (vis[leaf.clusterId] == 0 && !ArcRender.fullRender) {
+				if (vis[leaf.clusterId] == 0 && !ArcRenderLightGeneric.fullRender) {
 					continue;
 				}
 				
@@ -159,38 +160,7 @@ public class Architecture {
 	
 	public void render(Camera camera, Vector4f clipPlane, boolean hasLighting) {
 		
-		List<ArcHeightmap> heightmaps = new LinkedList<>();
-		
-		// Other stuff
-		ArcRender.renderShadows(camera, renderedLeaves, dynamicLightHandler.getLights());
-		ArcRender.renderHeightmaps(camera, this, renderedHeightmaps, clipPlane, hasLighting, dynamicLightHandler.getLights());
-		bsp.objects.render(camera, this);
-		
-		ArcRender.startRender(camera, clipPlane, hasLighting, dynamicLightHandler.getLights());
-		
-		for(BspLeaf leaf : renderedLeaves) {
-			
-			if (leaf.isUnderwater && clipPlane.w == Float.POSITIVE_INFINITY) {
-				Render.renderWaterFbos(scene, camera, leaf.max.y);
-				ArcRender.renderWater(camera, leaf.max, leaf.min);
-			}
-			
-			if (Debug.showClips) {
-				for(short id : leaf.clips ) {
-					ArcClip clip = bsp.clips[id];
-					LineRender.drawBox(clip.bbox.getCenter(), clip.bbox.getBounds(), clip.id.getColor());
-				}
-			}
-			
-			for(TexturedModel visObj : leaf.getMeshes()) {
-				
-				if (!camera.getFrustum().containsBoundingBox(leaf.max, leaf.min)) {continue;}
-
-				ArcRender.render(camera, this, visObj);
-			}
-		}
-		
-		ArcRender.finishRender();
+		ArcRenderMaster.render(scene, clipPlane, this, hasLighting, dynamicLightHandler.getLights(), renderedLeaves);
 		
 		for (ParticleEmitter pe : emitters) {
 			pe.generateParticles(camera);
@@ -217,7 +187,13 @@ public class Architecture {
 			
 			if (entity instanceof PhysicsEntity) {
 				PhysicsEntity physEnt = (PhysicsEntity)entity;
-				if (trigger.bbox.collide(physEnt.getBBox()) == null) {
+				
+				Plane[] planes = new Plane[trigger.numPlanes];
+				for(int i = 0; i < trigger.numPlanes; i++) 
+					planes[i] = bsp.planes[bsp.clipPlaneIndices[trigger.firstPlane + i]];
+				
+				MTV mtv = CollideUtils.convexHullBoxCollide(planes, physEnt.getBBox());
+				if (mtv == null) {
 					trigger.interact(entity, false);
 					iter.remove();
 				}
@@ -265,17 +241,12 @@ public class Architecture {
 	public boolean isLeafAudible(BspLeaf leaf) {
 		return audible.contains(leaf);
 	}
-
-	public void passAssetsToOpenGL() {
-		packedAssets.passToOpenGL();
-		packedAssets = null;
-		callCommand("spawn_player");
-	}
 	
 	public void cleanUp() {
 		bsp.cleanUp();
-		for(int i = 0; i < mapSpecTexRefs.length; i++) {
-			Resources.removeTexture(mapSpecTexRefs[i++]);
+		final Texture[] textures = textureData.getTextures();
+		for(Texture texture : textures) {
+			texture.delete();
 		}
 		lightmap.delete();
 	}
@@ -302,26 +273,10 @@ public class Architecture {
 		return mapCompilerVersion;
 	}
 
-	public void setMapSpecificTextures(Texture[] mapSpecificTextures, String[] mapSpecTexRefs) {
-		this.mapSpecificTextures = mapSpecificTextures;
-		this.mapSpecTexRefs = mapSpecTexRefs;
-	}
-
 	public List<BspLeaf> getRenderedLeaves() {
 		return renderedLeaves;
 	}
 	
-	public Vector3f getSunVector() {
-		return sunVector;
-	}
-
-	public void setSunVector(Vector3f sunVector) {
-		this.sunVector = sunVector;
-	}
-
-	public void setPackedAssets(ArcPackedAssets packedAssets) {
-		this.packedAssets = packedAssets;
-	}
 	
 	public void addFunction(ArcFunction func) {
 		funcHandler.add(func);
@@ -355,24 +310,12 @@ public class Architecture {
 		activeTriggers.put(entity, clip);
 	}
 
-	public String[] getMapTextureRefs() {
-		return this.mapSpecTexRefs;
-	}
-
-	public ArcPackedAssets getPackedAssets() {
-		return packedAssets;
-	}
-
-	public ArcTextureData[] getTexData() {
-		return packedAssets.getTextureData();
+	public Texture[] getTextures() {
+		return textureData.getTextures();
 	}
 	
-	public Texture[] getReferencedTextures() {
-		return this.mapSpecificTextures;
-	}
-	
-	public String[] getReferencedTexNames() {
-		return mapSpecTexRefs;
+	public String[] getTextureNames() {
+		return textureData.getTextureNames();
 	}
 
 	public Lightmap getLightmap() {
@@ -380,7 +323,7 @@ public class Architecture {
 	}
 	
 	public void changeMipmapBias() {
-		for (Texture texture : this.getReferencedTextures()) {
+		for (Texture texture : this.getTextures()) {
 			if (texture == null) continue;
 			texture.bind(0);
 			GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL14.GL_TEXTURE_LOD_BIAS, Render.defaultBias);
@@ -420,8 +363,9 @@ public class Architecture {
 				ArcFace[] faces = bsp.getFaces(leaf);
 				for(ArcFace face : faces) {
 					
-					ArcTextureData texData = packedAssets.getTextureData()[face.texId];
-					if (texData.textureId == -1) continue;
+					if (face.texMapping == -1) continue;
+					ArcTextureMapping texData = bsp.getTextureMappings()[face.texMapping];
+					//if (texData.textureId == -1) continue;
 					
 					float dist = CollideUtils.convexPolygonRay(bsp, face, org, dir);
 					if (dist < shortestDist) {
@@ -436,5 +380,21 @@ public class Architecture {
 
 	public DynamicLightHandler getDynamicLightHandler() {
 		return this.dynamicLightHandler;
+	}
+
+	public void setSkyCamera(SkyboxCamera skyCamera) {
+		this.skyCamera = skyCamera;
+	}
+	
+	public SkyboxCamera getSkyCamera() {
+		return skyCamera;
+	}
+
+	public List<ArcHeightmap> getRenderedHeightmaps() {
+		return renderedHeightmaps;
+	}
+
+	public void setTextureData(ArcTextureData textureData) {
+		this.textureData = textureData;
 	}
 }

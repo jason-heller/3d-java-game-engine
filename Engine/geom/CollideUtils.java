@@ -19,7 +19,7 @@ import map.architecture.vis.BspLeaf;
  */
 public class CollideUtils {
 
-	private final static Vector3f[] axisPtrs = new Vector3f[] { Vector3f.X_AXIS, Vector3f.Y_AXIS, Vector3f.Z_AXIS};
+	final static Vector3f[] axisPtrs = new Vector3f[] { Vector3f.X_AXIS, Vector3f.Y_AXIS, Vector3f.Z_AXIS};
 
 	/**
 	 * Gets the MTV between an axis aligned bounding box and a face defined within a

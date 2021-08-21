@@ -10,7 +10,7 @@ public class ArcFace {
 	public short planeId;
 	public int firstEdge;
 	public short numEdges;
-	public short texId;
+	public short texMapping;
 
 	public float lightmapOffsetX, lightmapOffsetY;
 	public float lightmapScaleX, lightmapScaleY;

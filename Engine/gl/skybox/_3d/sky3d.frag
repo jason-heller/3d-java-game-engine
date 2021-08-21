@@ -8,19 +8,19 @@ uniform sampler2D lightmap;
 uniform vec3 lightDirection;
 
 out vec4 out_color;
-const vec2 lightBias = vec2(0.3, 0.7);
+const float lightMin = 0.1;
+const float lightScale = 0.9;
 
 void main(void){
 	vec4 color, light;
 	color = texture(sampler, pass_textureCoords.xy);
 	light = texture(lightmap, pass_textureCoords.zw);
 	
-	if (color.rgb == vec3(1.0,0.0,1.0) || color.a == 0.0) {
+	if (color.a == 0.0) {
 		discard;
 	}
 	
-	vec4 ambient = vec4(0.25,0.25,0.25,0.0);
 	color.a = 1.0;
-	out_color = color * (light + ambient);
+	out_color = color * (light + lightMin) * lightScale;
 	
 }

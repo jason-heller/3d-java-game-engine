@@ -15,6 +15,7 @@ import map.architecture.components.ArcHeightmap;
 import map.architecture.components.ArcHeightmapVertex;
 import map.architecture.components.ArcObjects;
 import map.architecture.components.ArcRoom;
+import map.architecture.components.ArcTextureMapping;
 
 public class Bsp {
 	private static final float EPSILON = 0.0001f;
@@ -40,6 +41,8 @@ public class Bsp {
 	public ArcHeightmap[] heightmaps;
 
 	public BspLeaf[] clusters;
+
+	private ArcTextureMapping[] textureMappings;
 	
 	public void cleanUp() {
 		for(BspLeaf leaf : leaves) {
@@ -161,6 +164,14 @@ public class Bsp {
 
 	public void setNodes(BspNode[] nodes) {
 		this.nodes = nodes;
+	}
+
+	public ArcTextureMapping[] getTextureMappings() {
+		return textureMappings;
+	}
+
+	public void setTextureMappings(ArcTextureMapping[] textureMappings) {
+		this.textureMappings = textureMappings;
 	}
 
 	/*public boolean obbHullIntersection(BoundingBox obb, int firstFace, int numFaces) {

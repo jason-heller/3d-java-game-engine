@@ -29,7 +29,8 @@ import map.architecture.Architecture;
 import map.architecture.components.ArcEdge;
 import map.architecture.components.ArcFace;
 import map.architecture.components.ArcRoom;
-import map.architecture.components.ArcTextureData;
+import map.architecture.components.ArcTextureMapping;
+import map.architecture.util.ArcUtil;
 import map.architecture.vis.Bsp;
 import map.architecture.vis.BspLeaf;
 import scene.PlayableScene;
@@ -152,27 +153,40 @@ public class Debug {
 
 			if (nearestFace != null) {
 				
+				int surfEdge = bsp.surfEdges[bsp.faces[faceId].firstEdge];
+				ArcEdge oedge = bsp.edges[Math.abs(surfEdge)];
+				int vertId = (surfEdge > 0) ? oedge.start : oedge.end;
+				LineRender.drawBox(bsp.vertices[vertId], new Vector3f(1,1,1), Colors.VIOLET);
+				
 				for (int i = nearestFace.firstEdge; i < nearestFace.numEdges + nearestFace.firstEdge; i++) {
 					ArcEdge edge = bsp.edges[Math.abs(bsp.surfEdges[i])];
 					Vector3f A = bsp.vertices[edge.start];
 					Vector3f B = bsp.vertices[edge.end];
+					Vector3f N = bsp.planes[nearestFace.planeId].normal;
 					
-					ArcTextureData texData = arc.getPackedAssets().getTextureData()[nearestFace.texId];
+					if (nearestFace.texMapping == -1)
+						continue;
+					
+					ArcTextureMapping texInfo = bsp.getTextureMappings()[nearestFace.texMapping];
 					Texture tex = null;
 					String texName = "N/A", texMat = "N/A";
-					if (texData.textureId != -1 && texData.textureId-3 < arc.getReferencedTextures().length) {
-						tex = arc.getReferencedTextures()[texData.textureId-3];
-						texName = arc.getReferencedTexNames()[texData.textureId];
+					String[] textureNames = arc.getTextureNames();
+					Texture[] textures = arc.getTextures();
+					if (texInfo.textureId != -1 && texInfo.textureId < textureNames.length) {
+						tex = textures[texInfo.textureId];
+						texName = textureNames[texInfo.textureId];
 						texMat = tex.getMaterial().name();
 					}
 					
+					Vector3f tangent = ArcUtil.getFaceTangent(bsp.vertices, bsp.edges, bsp.surfEdges, bsp.getTextureMappings(), nearestFace);
+					
 					// Behold! Hell itself
-					float[][] tv = texData.lmVecs;
-					String info = "Face #" + faceId
+					float[][] tv = texInfo.lmVecs;
+					String info = "Face " + faceId + " " + nearestFace.texMapping  + "/" + texInfo.textureId
 					+ "\nedges [" + nearestFace.firstEdge + "-" + (nearestFace.firstEdge+nearestFace.numEdges) +"]"
-					+ "\ntexmap info:" + nearestFace.texId
+					+ "\ntexmap info:" + nearestFace.texMapping
 					+ "\nlm index:" + nearestFace.lmIndex
-					+ "\ntexture: " + texName + " (id=" + texData.textureId + ")"
+					+ "\ntexture: " + texName + " (id=" + texInfo.textureId + ")"
 					+ "\nmaterial: " + texMat
 					+ "\nlightmap:\n    mins: (" +nearestFace.lmMins[0] + ", " + nearestFace.lmMins[1] + ")"
 					+ "\n    sizes: (" +nearestFace.lmSizes[0] + ", " + nearestFace.lmSizes[1] + ")"
@@ -181,6 +195,7 @@ public class Debug {
 					+ "\n    tex vec (V): [" + tv[1][0] + ", " + tv[1][1] + ", " + tv[1][2] + ", " + tv[1][3] + "]"
 					+ "\n\" texture:\n    lm scales: (" +nearestFace.lightmapScaleX + ", " + nearestFace.lightmapScaleY + ")"
 					+ "\n    lm offsets: (" +nearestFace.lightmapOffsetX + ", " + nearestFace.lightmapOffsetY + ")"
+					+ "\ntangentt: " + tangent
 					;
 					
 					UI.drawString(info, 640, 376, .175f, false);
@@ -203,7 +218,20 @@ public class Debug {
 						UI.drawLine((int)u1, (int)v1, (int)u2, (int)v2, 1, Colors.RED);
 					}
 					
-					LineRender.drawLine(A, B, (i % 2 == 0) ? Colors.PINK : Colors.PURPLE);
+					Vector3f center1 = Vector3f.add(A, B).mul(.5f);
+					Vector3f bounds1 = Vector3f.sub(B, A).mul(.5f);
+					
+					
+					final float R = 2f;//MapFileBuilder.HMR_ARC_SCALE_DIFF*3f;
+					final float dR = R*2f;
+					if (bounds1.x <= dR) bounds1.x = Math.max(Math.abs(bounds1.x), dR);
+					if (bounds1.y <= dR) bounds1.y = Math.max(Math.abs(bounds1.y), dR);
+					if (bounds1.z <= dR) bounds1.z = Math.max(Math.abs(bounds1.z), dR);
+					
+					Vector3f trim = new Vector3f(R,R,R);
+					bounds1 = bounds1.sub(trim);
+					LineRender.drawBox(center1, bounds1, Colors.CLAY);
+					LineRender.drawLine(Vector3f.add(A, N), Vector3f.add(B, N), (i % 2 == 0) ? Colors.PINK : Colors.PURPLE);
 				}
 			}
 		}

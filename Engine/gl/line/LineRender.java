@@ -13,6 +13,7 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL33;
 
+import geom.Polygon;
 import gl.Camera;
 import gl.Render;
 import gl.res.Model;
@@ -191,5 +192,11 @@ public class LineRender {
 				Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(-1,1,-1))), color);
 		LineRender.drawLine(Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(-1,-1,1))),
 				Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(-1,1,1))), color);
+	}
+
+	public static void drawTriangle(Polygon tri, Vector3f color) {
+		LineRender.drawLine(tri.p1, tri.p2, color);
+		LineRender.drawLine(tri.p2, tri.p3, color);
+		LineRender.drawLine(tri.p3, tri.p1, color);
 	}
 }

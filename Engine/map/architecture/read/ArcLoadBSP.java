@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import org.joml.Vector3f;
 
-import map.architecture.components.ArcPackedAssets;
+import map.architecture.components.ArcTextureData;
 import map.architecture.vis.Bsp;
 import map.architecture.vis.BspLeaf;
 import map.architecture.vis.BspNode;

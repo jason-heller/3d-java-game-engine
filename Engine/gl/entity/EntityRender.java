@@ -14,10 +14,10 @@ import core.Resources;
 import dev.Debug;
 import gl.Camera;
 import gl.Render;
-import gl.arc.ArcRender;
+import gl.arc.ArcRenderMaster;
+import gl.generic.LightGenericShader;
 import gl.light.DynamicLight;
 import gl.light.DynamicLightHandler;
-import gl.light.LightShader;
 import gl.res.Model;
 import gl.res.Texture;
 import map.architecture.Architecture;
@@ -44,7 +44,7 @@ public class EntityRender {
 	}
 	
 	public void render(Camera camera, Architecture arc, Vector4f clipPlane, Map<BspLeaf, List<Entity>> entities) {
-		LightShader shader = Render.getLightShader();
+		LightGenericShader shader = Render.getLightShader();
 		shader.start();
 		shader.projectionViewMatrix.loadMatrix(camera.getProjectionViewMatrix());
 		shader.clipPlane.loadVec4(clipPlane);
@@ -52,7 +52,7 @@ public class EntityRender {
 		
 		// Arc stuff
 		DynamicLight[] lights = arc.getDynamicLightHandler().getLights();
-		Matrix4f lightProjectionMatrix = ArcRender.getShadowProjectionMatrix();
+		Matrix4f lightProjectionMatrix = ArcRenderMaster.getShadowProjectionMatrix();
 		//
 		
 		for(int i = 0; i < DynamicLightHandler.MAX_DYNAMIC_LIGHTS; i++) {
@@ -96,7 +96,7 @@ public class EntityRender {
 		shader.stop();
 	}
 	
-	private void render(Architecture arc, Camera camera, Entity entity, LightShader shader) {
+	private void render(Architecture arc, Camera camera, Entity entity, LightGenericShader shader) {
 		Model model = entity.getModel();
 		
 		if (model == null || !entity.visible) 

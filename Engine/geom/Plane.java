@@ -67,11 +67,19 @@ public class Plane {
 		return Vector3f.sub(point, Vector3f.mul(normal, (float) signedDistanceTo(point)));
 	}
 
-	public float collide(Vector3f org, Vector3f dir) {
+	public Vector3f raycastPoint(Vector3f org, Vector3f dir) {
 		final float dp = normal.dot(dir);
-		if (Math.abs(dp) < .00001f) {
+		if (Math.abs(dp) < .00001f)
+			return org;
+			
+		float t = (dist - normal.dot(org)) / dp;
+		return Vector3f.add(org, Vector3f.mul(dir, t));
+	}
+	
+	public float raycast(Vector3f org, Vector3f dir) {
+		final float dp = normal.dot(dir);
+		if (Math.abs(dp) < .00001f)
 			return Float.POSITIVE_INFINITY;
-		}
 
 		float t = (dist - normal.dot(org)) / dp;
 		return t >= 0 ? t : Float.POSITIVE_INFINITY;

@@ -2,11 +2,51 @@ package map.architecture.util;
 
 import org.joml.Vector3f;
 
+import dev.cmd.Console;
 import gl.line.LineRender;
+import map.architecture.components.ArcEdge;
 import map.architecture.components.ArcFace;
+import map.architecture.components.ArcTextureMapping;
 import map.architecture.vis.Bsp;
 
 public class ArcUtil {
+	
+	public static Vector3f getFaceTangent(Vector3f[] vertices, ArcEdge[] edges, int[] surfEdges, ArcTextureMapping[] texMappings, ArcFace face) {
+		Vector3f dPos1 = getEdgeVector(vertices, edges, surfEdges, face.firstEdge);
+		Vector3f dPos2 = getEdgeVector(vertices, edges, surfEdges, face.firstEdge + face.numEdges - 1);
+
+		ArcTextureMapping texMap = texMappings[face.texMapping];
+		
+		// Note: Ignored texels[n][4] since it's irrelevant to the delta
+		float[] dTex1 = new float[] {
+				(dPos1.x * texMap.texels[0][0] + dPos1.y * texMap.texels[0][1] + dPos1.z * texMap.texels[0][2]),
+				(dPos1.x * texMap.texels[1][0] + dPos1.y * texMap.texels[1][1] + dPos1.z * texMap.texels[1][2])
+		};
+		
+		float[] dTex2 = new float[] {
+				(dPos2.x * texMap.texels[0][0] + dPos2.y * texMap.texels[0][1] + dPos2.z * texMap.texels[0][2]),
+				(dPos2.x * texMap.texels[1][0] + dPos2.y * texMap.texels[1][1] + dPos2.z * texMap.texels[1][2])
+		};
+		
+		//float r = 1f / (dTex1[0] * dTex2[1] - dTex1[1] * dTex2[0]);
+		//return Vector3f.mul(Vector3f.sub(Vector3f.mul(dPos1, dTex2[1]), Vector3f.mul(dPos2, dTex1[1])), r);
+		return Vector3f.sub(Vector3f.mul(dPos1, dTex2[1]), Vector3f.mul(dPos2, dTex1[1])).normalize();
+	}
+	
+
+	public static Vector3f getVertex(Vector3f[] vertices, ArcEdge[] edges, int[] surfEdges, int surfEdge, boolean end) {
+		ArcEdge edge = edges[Math.abs(surfEdges[surfEdge])];
+		boolean getEnd = (end ^ (surfEdge < 0));
+		return vertices[getEnd ? edge.end : edge.start];
+	}
+	
+	
+	public static Vector3f getEdgeVector(Vector3f[] vertices, ArcEdge[] edges, int[] surfEdges, int surfEdge) {
+		ArcEdge edge = edges[Math.abs(surfEdges[surfEdge])];
+		return (surfEdge < 0) ?
+				Vector3f.sub(vertices[edge.start], vertices[edge.end])
+				: Vector3f.sub(vertices[edge.end], vertices[edge.start]);
+	}
 
 	public static boolean faceContainsPoint(Bsp bsp, ArcFace face, Vector3f point) {
 		final int edgeStart = face.firstEdge;

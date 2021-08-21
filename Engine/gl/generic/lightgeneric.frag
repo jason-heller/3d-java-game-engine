@@ -11,8 +11,8 @@ uniform sampler2D diffuse;
 out vec4 out_color;
 out vec4 out_brightness;
 
-const float lightMin = 0.2;
-const float lightScale = 0.8;
+const float lightMin = 0.1;
+const float lightScale = 0.9;
 
 uniform sampler2D[4] shadowMap;
 uniform vec3[4] lightPos;
@@ -36,8 +36,10 @@ float ShadowCalculation(vec4 projLightSpace, int i) {
 void main(void){
 	vec4 color, light;
 	color = texture(diffuse, pass_textureCoords.xy);
+	
 	if (color.a < 0.5)
 		discard;
+		
 	// Spotlight
 	float intensity = 0.0;
 	float shadow = 0.0;
@@ -64,6 +66,7 @@ void main(void){
 	}
 
 	color.a = 1.0;
-	out_color = ((color * lightColor * max(intensity, lightMin)) * lightScale);
+	float lightScale = max(intensity, lightMin);
+	out_color = (color * (lightColor + vec3(lightScale)));
 	out_brightness = vec4(0.0);
 }

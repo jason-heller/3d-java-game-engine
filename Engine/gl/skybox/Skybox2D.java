@@ -1,17 +1,16 @@
 package gl.skybox;
 
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
 
 import core.Resources;
 import gl.Camera;
 import gl.Render;
 import gl.res.Model;
 import gl.res.Texture;
+import map.architecture.Architecture;
 
-public class Skybox2D {
+public class Skybox2D implements Skybox {
 	
 	private SkyboxShader shader;
 	private Model box;
@@ -19,7 +18,6 @@ public class Skybox2D {
 	
 	public Skybox2D() {
 		this.shader = new SkyboxShader();
-		
 		createSkyboxModel();
 	}
 	
@@ -40,7 +38,7 @@ public class Skybox2D {
 				-size };
 	}
 	
-	public void render(Camera camera, Vector3f sunDirection) {
+	public void render(Architecture arc, Camera camera) {
 		shader.start();
 		Matrix4f matrix = new Matrix4f(camera.getViewMatrix());
 		matrix.m30 = 0;
@@ -49,7 +47,7 @@ public class Skybox2D {
 		//matrix.rotateX(camera.getPitch());
 		shader.projectionMatrix.loadMatrix(camera.getProjectionMatrix());
 		shader.viewMatrix.loadMatrix(matrix);
-		shader.lightDir.loadVec3(sunDirection);
+		//shader.lightDir.loadVec3(sunDirection);
 		
 		//GL11.glDisable(GL11.GL_BLEND);
 		//GL11.glCullFace(GL11.GL_BACK);

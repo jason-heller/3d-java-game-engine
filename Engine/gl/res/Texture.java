@@ -15,7 +15,7 @@ public class Texture {
 	private int atlasRows = 1;
 
 	private boolean transparent = false;
-	private Material material;
+	private Material material = Material.ROCK;
 
 	public Texture(int id, int width, int height, boolean transparent, int atlasRows) {
 		this.id = id;

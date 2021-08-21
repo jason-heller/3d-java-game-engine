@@ -8,9 +8,7 @@ import java.util.TreeMap;
 import org.joml.Vector3f;
 
 import core.Application;
-import dev.cmd.Console;
 import geom.Plane;
-import map.architecture.util.ArcUtil;
 import map.architecture.vis.Bsp;
 import scene.PlayableScene;
 import scene.entity.util.NavigableEntity;
@@ -23,8 +21,8 @@ public class ArcNavigation {
 		navMesh = new ArcNavNode[numNavElements];
 	}
 	
-	public void addNode(int index, Vector3f position, int[] faces, short[] neighbors, int[] edges) {
-		navMesh[index] = new ArcNavNode(position, faces, neighbors, edges);
+	public void addNode(int index, Vector3f position, int planeId, short[] neighbors, float width, float length) {
+		navMesh[index] = new ArcNavNode(position, planeId, neighbors, width, length);
 	}
 	
 	public ArcNavNode getNodeAt(Vector3f pos, Bsp bsp) {
@@ -37,23 +35,25 @@ public class ArcNavigation {
 		int id = -1;
 		
 		for(int i = 0; i < navMesh.length; i++) {
-			final int[] faceIds = navMesh[i].getFaceIds();
+			ArcNavNode node = navMesh[i];
+			final int planeId = node.getPlaneId();
 			
-			for(int faceId : faceIds) {
-				Plane plane = bsp.planes[bsp.faces[faceId].planeId];
-				Vector3f projPos = plane.projectPoint(pos);
-				if (projPos.y >= pos.y)
-					continue;
-				
-				boolean outside = faceContainsPointProjXZ(bsp, bsp.faces[faceId], pos);
-				
-				if (!outside) {
-					float dist = Vector3f.distanceSquared(pos, projPos);
-					if (dist < nearestY) {
-						nearestY = dist;
-						id = i;
-					}
-				}
+			Plane plane = bsp.planes[planeId];
+			float signDistPlane = plane.raycast(pos, new Vector3f(0, -1, 0));
+			
+			if (signDistPlane == Float.POSITIVE_INFINITY)
+				continue;
+			
+			if (Math.abs(pos.x - node.getPosition().x) > node.getWidth())
+				continue;
+			
+			if (Math.abs(pos.z - node.getPosition().z) > node.getLength())
+				continue;
+			
+			//float dist = Vector3f.distanceSquared(pos, node.getPosition());
+			if (signDistPlane < nearestY) {
+				nearestY = signDistPlane;
+				id = i;
 			}
 		}
 		
@@ -148,47 +148,6 @@ public class ArcNavigation {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Similar to ArcUtil.faceContainsPoint(); This is a special case where the face
-	 * is always projected onto the XZ plane. Since this will be called often, this
-	 * is used over the general case method for optimization
-	 * 
-	 * @param bsp
-	 *            The current BSP
-	 * @param face
-	 *            The face being tested
-	 * @param point
-	 *            The point we are testing against
-	 * @return true if the point falls within the face when projected onto the XZ
-	 *         plane, false otherwise
-	 */
-	private boolean faceContainsPointProjXZ(Bsp bsp, ArcFace face, Vector3f point) {
-		final int edgeStart = face.firstEdge;
-		final int edgeEnd = edgeStart + face.numEdges;
-		
-		boolean outside = false;
-		
-		for(int j = edgeStart; j < edgeEnd; j++) {
-			Vector3f p1, p2;
-			int edgeId = bsp.surfEdges[j];
-			
-			if (edgeId < 0) {
-				p1 = bsp.vertices[bsp.edges[-edgeId].end];
-				p2 = bsp.vertices[bsp.edges[-edgeId].start];
-			} else {
-				p1 = bsp.vertices[bsp.edges[edgeId].start];
-				p2 = bsp.vertices[bsp.edges[edgeId].end];
-			}
-
-			if (((p2.x - p1.x) * (point.z - p1.z) - (p2.z - p1.z) * (point.x - p1.x)) > 0) {
-				outside = true;
-				break;
-			}
-		}
-		
-		return outside;
 	}
 
 	public ArcNavNode[] getNavFaces() {

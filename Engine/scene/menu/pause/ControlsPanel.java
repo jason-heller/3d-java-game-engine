@@ -29,7 +29,7 @@ public class ControlsPanel extends GuiPanel {
 		int i = 0;
 		Iterator<String> iter = Controls.controls.keySet().iterator();
 
-		for (i = 0; i < 4; i++) {
+		for (i = 0; i < 5; i++) {
 			addBind(iter.next());
 		}
 		

@@ -44,6 +44,7 @@ public class Controls {
 		controls.put("use_left", Input.KEY_LMB);
 		controls.put("use_right", Input.KEY_RMB);
 		controls.put("interact", Keyboard.KEY_E);
+		controls.put("flashlight", Keyboard.KEY_F);
 		
 		controls.put("walk_forward", Keyboard.KEY_W);
 		controls.put("walk_left", Keyboard.KEY_A);

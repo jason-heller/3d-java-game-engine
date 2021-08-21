@@ -24,7 +24,7 @@ public class SkyboxCamera extends Entity {
 			Vector3f fogColor) {
 		super("sky_camera");
 		this.pos = position;
-		this.scale = scale;
+		this.scale = scale / 4f;		// oops
 		this.hasFog = hasFog;
 		this.fogColor = fogColor;
 		this.fogStart = fogStart;

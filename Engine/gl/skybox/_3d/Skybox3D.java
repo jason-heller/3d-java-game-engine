@@ -7,35 +7,43 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
 import core.Resources;
+import dev.Debug;
 import gl.Camera;
 import gl.Render;
-import gl.TexturedModel;
 import gl.arc.ArcShader;
+import gl.skybox.Skybox;
+import gl.skybox.Skybox2D;
+import map.architecture.Architecture;
 import map.architecture.vis.Bsp;
 import map.architecture.vis.BspLeaf;
+import map.architecture.vis.Cluster;
 import map.architecture.vis.Pvs;
 
-public class Skybox3D {
+public class Skybox3D implements Skybox {
 	
 	private ArcShader shader;
 	private SkyboxCamera skyboxCamera;
 	
-	public Skybox3D(SkyboxCamera skyboxCamera) {
+	private Skybox2D skybox2D;
+	
+	public Skybox3D(SkyboxCamera skyboxCamera, Bsp bsp, Pvs pvs) {
 		this.shader = new ArcShader();
 		this.skyboxCamera = skyboxCamera;
-	}
-	
-	public void init(Bsp bsp, Pvs pvs) {
 		skyboxCamera.updateLeaf(bsp, pvs);
+		
+		skybox2D = new Skybox2D();
 	}
 	
-	public void render(Camera camera) {
+	public void render(Architecture arc, Camera camera) {
+		skybox2D.render(arc, camera);
+		
 		
 		Matrix4f matrix = new Matrix4f();
 		Vector3f position = new Vector3f(skyboxCamera.pos).mul(skyboxCamera.getScale()).negate();
 		position.sub(new Vector3f(camera.getPosition()).div(skyboxCamera.getScale()));
-		matrix.rotateX(camera.getPitch());
-		matrix.rotateY(camera.getYaw());
+		matrix.rotateX(camera.getEffectedPitch());
+		matrix.rotateY(camera.getEffectedYaw());
+		matrix.rotateZ(camera.getEffectedRoll());
 		matrix.translate(position);
 		matrix.scale(skyboxCamera.getScale());
 		
@@ -51,15 +59,17 @@ public class Skybox3D {
 		GL20.glEnableVertexAttribArray(2);
 		shader.projectionMatrix.loadMatrix(camera.getProjectionMatrix());
 		shader.viewMatrix.loadMatrix(matrix);
-		Resources.getTexture("lightmap").bind(1);
+
+		//shader.sampler.loadTexUnit(0);
+		shader.lightmap.loadTexUnit(1);
+		Resources.getTexture(Debug.fullbright ? "flat" : "lightmap").bind(1);
 		for(BspLeaf leaf : skyboxCamera.getRenderedLeaves()) {
-			for(TexturedModel object : leaf.getMeshes()) {
+			for(Cluster cluster : leaf.getMeshes()) {
 				
-				//if (!camera.getFrustum().containsBoundingBox(leaf.max, leaf.min)) continue;
-				object.getTexture().bind(0);
-				object.getModel().bind(0,1,2);
-				shader.modelMatrix.loadMatrix(object.getMatrix());
-				GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, object.getModel().getVertexCount());
+				arc.getTextures()[cluster.getDiffuseId()].bind(0);
+				cluster.getModel().bind(0,1,2);
+				// shader.modelMatrix.loadMatrix(object.getMatrix());
+				GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, cluster.getModel().getVertexCount());
 				Render.drawCalls++;
 			}
 		}
@@ -70,11 +80,15 @@ public class Skybox3D {
 		GL30.glBindVertexArray(0);
 		shader.stop();
 		
-		camera.getViewMatrix().set(tempMatrix);camera.updateProjection();
+		camera.getViewMatrix().set(tempMatrix);
+		camera.updateProjection();
+		
+		GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 		
 	}
 	
 	public void cleanUp() {
+		skybox2D.cleanUp();
 		shader.cleanUp();
 	}
 }

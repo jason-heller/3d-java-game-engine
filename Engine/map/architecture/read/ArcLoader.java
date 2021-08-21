@@ -17,6 +17,9 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import org.joml.Vector3f;
 
@@ -25,7 +28,8 @@ import dev.cmd.Console;
 import io.FileUtils;
 import map.architecture.Architecture;
 import map.architecture.components.ArcNavigation;
-import map.architecture.components.ArcPackedAssets;
+import map.architecture.components.ArcStaticObject;
+import map.architecture.components.ArcTextureData;
 import map.architecture.vis.Bsp;
 import map.architecture.vis.Pvs;
 import scene.Scene;
@@ -44,14 +48,13 @@ public class ArcLoader {
 		Bsp bsp = new Bsp();
 		Pvs pvs = new Pvs();
 		ArcNavigation nav = new ArcNavigation();
-		Vector3f sunVector = new Vector3f(.5f, -.5f, 0);
 		
 		arc.bsp = bsp;
+		List<ArcStaticObject> objects = new ArrayList<>();
 		
 		EntityHandler.link(arc);
 
-		ArcPackedAssets packedAssets = new ArcPackedAssets(arc);
-		arc.setPackedAssets(packedAssets);
+		ArcTextureData texData = new ArcTextureData(arc);
 		
 		boolean successfulLoad = false;
 
@@ -86,22 +89,33 @@ public class ArcLoader {
 			readRooms(bsp, in);
 			readBspTree(bsp, in);
 			readEntities(arc, in);
-			readObjects(bsp, in);
+			readObjects(bsp, objects, in);
 			readVis(pvs, in);
 			readNavMesh(nav, in);
-			readTextureInfo(packedAssets, in, hasBakedLighting);
-			readTextureList(packedAssets, in);
+			readTextureInfo(bsp, texData, in, hasBakedLighting);
+			readTextureList(texData, in);
 			readHeightmaps(bsp, in);
 			readLighting(arc, in, hasBakedLighting);
 
 			arc.setProperties(mapName, mapVer, gameId);
-			arc.setSunVector(sunVector);		// TODO: Deprecated, remove this from file
 
 			arc.pvs = pvs;
 			arc.faces = bsp.faces;		// Redundant
 			arc.setNavigation(nav);
+			arc.setTextureData(texData);
 			
-			packedAssets.passToOpenGL();
+			texData.setSkybox();
+			
+			// Texture data
+			String[] textureNames = texData.getTextureNames();
+			
+			for(int i = 0; i < bsp.clusters.length; ++i) {
+				bsp.clusters[i].buildModel(bsp.planes, bsp.edges, bsp.surfEdges, bsp.vertices, bsp.faces, bsp.leafFaceIndices, bsp.getTextureMappings(), textureNames);
+			}
+			
+			for(int i = 0; i < bsp.heightmaps.length; i++) {
+				bsp.heightmaps[i].buildModel(bsp.heightmapVerts, bsp.faces, bsp.planes, bsp.edges, bsp.surfEdges, bsp.vertices, bsp.getTextureMappings(), textureNames);
+			}
 			
 			successfulLoad = true;
 			Console.log("Map loaded: " + mapName + " version=" + mapVer);
@@ -125,12 +139,17 @@ public class ArcLoader {
 			
 			if (successfulLoad) {
 
-				String assetLocation = "maps/" + mapFileName + "/";
+				String assetLocation = "models/props/";
 				String[] modelFiles = bsp.objects.getModelReference();
 				for(String modelFile : modelFiles) {
 					String path = assetLocation + modelFile;
-					Resources.addModel(modelFile, path);
+					Resources.addModel(modelFile, path + ".mod");
+
+					Console.log(path + ".png");
+					Resources.addTexture(modelFile, path + ".png");
 				}
+				
+				bsp.objects.createBoundingBoxes(objects);
 			}
 		}
 	}

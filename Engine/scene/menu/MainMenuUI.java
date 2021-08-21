@@ -67,6 +67,9 @@ public class MainMenuUI {
 				
 				switch (index) {
 				case 0:
+					musicSource.removeEffect();
+					musicSource.removeFilter();
+					
 					about.setFocus(false);
 					if (options.isFocused()) {
 						Settings.save();

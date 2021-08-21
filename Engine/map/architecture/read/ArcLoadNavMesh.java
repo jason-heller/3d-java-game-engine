@@ -17,19 +17,17 @@ public class ArcLoadNavMesh {
 		nav.initNarrowphase(numNavElements);
 		for(int i = 0; i < numNavElements; i++) {
 			Vector3f position = FileUtils.readVec3(in);
-			int numFaces = in.readByte();
-			int[] navFaces = new int[numFaces];
-			for(int n = 0; n < numFaces; n++) {
-				navFaces[n] = in.readInt();
-			}
+			int planeId = in.readInt();
+			float width = in.readFloat();
+			float length = in.readFloat();
 			short[] neighbors = new short[in.readByte()];
-			int[] neighborEdges = new int[neighbors.length];
+			//int[] sharedEdgeIds = new int[neighbors.length];
 			
 			for(int n = 0; n < neighbors.length; n++) {
 				neighbors[n] = in.readShort();
-				neighborEdges[n] = in.readInt();
+				//sharedEdgeIds[n] = in.readShort();
 			}
-			nav.addNode(i, position, navFaces, neighbors, neighborEdges);
+			nav.addNode(i, position, planeId, neighbors, width, length);
 		}
 	}
 }

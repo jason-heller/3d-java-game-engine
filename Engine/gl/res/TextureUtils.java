@@ -306,7 +306,7 @@ public class TextureUtils {
 		return new TextureData(buffer, width, height);
 	}
 
-	protected static int loadTextureToOpenGL(TextureData data) {
+	private static int loadTextureToOpenGL(TextureData data) {
 		final int texID = GL11.glGenTextures();
 		GL13.glActiveTexture(GL13.GL_TEXTURE0);
 		GL11.glBindTexture(data.type, texID);

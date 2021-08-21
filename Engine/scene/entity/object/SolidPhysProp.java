@@ -19,7 +19,7 @@ public class SolidPhysProp extends HoldableEntity implements Spawnable {
 		this.setModel(name);
 		this.setTexture(name);
 		Model model = this.getModel();
-		bbox.getBounds().set(Vector3f.sub(model.max, model.min).div(2f));
+		bbox.getBounds().set(model.bounds);
 		
 		solid = true;
 	}

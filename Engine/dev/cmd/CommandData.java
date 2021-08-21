@@ -9,7 +9,7 @@ import dev.MemDebug;
 import dev.ModelDataEditor;
 import gl.Camera;
 import gl.Window;
-import gl.arc.ArcRender;
+import gl.arc.ArcRenderLightGeneric;
 import io.Controls;
 import map.architecture.ArchitectureHandler;
 import scene.entity.util.PhysicsEntity;
@@ -91,7 +91,7 @@ enum CommandData {
 	phys_friction("friction", PhysicsEntity.class, SETTER, true),
 	phys_friction_air("airFriction", PhysicsEntity.class, SETTER, true),
 	god("god", Debug.class, SETTER, true),
-	fullrender("fullRender", ArcRender.class, SETTER, false),
+	fullrender("fullRender", ArcRenderLightGeneric.class, SETTER, false),
 	velocity_vectors("velocityVectors", Debug.class, SETTER, true);
 
 	Command command;

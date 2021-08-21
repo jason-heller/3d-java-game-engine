@@ -9,12 +9,15 @@ import org.joml.Vector3f;
 import core.Application;
 import core.Resources;
 import dev.Debug;
+import dev.cmd.Console;
 import geom.AxisAlignedBBox;
 import geom.CollideUtils;
 import geom.MTV;
 import geom.Plane;
+import geom.Polygon;
 import gl.Window;
 import gl.line.LineRender;
+import gl.res.Model;
 import map.architecture.Architecture;
 import map.architecture.ArchitectureHandler;
 import map.architecture.Material;
@@ -22,7 +25,9 @@ import map.architecture.components.ArcClip;
 import map.architecture.components.ArcEdge;
 import map.architecture.components.ArcFace;
 import map.architecture.components.ArcHeightmap;
+import map.architecture.components.ArcStaticObject;
 import map.architecture.components.ArcTriggerClip;
+import map.architecture.util.ArcUtil;
 import map.architecture.vis.Bsp;
 import map.architecture.vis.BspLeaf;
 import scene.PlayableScene;
@@ -131,7 +136,8 @@ public abstract class PhysicsEntity extends Entity {
 		upwarp = 0f;
 
 		handleEntityCollisions(leaves);
-		handleHeightmapCollisions(bsp, leaf, faces);
+		handleObjectCollisions(leaf, bsp);
+		handleHeightmapCollisions(architecture, leaves, faces);
 		handleFaceCollisions(bsp, faces, 0);
 		handleClipCollisions(architecture, leaves);
 		
@@ -141,25 +147,34 @@ public abstract class PhysicsEntity extends Entity {
 		super.update(scene);
 	}
 
-	private void handleHeightmapCollisions(Bsp bsp, BspLeaf leaf, List<ArcFace> faces) {
-		for(short hmapid : leaf.heightmaps) {
-			ArcHeightmap hmap = bsp.heightmaps[hmapid];
-			ArcFace face = bsp.faces[hmap.getFaceId()];
-			if (bsp.planes[face.planeId].normal.y > 0f) {
-				if (!hmap.intersects(bbox))
-					continue;
-				
-				float height = hmap.getHeightAt(bbox, bsp.heightmapVerts) + bbox.getHeight();
-				if (Float.isFinite(height)) {
-					float fudge = (!grounded && vel.y < 0f ? .2f : 0f);
-					if (height >= pos.y - fudge) {
-						pos.y = height;
-						vel.y = 0f;
-						grounded = true;
+	private void handleHeightmapCollisions(Architecture arc, List<BspLeaf> leaves, List<ArcFace> faces) {
+		Bsp bsp = arc.bsp;
+		for(BspLeaf leaf : leaves) {
+			for(short hmapid : leaf.heightmaps) {
+				ArcHeightmap hmap = bsp.heightmaps[hmapid];
+				ArcFace face = bsp.faces[hmap.getFaceId()];
+				if (bsp.planes[face.planeId].normal.y > 0f) {
+					if (!hmap.intersects(bbox))
+						continue;
+					
+					float height = hmap.getHeightAt(bbox, bsp.heightmapVerts) + bbox.getHeight();
+					if (Float.isFinite(height)) {
+						float fudge = (!grounded && vel.y < 0f ? .2f : 0f);
+						if (height >= pos.y - fudge) {
+							pos.y = height;
+							vel.y = 0f;
+							grounded = true;
+							float blend = hmap.getBlendAt(pos.x, pos.z, bsp.heightmapVerts);
+
+							if (blend >= 0f) {
+								int id = (blend < .5f) ? hmap.getTexture1() : hmap.getTexture2();
+								materialStandingOn = arc.getTextures()[id].getMaterial();
+							}
+						}
 					}
+				} else {
+					faces.add(face);
 				}
-			} else {
-				faces.add(face);
 			}
 		}
 	}
@@ -183,16 +198,58 @@ public abstract class PhysicsEntity extends Entity {
 					
 					if (!physEnt.solid)
 						continue;
+
+					handleBBoxCollision(physEnt.bbox);
+				}
+			}
+		}
+	}
+	
+	private void handleBBoxCollision(AxisAlignedBBox other) {
+		MTV mtv = bbox.collide(other);
+
+		if (mtv != null) {
+			if (mtv.getAxis().y > .5f) {
+				vel.y = 0f;
+				grounded = true;
+				pos.y = other.getCenter().y + bbox.getBounds().y + other.getBounds().y;
+			} else {
+				vel.add(mtv.getMTV());
+			}
+		}
+	}
+
+	protected void handleObjectCollisions(BspLeaf leaf, Bsp bsp) {
+		if (!solid) return;
+		
+		List<ArcStaticObject> objects = bsp.objects.getObjects(leaf);
+		
+		if (objects == null) 
+			return;
+		
+		for(ArcStaticObject obj : objects) {
+			if (obj.solidity == 0)
+				continue;
+			
+			AxisAlignedBBox otherBox = obj.getBBox();
+			if (bbox.intersects(otherBox)) {
+				if (obj.solidity == 1) {
+					handleBBoxCollision(otherBox);
+				} else {
+					Model model = bsp.objects.getModel(obj.model);
+					if (model.getNavMesh() == null)
+						continue;
 					
-					MTV mtv = bbox.collide(physEnt.bbox);
-					
-					if (mtv != null) {
-						if (mtv.getAxis().y > .5f) {
-							vel.y = 0f;
-							grounded = true;
-							pos.y = physEnt.pos.y + physEnt.bbox.getBounds().y + bbox.getBounds().y;
-						} else {
-							vel.add(mtv.getMTV());
+					Vector3f[] navMesh = model.getNavMesh();
+					for(int i = 0; i < navMesh.length; i += 3) {
+						Vector3f p1 = Vector3f.add(navMesh[i], obj.pos);
+						Vector3f p2 = Vector3f.add(navMesh[i + 1], obj.pos);
+						Vector3f p3 = Vector3f.add(navMesh[i + 2], obj.pos);
+						Polygon tri = new Polygon(p1, p2, p3);
+
+						MTV mtv = bbox.collide(tri);
+						if (mtv != null) {
+							resolveTriCollision(mtv, tri);
 						}
 					}
 				}
@@ -211,11 +268,9 @@ public abstract class PhysicsEntity extends Entity {
 
 		for(ArcFace face : faces) {
 			
-			Architecture arc = arcHandler.getArchitecture();
-			int id = arc.getTexData()[face.texId].textureId;
-			if (id == -1) {
+			//Architecture arc = arcHandler.getArchitecture();
+			if (face.texMapping == -1) 
 				continue;
-			}
 			
 			Plane plane = bsp.planes[face.planeId];
 			Vector3f normal = plane.normal;
@@ -229,7 +284,7 @@ public abstract class PhysicsEntity extends Entity {
 		}
 		
 		if (nearest != null) {
-			resolveCollision(bsp, nearest, nearestFace);
+			resolveFaceCollision(bsp, nearest, nearestFace);
 			faces.remove(nearestFace);
 			
 		} else {
@@ -268,14 +323,40 @@ public abstract class PhysicsEntity extends Entity {
 					}
 					
 					if (doCollide) {
-						resolveCollision(bsp, mtv, null);
+						resolveFaceCollision(bsp, mtv, null);
 					}
 				}
 			}
 		}
 	}
 	
-	private void resolveCollision(Bsp bsp, MTV mtv, ArcFace face) {
+	private void resolveTriCollision(MTV mtv, Polygon tri) {
+		if (mtv.getAxis().y < .5f) {
+			bbox.getCenter().y += STEP_HEIGHT;
+			MTV stepMtv = bbox.collide(tri);
+			bbox.getCenter().y -= STEP_HEIGHT;
+			if (stepMtv == null) {
+				if (Math.abs(tri.normal.y) > .5f) {
+					collideWithFloor(tri.getPlane(), mtv);
+				}
+				return;
+			}
+		}
+		
+		if (Debug.viewCollide && mtv != null) {
+			LineRender.drawTriangle(tri, Colors.RED);
+		}
+		
+		if (mtv.getAxis().y >= .5f) {
+			collideWithFloor(tri.getPlane(), mtv);
+			return;
+		}
+		
+		pos.add(mtv.getMTV());
+		vel.add(Vector3f.div(mtv.getMTV(), Window.deltaTime));
+	}
+	
+	private void resolveFaceCollision(Bsp bsp, MTV mtv, ArcFace face) {
 		// Check if moving the player's path up one resolves collision, if it does, move along that path, then drop down
 
 		if (face == null) {
@@ -291,7 +372,11 @@ public abstract class PhysicsEntity extends Entity {
 			bbox.getCenter().y -= STEP_HEIGHT;
 			if (stepMtv == null) {
 				if (Math.abs(normal.y) > .5f) {
-					collideWithFloor(bsp, mtv);
+					Plane plane = mtv.getPlane();
+					if (plane == null) {
+						plane = bsp.planes[mtv.getFace().planeId];
+					}
+					collideWithFloor(plane, mtv);
 				}
 				return;
 			}
@@ -306,13 +391,15 @@ public abstract class PhysicsEntity extends Entity {
 		}
 		
 		if (mtv.getAxis().y >= .5f) {
-			collideWithFloor(bsp, mtv);
+			Plane plane = mtv.getPlane();
+			if (plane == null) {
+				plane = bsp.planes[mtv.getFace().planeId];
+			}
+			collideWithFloor(plane, mtv);
 			if (face != null) {
 				Architecture arc = arcHandler.getArchitecture();
-				int id = arc.getTexData()[face.texId].textureId;
-
-				materialStandingOn = Resources.getTexture(arc.getReferencedTexNames()[id]).getMaterial();
-				// materialStandingOn = arc.getReferencedTextures()[id].getMaterial();
+				int id = bsp.getTextureMappings()[face.texMapping].textureId;
+				materialStandingOn = arc.getTextures()[id].getMaterial();
 			}
 			return;
 		}
@@ -321,7 +408,7 @@ public abstract class PhysicsEntity extends Entity {
 		vel.add(Vector3f.div(mtv.getMTV(), Window.deltaTime));
 	}
 
-	protected void collideWithFloor(Bsp bsp, MTV mtv) {
+	protected void collideWithFloor(Plane plane, MTV mtv) {
 		
 		// Easy out
 		if (mtv.getAxis().y == 1f) {
@@ -331,10 +418,6 @@ public abstract class PhysicsEntity extends Entity {
 			return;
 		}
 		
-		Plane plane = mtv.getPlane();
-		if (plane == null) {
-			plane = bsp.planes[mtv.getFace().planeId];
-		}
 		float depth = Float.NEGATIVE_INFINITY;
 		
 		final Vector3f[] points = new Vector3f[] {
@@ -345,7 +428,7 @@ public abstract class PhysicsEntity extends Entity {
 				};
 
 		for(int i = 0; i < points.length; i++) {
-			float newDepth = plane.collide(Vector3f.add(pos, points[i]), Vector3f.Y_AXIS);
+			float newDepth = plane.raycast(Vector3f.add(pos, points[i]), Vector3f.Y_AXIS);
 
 			if (!Float.isInfinite(newDepth) && newDepth > depth) 
 				depth = newDepth;

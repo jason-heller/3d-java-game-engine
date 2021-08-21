@@ -7,10 +7,12 @@ import java.util.Map;
 
 import org.joml.Vector3f;
 
+import gl.skybox._3d.SkyboxCamera;
 import io.FileUtils;
 import map.architecture.Architecture;
 import map.architecture.functions.commands.CamView;
 import map.architecture.functions.commands.PathNode;
+import map.architecture.functions.commands.SoundScape;
 import map.architecture.functions.commands.SpawnPoint;
 import scene.entity.EntityHandler;
 import scene.entity.object.RopePointEntity;
@@ -36,6 +38,12 @@ public class ArcLoadEntities {
 				SpawnPoint spawn = new SpawnPoint(readVec3(tags, "pos"), readVec3(tags, "rot"), tags.get("label"));
 				arc.addFunction(spawn);
 				break;
+			case "sky_view":
+				SkyboxCamera skyCamera = new SkyboxCamera(readVec3(tags, "pos"),
+						readFloat(tags, "scale"), readInt(tags, "has_fog") != 0, readFloat(tags, "fog_start"),
+						readFloat(tags, "fog_end"), readVec3(tags, "fog_color"));
+				arc.setSkyCamera(skyCamera);
+				break;
 			case "path_node":
 				PathNode pathNode = new PathNode(readVec3(tags, "pos"), readInt(tags, "id"), readInt(tags, "next"), readInt(tags, "prev"), tags.get("cmd"));
 				arc.addFunction(pathNode);
@@ -43,6 +51,10 @@ public class ArcLoadEntities {
 			case "cam_view":
 				CamView camView = new CamView(readVec3(tags, "pos"), readVec3(tags, "rot"));
 				arc.addFunction(camView);
+				break;
+			case "ambient_sfx":
+				SoundScape soundScape = new SoundScape(readVec3(tags, "pos"), tags.get("sfx"));
+				arc.addFunction(soundScape);
 				break;
 			case "prop":
 				SolidPhysProp prop = new SolidPhysProp(readVec3(tags, "pos"), readVec3(tags, "rot"), tags.get("model"));

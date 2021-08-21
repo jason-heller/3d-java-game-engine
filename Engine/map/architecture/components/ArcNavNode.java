@@ -3,28 +3,35 @@ package map.architecture.components;
 import org.joml.Vector3f;
 
 public class ArcNavNode {
-	private int[] faceIds;
+	private int planeId;
 	private short[] neighbors;
-	private int[] edges;
-	private Vector3f position;		// TODO: Make this obsolete
+	
+	private float width, length;
+	
+	private Vector3f position;
 
-	public ArcNavNode(Vector3f position, int[] faceIds, short[] neighbors, int[] edges) {
+	public ArcNavNode(Vector3f position, int planeId, short[] neighbors, float width, float length) {
 		this.position = position;
-		this.faceIds = faceIds;
+		this.planeId = planeId;
 		this.neighbors = neighbors;
-		this.edges = edges;
+		this.width = width;
+		this.length = length;
 	}
 	
 	public short[] getNeighbors() {
 		return neighbors;
 	}
 	
-	public int[] getEdges() {
-		return edges;
+	public float getWidth() {
+		return width;
 	}
 	
-	public int[] getFaceIds() {
-		return faceIds;
+	public float getLength() {
+		return length;
+	}
+	
+	public int getPlaneId() {
+		return planeId;
 	}
 
 	public Vector3f getPosition() {

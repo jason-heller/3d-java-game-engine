@@ -19,7 +19,6 @@ public class ArcTriggerClip extends ArcClip {
 		this.arc = arc;
 	}
 
-	// TODO: Consider style
 	public boolean interact(Entity entity, boolean isEntering) {
 		if (!canFire) return false;
 
@@ -35,6 +34,7 @@ public class ArcTriggerClip extends ArcClip {
 		}
 		
 		if (allow) {
+
 			if (isEntering && !commandEnter.equals(""))
 				arc.callCommand(entity, commandEnter);
 			else if (!isEntering && !commandExit.equals(""))

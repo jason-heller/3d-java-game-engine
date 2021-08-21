@@ -23,6 +23,7 @@ public class ItemHandler {
 	private ViewModelHandler viewModelHandler;
 	
 	private List<Item> items = new ArrayList<>();
+	private int itemIndex = 0;
 	private Item currentItem;
 	
 	private Source source;
@@ -75,6 +76,12 @@ public class ItemHandler {
 			}
 		}
 		
+		if (Input.getMouseDWheel() != 0) {
+			int nextItem = Math.floorMod((itemIndex + (int)Math.signum(Input.getMouseDWheel())), items.size());
+			unequipItem();
+			equipItem(nextItem);
+		}
+		
 		if (Input.isPressed(Input.KEY_LMB)) {
 			onInteractPress();
 		}
@@ -99,6 +106,8 @@ public class ItemHandler {
 		viewModelHandler.setDrawnModel(0, currentItem.getViewModel());
 		currentItem.equip();
 		currentItem.getViewModel().equip();
+
+		itemIndex = index;
 	}
 	
 	public void unequipItem() {

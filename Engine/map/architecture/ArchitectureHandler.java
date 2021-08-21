@@ -7,24 +7,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import dev.Debug;
 import dev.cmd.Console;
+import geom.Plane;
 import gl.Camera;
-import gl.Render;
-import gl.arc.ArcRender;
-import gl.fbo.FrameBuffer;
+import gl.arc.ArcRenderMaster;
 import gl.line.LineRender;
-import map.architecture.components.ArcFace;
 import map.architecture.components.ArcNavNode;
 import map.architecture.components.ArcNavigation;
 import map.architecture.components.ArcRoom;
 import map.architecture.components.GhostPoi;
 import map.architecture.read.ArcLoader;
-import map.architecture.util.ArcUtil;
 import map.architecture.vis.Bsp;
 import scene.Scene;
 import util.Colors;
@@ -75,7 +71,7 @@ public class ArchitectureHandler {
 	}
 
 	public ArchitectureHandler() {
-		ArcRender.init();
+		ArcRenderMaster.init();
 	}
 
 	public void load(Scene scene, Vector3f vec, String path) {
@@ -84,7 +80,7 @@ public class ArchitectureHandler {
 	
 	public void cleanUp() {
 		architecture.cleanUp();
-		ArcRender.cleanUp();
+		ArcRenderMaster.cleanUp();
 	}
 	
 	public void debugRender(Camera camera) {
@@ -94,30 +90,30 @@ public class ArchitectureHandler {
 		if (Debug.viewNavNode) {
 			ArcNavNode node = navigation.getNodeAt(camera.getPosition(), bsp);
 			if (node != null) {
-				for(int id : node.getFaceIds()) {
-					ArcFace face = bsp.faces[id];
-					ArcUtil.drawFaceHighlight(bsp, face, Colors.alertColor());
-				}
+				Plane plane = bsp.planes[node.getPlaneId()];
+				Vector3f p = node.getPosition();
+				float dx = node.getWidth();
+				float dz = node.getLength();
 				
-				for(int nid : node.getNeighbors()) {
-					ArcNavNode node2 = navigation.getNode(nid);
-					
-					int x = 0;
-					int z = 0;
-					for(int id : node2.getFaceIds()) {
-						ArcFace face = bsp.faces[id];
-						ArcUtil.drawFaceHighlight(bsp, face, Colors.random(z++));
-					}
-					
-					for(int i = 0; i < node.getEdges().length; i++) {
-						int edge = node.getEdges()[i];
-						Vector3f p1 = bsp.vertices[bsp.edges[edge].start];
-						Vector3f p2 = bsp.vertices[bsp.edges[edge].end];
-						Vector3f center = Vector3f.add(p1, p2).div(2f).add(Vector3f.Y_AXIS);
-						Vector3f cross = Vector3f.sub(p2, p1).cross(Vector3f.Y_AXIS).normalize();
-						LineRender.drawLine(Vector3f.add(center, cross),
-								Vector3f.add(center, Vector3f.negate(cross)), Colors.random(i));
-					}
+				Vector3f tl = plane.raycastPoint(new Vector3f(p.x-dx, -99999, p.z+dz), Vector3f.Y_AXIS);
+				Vector3f tr = plane.raycastPoint(new Vector3f(p.x+dx, -99999, p.z+dz), Vector3f.Y_AXIS);
+				Vector3f bl = plane.raycastPoint(new Vector3f(p.x-dx, -99999, p.z-dz), Vector3f.Y_AXIS);
+				Vector3f br = plane.raycastPoint(new Vector3f(p.x+dx, -99999, p.z-dz), Vector3f.Y_AXIS);
+				
+				tl.add(plane.normal);
+				tr.add(plane.normal);
+				bl.add(plane.normal);
+				br.add(plane.normal);
+				
+				LineRender.drawLine(tl, tr, Colors.alertColor());
+				LineRender.drawLine(tr, br, Colors.alertColor());
+				LineRender.drawLine(br, bl, Colors.alertColor());
+				LineRender.drawLine(bl, tl, Colors.alertColor());
+				
+				for(int i = 0; i < node.getNeighbors().length; i++) {
+					short nid = node.getNeighbors()[i];
+					LineRender.drawLine(node.getPosition(), navigation.getNode(nid).getPosition(), Colors.WHITE);
+					LineRender.drawPoint(node.getPosition());
 				}
 			}
 		}
@@ -137,20 +133,25 @@ public class ArchitectureHandler {
 			ArcNavigation nav = architecture.getNavigation();
 			for(ArcNavNode node : nav.getNavFaces()) {
 				
-				for(int id : node.getFaceIds()) {
-					ArcFace face = bsp.faces[id];
-					ArcUtil.drawFaceHighlight(bsp, face, Colors.YELLOW);
-				}
+				Plane plane = bsp.planes[node.getPlaneId()];
+				Vector3f p = node.getPosition();
+				float dx = node.getWidth();
+				float dz = node.getLength();
 				
-				for(int i = 0; i < node.getEdges().length; i++) {
-					int edge = node.getEdges()[i];
-					Vector3f p1 = bsp.vertices[bsp.edges[edge].start];
-					Vector3f p2 = bsp.vertices[bsp.edges[edge].end];
-					Vector3f center = Vector3f.add(p1, p2).div(2f).add(Vector3f.Y_AXIS);
-					Vector3f cross = Vector3f.sub(p2, p1).cross(Vector3f.Y_AXIS).normalize();
-					LineRender.drawLine(Vector3f.add(center, cross),
-							Vector3f.add(center, Vector3f.negate(cross)), Colors.WHITE);
-				}
+				Vector3f tl = plane.raycastPoint(new Vector3f(p.x-dx, -99999, p.z+dz), Vector3f.Y_AXIS);
+				Vector3f tr = plane.raycastPoint(new Vector3f(p.x+dx, -99999, p.z+dz), Vector3f.Y_AXIS);
+				Vector3f bl = plane.raycastPoint(new Vector3f(p.x-dx, -99999, p.z-dz), Vector3f.Y_AXIS);
+				Vector3f br = plane.raycastPoint(new Vector3f(p.x+dx, -99999, p.z-dz), Vector3f.Y_AXIS);
+				
+				tl.add(plane.normal);
+				tr.add(plane.normal);
+				bl.add(plane.normal);
+				br.add(plane.normal);
+				
+				LineRender.drawLine(tl, tr, Colors.YELLOW);
+				LineRender.drawLine(tr, br, Colors.YELLOW);
+				LineRender.drawLine(br, bl, Colors.YELLOW);
+				LineRender.drawLine(bl, tl, Colors.YELLOW);
 			}
 		}
 	}

@@ -3,6 +3,7 @@ package map.architecture.functions;
 import map.architecture.functions.commands.CamView;
 import map.architecture.functions.commands.PathNode;
 import map.architecture.functions.commands.SpawnPoint;
+import map.architecture.functions.commands.SoundScape;
 
 /**
  * Arc Commands are commands that can be called to trigger certain events on the map globally.
@@ -10,7 +11,8 @@ import map.architecture.functions.commands.SpawnPoint;
 public enum ArcCommands {
 	SPAWN_PLAYER(SpawnPoint.class, ArcFuncCallMethod.BY_RANDOM),
 	NAVIGATE(PathNode.class, ArcFuncCallMethod.ALL),
-	CAMVIEW_RENDER(CamView.class, ArcFuncCallMethod.BY_INDEX);
+	CAMVIEW_RENDER(CamView.class, ArcFuncCallMethod.BY_INDEX),
+	TRIGGER_SOUNDSCAPE(SoundScape.class, ArcFuncCallMethod.BY_NEAREST);
 	
 	private Class<? extends ArcFunction> funcClass;
 	private ArcFuncCallMethod preferredCallMethod;

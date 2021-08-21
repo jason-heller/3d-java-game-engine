@@ -6,10 +6,10 @@ import audio.AudioHandler;
 import core.Application;
 import dev.Debug;
 import geom.MTV;
+import geom.Plane;
 import gl.Camera;
 import gl.Window;
 import gl.post.PostProcessing;
-import map.architecture.vis.Bsp;
 import scene.PlayableScene;
 import ui.UI;
 
@@ -41,7 +41,6 @@ public class PlayerEntity extends PhysicsEntity {
 	
 	@Override
 	public void update(PlayableScene scene) {
-
 		PlayerHandler.update(Application.scene);
 		super.update(scene);
 		
@@ -52,7 +51,7 @@ public class PlayerEntity extends PhysicsEntity {
 			PostProcessing.underwater = false;
 		}
 		
-		if (grounded) {
+		if (grounded && camera.getControlStyle() != Camera.SPECTATOR) {
 			
 			stepTimer += Window.deltaTime * new Vector3f(vel.x, 0f, vel.z).length();
 			
@@ -130,7 +129,7 @@ public class PlayerEntity extends PhysicsEntity {
 	}
 	
 	@Override
-	protected void collideWithFloor(Bsp bsp, MTV mtv) {
+	protected void collideWithFloor(Plane plane, MTV mtv) {
 		/*float fallHeight = -PlayerHandler.jumpVel * 3.4f;
 		if (vel.y < fallHeight) {
 			takeDamage((int) (-vel.y / 20f));
@@ -139,7 +138,7 @@ public class PlayerEntity extends PhysicsEntity {
 			vel.y = -PlayerHandler.jumpVel;	// TODO: Bad
 		}*/
 		
-		super.collideWithFloor(bsp, mtv);
+		super.collideWithFloor(plane, mtv);
 	}
 
 	public static int getHp() {

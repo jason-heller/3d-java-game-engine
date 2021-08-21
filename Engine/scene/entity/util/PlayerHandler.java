@@ -96,7 +96,7 @@ public class PlayerHandler {
 				S = Input.isDown("walk_backward"), JUMP = Input.isDown("jump");
 		final boolean CTRL = Input.isDown("sneak");
 		
-		if (Input.isPressed(Keyboard.KEY_F)) {
+		if (Input.isPressed("flashlight")) {
 			if (light != null) {
 				arc.removeLight(light);
 				light = null;
@@ -138,7 +138,7 @@ public class PlayerHandler {
 					direction = yaw + 180;
 				}
 	
-				if (RUN && !CTRL && entity.grounded) {
+				if (RUN && !CTRL && entity.grounded && !entity.deactivated) {
 					camera.sway(.1f, 5f, 5f);
 				}
 				
@@ -153,13 +153,13 @@ public class PlayerHandler {
 			}
 			
 			Camera.animSpeed = 0f;
-			if (speed != 0) {
+			if (speed != 0 && !entity.deactivated) {
 				Camera.animSpeed = 4.5f;
-				if (CTRL) {
+				if (crouching) {
 					speed /= 2;
 					Camera.animSpeed = 2.25f;
 				}
-				else if (RUN) {
+				else if (RUN && entity.grounded) {
 					Camera.animSpeed = 15f;
 				}
 				
@@ -198,7 +198,7 @@ public class PlayerHandler {
 		} else if (crouching) {
 			if (entity.getBBox().getBounds().y == BBOX_HEIGHT - BBOX_CROUCH_DIFF) {
 
-				if (entityBspRayAbove(arc) > BBOX_HEIGHT + BBOX_CROUCH_DIFF + 4f) {
+				if (entityBspRayAbove(arc) > BBOX_HEIGHT + BBOX_CROUCH_DIFF ) {
 					if (Camera.offsetY < CAMERA_STANDING_HEIGHT + BBOX_CROUCH_DIFF) {
 						Camera.offsetY += Window.deltaTime * maxSpeedCrouch;
 						if (Camera.offsetY >= CAMERA_STANDING_HEIGHT + BBOX_CROUCH_DIFF) {

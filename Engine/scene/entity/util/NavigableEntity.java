@@ -76,44 +76,11 @@ public abstract class NavigableEntity extends PhysicsEntity {
 				
 				Bsp bsp = ((PlayableScene)Application.scene).getArchitecture().bsp;
 				
-				int navEdgeId = currentNode.getEdges()[neighborId];
+				//int nextNodeId = currentNode.getNeighbors()[neighborId];
 				//ArcFace face = bsp.faces[currentNode.getFaceId()];
-				ArcEdge edge = bsp.edges[navEdgeId];
-
-				Vector3f p1 = bsp.vertices[edge.start], p2 = bsp.vertices[edge.end];
-				Vector3f edgeVec = Vector3f.sub(p2, p1);
-				navStep = Vector3f.add(p1, p2).div(2f);
+				//ArcEdge edge = bsp.edges[nextNodeId];
 				
-				// Code for traversing a node
-				
-				// If heading directly to the edge is viable, it should be done
-				/*float bboxWidSqr = 66;
-				// Get length of edge we must cross
-				float edgeLenSqr = edgeVec.dot(edgeVec);
-				// Get hueristic of edge's center to position
-				float hueristicA = Vector3f.distanceSquared(pos, navStep);
-				// Get projection length from p1 to position onto the edge vector
-				float ptProjLen = Vector3f.sub(pos, p1).dot(edgeVec);
-				Vector3f directPos = Vector3f.add(p1, Vector3f.mul(edgeVec, ptProjLen / edgeLenSqr));
-				float hueristicB = Vector3f.distanceSquared(pos, directPos);
-				// If this projection falls on the edge
-				
-				if (hueristicA > hueristicB && ptProjLen >= bboxWidSqr && ptProjLen < edgeLenSqr - bboxWidSqr) {
-
-					navStep = directPos;
-				}*/
-				
-				// If the difference between navStep and the edge are too similar, head towards node center
-				/*Vector3f movementVec = Vector3f.sub(navStep, pos);
-				// u = edgevec, v = movementVec
-				float crossX = edgeVec.y * movementVec.z + edgeVec.z * movementVec.y;
-				float crossY = edgeVec.x * movementVec.z + edgeVec.z * movementVec.x;
-				float crossZ = edgeVec.x * movementVec.y + edgeVec.y * movementVec.x;
-				float crossN = crossX * crossX + crossY * crossY + crossZ * crossZ;
-				Console.log(crossN);
-				if (crossN < .1f) {
-					navStep = currentNode.getPosition();
-				}*/
+				navStep = navigation.getNode(nextNodeId).getPosition();
 			}
 		}
 	
@@ -132,10 +99,9 @@ public abstract class NavigableEntity extends PhysicsEntity {
 			Vector3f lastPt = navTarget;
 			
 			ArcNavNode node = navigation.getNode(currentNodeId);
-			for(int id : node.getFaceIds()) {
-				ArcFace face = bsp.faces[id];
-				ArcUtil.drawFaceHighlight(bsp, face, Colors.alertColor());
-			}
+
+			//ArcFace face = bsp.faces[node.getFaceId()];
+			//ArcUtil.drawFaceHighlight(bsp, face, Colors.alertColor());
 			
 			for(int i = 1; i < path.size(); i++) {
 				int nextNodeId = path.get(i-1);
@@ -152,14 +118,9 @@ public abstract class NavigableEntity extends PhysicsEntity {
 					}
 				}
 				
-				int navEdgeId = node1.getEdges()[neighborId];
-				ArcFace face = bsp.faces[node1.getFaceIds()[0]];
-				ArcEdge edge = bsp.edges[navEdgeId];
-				Vector3f p1 = bsp.vertices[edge.start], p2 = bsp.vertices[edge.end];
-				Vector3f pt = Vector3f.add(p1, p2).div(2f);
 				
-				LineRender.drawLine(Vector3f.add(pt, new Vector3f(0,3,0)), Vector3f.add(lastPt, new Vector3f(0,3,0)), Colors.RED);
-				lastPt = pt;
+				LineRender.drawLine(Vector3f.add(node1.getPosition(), new Vector3f(0,3,0)), Vector3f.add(lastPt, new Vector3f(0,3,0)), Colors.RED);
+				lastPt = node1.getPosition();
 			}
 			// 
 			Vector3f step = Vector3f.add(navStep, new Vector3f(0,3,0));

@@ -2,7 +2,8 @@ package geom;
 
 import org.joml.Vector3f;
 
-import dev.cmd.Console;
+import gl.line.LineRender;
+import util.Colors;
 
 public class AxisAlignedBBox {
 	private Vector3f center;
@@ -151,5 +152,77 @@ public class AxisAlignedBBox {
 		return (point.x >= center.x - bounds.x && point.x <= center.x + bounds.x)
 				&& (point.y >= center.y - bounds.y && point.y <= center.y + bounds.y)
 				&& (point.z >= center.z - bounds.z && point.z <= center.z + bounds.z);
+	}
+
+	public MTV collide(Polygon tri) {
+		final Vector3f tl = Vector3f.sub(center, bounds);
+		final Vector3f br = Vector3f.add(center, bounds);
+		MTV mtv = new MTV();
+
+		final Vector3f[] facePoints = new Vector3f[] {tri.p1, tri.p2, tri.p3};
+
+		final Vector3f[] boxPoints = new Vector3f[] { tl, new Vector3f(br.x, tl.y, tl.z),
+				new Vector3f(tl.x, tl.y, br.z), new Vector3f(br.x, tl.y, br.z), br, new Vector3f(br.x, br.y, tl.z),
+				new Vector3f(tl.x, br.y, br.z), new Vector3f(tl.x, br.y, tl.z) };
+
+		Bounds faceBounds, boxBounds;
+
+		final float[] boxMins = new float[] { tl.x, tl.y, tl.z };
+		final float[] boxMaxs = new float[] { br.x, br.y, br.z };
+
+		// Test face normals of AABB
+		for (int i = 0; i < 3; i++) {
+			faceBounds = project(facePoints, CollideUtils.axisPtrs[i]);
+			if (faceBounds.max < boxMins[i] || faceBounds.min > boxMaxs[i])
+				return null;
+		}
+
+		// Test face normal of face
+		Vector3f normal = tri.normal;
+		float faceOffset = normal.dot(facePoints[0]);
+		boxBounds = project(boxPoints, normal);
+
+		if (!mtv.testAxis(boxBounds.max, boxBounds.min, faceOffset, faceOffset, normal))
+			return null;
+
+		// Get all edges of face
+		Vector3f[] faceEdges = new Vector3f[] {
+				Vector3f.sub(tri.p2, tri.p1),
+				Vector3f.sub(tri.p3, tri.p2),
+				Vector3f.sub(tri.p1, tri.p3)
+		};
+
+		for (int i = 0; i < faceEdges.length; i++) {
+			for (int j = 0; j < 3; j++) {
+				Vector3f axis = faceEdges[i].cross(CollideUtils.axisPtrs[j]);
+				
+				if (axis.isZero())
+					continue;
+				
+				boxBounds = project(boxPoints, axis);
+				faceBounds = project(facePoints, axis);
+				
+				if (!mtv.testAxis(boxBounds.max, boxBounds.min, faceBounds.max, faceBounds.min, axis))
+					return null;
+			}
+		}
+		
+		mtv.finish(facePoints[0], null);
+		return mtv;
+	}
+	
+	private static Bounds project(Vector3f[] points, Vector3f axis) {
+		float min = Float.POSITIVE_INFINITY;
+		float max = Float.NEGATIVE_INFINITY;
+
+		for (Vector3f pt : points) {
+			float val = axis.dot(pt);
+			if (val < min)
+				min = val;
+			if (val > max)
+				max = val;
+		}
+
+		return new Bounds(max, min);
 	}
 }
