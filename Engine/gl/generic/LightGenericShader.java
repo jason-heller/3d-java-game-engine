@@ -16,7 +16,7 @@ public class LightGenericShader extends ShaderProgram {
 	private static final String FRAGMENT_SHADER = "gl/generic/lightgeneric.frag";
 	
 	protected UniformSampler diffuse = new UniformSampler("diffuse");
-	protected UniformSampler bumpMap = new UniformSampler("bumpMap");
+	//protected UniformSampler bumpMap = new UniformSampler("bumpMap");
 	//protected UniformSampler specMap = new UniformSampler("specMap");
 
 	public UniformMatrix projectionViewMatrix = new UniformMatrix("projectionViewMatrix");
@@ -36,7 +36,7 @@ public class LightGenericShader extends ShaderProgram {
 
 	public LightGenericShader() {
 		super(VERTEX_SHADER, FRAGMENT_SHADER, "in_vertices", "in_uvs", "in_normals");
-		super.storeAllUniformLocations(diffuse, bumpMap, projectionViewMatrix, modelMatrix, lights, lightPos, lightDir,
+		super.storeAllUniformLocations(diffuse, projectionViewMatrix, modelMatrix, lights, lightPos, lightDir,
 				cutoff, strength, clipPlane, lightSpaceMatrix, shadowMap);
 	}
 }

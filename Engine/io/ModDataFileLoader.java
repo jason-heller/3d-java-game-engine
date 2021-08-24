@@ -10,6 +10,7 @@ import java.util.Map;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import gl.Window;
 import gl.res.mesh.ImageTag;
 import gl.res.mesh.MeshData;
 import gl.res.mesh.TextTag;
@@ -51,6 +52,7 @@ public class ModDataFileLoader {
 		float[] uvOffset = getVecTag(tags, "image_uvoffset", new float[] { 0, 0, 1, 1 }, 4);
 
 		viewport.mul(scale);
+		
 		int[] viewportArr = new int[] { (int) viewport.x, (int) viewport.y, (int) viewport.z, (int) viewport.w };
 		meshData.addTag(new ImageTag(field, offset, viewportArr, uvOffset, color, centered));
 	}

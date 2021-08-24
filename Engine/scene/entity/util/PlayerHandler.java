@@ -32,8 +32,6 @@ public class PlayerHandler {
 	private static float lightStrength = 21f;
 	
 	private static float accel = accelSpeed;
-	
-	private static float walkSfxTimer = 0f;
 
 	private static boolean disabled = false;
 	private static boolean threatened = false;
@@ -62,6 +60,9 @@ public class PlayerHandler {
 	public static void setEntity(PlayerEntity entity) {
 		Camera.offsetY = CAMERA_STANDING_HEIGHT;
 		PlayerHandler.entity = entity;
+		light = null;
+		flickerTimer = 0f;
+		threatened = false;
 		enable();
 	}
 
@@ -78,7 +79,9 @@ public class PlayerHandler {
 		Architecture arc = ((PlayableScene)scene).getArchitecture();
 		
 		if (light != null) {
-			setLightPos(light);
+			if (!Input.isDown(Keyboard.KEY_G)) {
+				setLightPos(light);
+			}
 			if (threatened) {
 				flickerTimer += Window.deltaTime;
 				if (flickerTimer > .75f) {
@@ -237,8 +240,8 @@ public class PlayerHandler {
 	}
 	
 	private static float entityBspRayAbove(Architecture arc) {
-		final float bx = entity.bbox.getBounds().x;
-		final float bz = entity.bbox.getBounds().z;
+		final float bx = entity.getBBox().getBounds().x;
+		final float bz = entity.getBBox().getBounds().z;
 		BspRaycast tl = arc.raycast(new Vector3f(entity.pos.x - bx, entity.pos.y, entity.pos.z - bz), Vector3f.Y_AXIS);
 		BspRaycast tr = arc.raycast(new Vector3f(entity.pos.x - bx, entity.pos.y, entity.pos.z + bz), Vector3f.Y_AXIS);
 		BspRaycast bl = arc.raycast(new Vector3f(entity.pos.x + bx, entity.pos.y, entity.pos.z - bz), Vector3f.Y_AXIS);
@@ -347,5 +350,7 @@ public class PlayerHandler {
 
 	public static void setThreatened(boolean isThreatened) {
 		threatened = isThreatened;
+		if (!isThreatened)
+			light.setStrength(lightStrength);
 	}
 }

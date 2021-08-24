@@ -172,4 +172,36 @@ public class EntityHandler {
 	public void render(Camera camera, Architecture arc, Vector4f clipPlane) {
 		entityRender.render(camera, arc, clipPlane, entities);
 	}
+
+	public static List<Entity> getEntities(List<BspLeaf> leaves) {
+		List<Entity> entities = new ArrayList<>();
+		
+		for(BspLeaf leaf : leaves) {
+			List<Entity> ents = EntityHandler.getEntities(leaf);
+			if (ents != null) {
+				entities.addAll(ents);
+			}
+		}
+		
+		return entities;
+	}
+
+	public static Entity raycast(Vector3f origin, Vector3f direction, List<BspLeaf> leaves, Entity ignore) {
+		float closest = Float.POSITIVE_INFINITY;
+		Entity closestEntity = null;
+		List<Entity> entities = getEntities(leaves);
+		
+		for(Entity entity : entities) {
+			if (entity == ignore)
+				continue;
+			
+			float dist = entity.getBBox().collide(origin, direction);
+			if (dist < closest) {
+				closest = dist;
+				closestEntity = entity;
+			}
+		}
+		
+		return closestEntity;
+	}
 }

@@ -12,6 +12,7 @@ public class TextTag extends MeshTag {
 	
 	private String field;
 	private boolean centered;
+	private float width, height;
 	
 	public TextTag(String field, Vector3f offset, float scale, boolean centered) {
 		this.setOffset(offset);
@@ -31,6 +32,8 @@ public class TextTag extends MeshTag {
 			str = "Missing Value";
 		
 		Text text = UI.drawString(str, scale, centered, m);
+		width = text.getWidth();
+		height = text.getHeight();
 		text.markAsTemporary();
 	}
 	
@@ -52,6 +55,16 @@ public class TextTag extends MeshTag {
 
 	@Override
 	public void cleanUp() {
+	}
+
+	@Override
+	public float getWidth() {
+		return width;
+	}
+
+	@Override
+	public float getHeight() {
+		return height;
 	}
 
 }

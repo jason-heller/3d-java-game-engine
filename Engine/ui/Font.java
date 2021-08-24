@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import core.Resources;
+import dev.cmd.Console;
 import gl.res.Texture;
 import io.FileUtils;
 
@@ -106,7 +107,7 @@ public class Font {
 			reader.close();
 		} catch (final Exception e) {
 			e.printStackTrace();
-			System.err.println("Couldn't read font file!");
+			Console.severe("Couldn't read font file!");
 		}
 	}
 

@@ -32,7 +32,7 @@ public class ImageTag extends MeshTag {
 		m.set(matrix);
 		m.translate(offset);
 		
-		Image image = UI.drawImage(MeshData.getField(field), viewport[0], viewport[1], viewport[2], -viewport[3], m);
+		Image image = UI.drawImage(MeshData.getField(field), viewport[0], viewport[1], viewport[2], viewport[3], m);
 		image.setUvOffset(uvOffset[0], uvOffset[1], uvOffset[2], uvOffset[3]);
 		image.setColor(color);
 		image.setCentered(centered);
@@ -69,6 +69,16 @@ public class ImageTag extends MeshTag {
 
 	public float[] getUvOffsets() {
 		return uvOffset;
+	}
+
+	@Override
+	public float getWidth() {
+		return viewport[2];
+	}
+
+	@Override
+	public float getHeight() {
+		return viewport[3];
 	}
 
 }

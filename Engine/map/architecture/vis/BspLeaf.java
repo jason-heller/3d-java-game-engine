@@ -83,7 +83,7 @@ public class BspLeaf {
 				ArcFace face = partitionedFaces.get(i);
 				int lastEdge = face.firstEdge + face.numEdges;
 
-				Vector3f tangent = ArcUtil.getFaceTangent(vertices, edges, surfEdges, texMappings, face);
+				Vector3f tangent = ArcUtil.getFaceTangent(vertices, edges, surfEdges, planes, texMappings, face);
 				
 				for (int j = face.firstEdge + 1; j < lastEdge - 1; j++) {
 					// Gross but fast
@@ -158,11 +158,20 @@ public class BspLeaf {
 			
 			clusters[mdlIndex] = new Cluster(model, id);
 			
-			if (textureList.length - 1 != id) {
-				if (textureList[id + 1].startsWith("%")) 
-					clusters[mdlIndex].setBumpMapId(id + 1);
+			for(int i = 1; i < 3; i++) {
+				if (textureList.length - i == id) 
+					break;
+
+				char texTypeIdentifier = textureList[id + i].charAt(0);
+
+				if (texTypeIdentifier == '$')
+					break;
+				if (texTypeIdentifier == '%')
+					clusters[mdlIndex].setBumpMapId(id + i);
+				else if (texTypeIdentifier == '&')
+					clusters[mdlIndex].setSpecMapId(id + i);
 			}
-			
+
 			mdlIndex++;
 		}
 	}

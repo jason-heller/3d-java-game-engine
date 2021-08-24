@@ -46,6 +46,7 @@ public class Window {
 			// Display.setLocation(0, 0);
 			// Display.setResizable(true);
 			setDisplayMode(Window.getWidth(), Window.getHeight(), fullscreen);
+			aspectRatio = Window.getWidth() / (float) Window.getHeight();
 
 			GL11.glEnable(GL13.GL_MULTISAMPLE);
 		} catch (final LWJGLException e) {
@@ -178,6 +179,7 @@ public class Window {
 				}
 			} else {
 				targetDisplayMode = new DisplayMode(width, height);
+				aspectRatio = width / (float) height;
 			}
 
 			if (targetDisplayMode == null) {

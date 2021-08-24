@@ -80,7 +80,10 @@ public class Debug {
 		Console.log("");
 	}
 
-	public static void uiDebugInfo(Scene scene) {
+	public static void update(Scene scene) {
+		
+		mdEditor.update();
+		
 		Camera camera = scene.getCamera();
 		PlayableScene playScene = ((PlayableScene) scene);
 		PlayerEntity player = playScene.getPlayer();
@@ -106,7 +109,7 @@ public class Debug {
 				+ "\n" + "VX: " + vx + " VY: " + vy + " VZ: " + vz
 				+ "\n" + "speed: " + spd
 				+ "\n" + MemDebug.memoryInfo()
-				+ "\n",
+				+ "\n" + camera.getDirectionVector(),
 				5, 5, .25f, false);
 		
 		MemDebug.visualizeInfo();
@@ -124,8 +127,6 @@ public class Debug {
 		if (viewShadowTexture0) {
 			UI.drawImage("shadow0", 1280 - 512, 720, 512, -512, Colors.WHITE);
 		}
-
-		mdEditor.update();
 		
 		if (faceInfo) {
 			int faceId = -1;
@@ -178,7 +179,7 @@ public class Debug {
 						texMat = tex.getMaterial().name();
 					}
 					
-					Vector3f tangent = ArcUtil.getFaceTangent(bsp.vertices, bsp.edges, bsp.surfEdges, bsp.getTextureMappings(), nearestFace);
+					Vector3f tangent = ArcUtil.getFaceTangent(bsp.vertices, bsp.edges, bsp.surfEdges, bsp.planes, bsp.getTextureMappings(), nearestFace);
 					
 					// Behold! Hell itself
 					float[][] tv = texInfo.lmVecs;
@@ -230,7 +231,6 @@ public class Debug {
 					
 					Vector3f trim = new Vector3f(R,R,R);
 					bounds1 = bounds1.sub(trim);
-					LineRender.drawBox(center1, bounds1, Colors.CLAY);
 					LineRender.drawLine(Vector3f.add(A, N), Vector3f.add(B, N), (i % 2 == 0) ? Colors.PINK : Colors.PURPLE);
 				}
 			}

@@ -6,16 +6,19 @@ import java.nio.file.Files;
 import java.util.List;
 
 import audio.AudioHandler;
+import audio.speech.SpeechHandler;
 import core.Application;
 import dev.Debug;
 import gl.Camera;
 import gl.Render;
 import gl.Window;
+import io.Input;
 import map.architecture.ArchitectureHandler;
 import scene.PlayableScene;
 import scene.entity.Entity;
 import scene.entity.EntityHandler;
 import scene.entity.SpawnHandler;
+import scene.entity.hostile.GhostState;
 import scene.entity.util.PlayerEntity;
 import scene.mapscene.MapScene;
 
@@ -49,6 +52,11 @@ public class CommandMethods {
 			Console.log("No such map: " + map);
 			return;
 		}
+		
+		if (Application.scene instanceof MapScene) {
+			Input.requestMouseRelease();
+		}
+		
 		AudioHandler.stopAll();
 		PlayableScene.currentMap = map;
 		Application.changeScene(MapScene.class);
@@ -252,6 +260,17 @@ public class CommandMethods {
 		}
 	}
 	
+	public static void ghost_freeze() {
+		if (Application.scene instanceof MapScene) {
+			MapScene s = (MapScene)Application.scene;
+			if (s.getGhost().getState() == GhostState.FROZEN) {
+				s.getGhost().setState(GhostState.WANDERING);
+			} else {
+				s.getGhost().setState(GhostState.FROZEN);
+			}
+		}
+	}
+	
 	public static void viewmodel_edit() {
 		Debug.mdEditor.toggle();
 	}
@@ -272,6 +291,10 @@ public class CommandMethods {
 	
 	public static void exit() {
 		quit();
+	}
+	
+	public static void speak(String say) {
+		SpeechHandler.speak(say);
 	}
 	
 	private static void incorrectParams(String cmd, String ... strings) {

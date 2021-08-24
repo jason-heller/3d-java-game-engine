@@ -220,7 +220,7 @@ public class UI {
 	public static Image drawImage(String texture, int x, int y, int w, int h, Matrix4f worldMatrix) {
 		final Image img = new Image(texture, x, y);
 		img.w = w;
-		img.h = h;
+		img.h = h / Window.getAspectRatio();
 		img.setOpacity(opacity);
 		worldSpaceComponents.put(worldMatrix, img);
 		return img;
@@ -258,6 +258,9 @@ public class UI {
 	public static void render(Scene scene) {
 		if (hideUI) 
 			return;
+		
+
+		renderWorldSpace(scene);
 
 		prepare();
 		
@@ -306,11 +309,9 @@ public class UI {
 
 		shader.stop();
 		finish();
-		
-		renderWorldSpace(scene);
 	}
 	
-	public static void renderWorldSpace(Scene scene) {
+	private static void renderWorldSpace(Scene scene) {
 		prepare();
 		
 		worldSpaceShader.start();
@@ -363,6 +364,7 @@ public class UI {
 
 		worldSpaceShader.stop();
 		finish();
+		GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 	}
 	
 	private static void prepare() {

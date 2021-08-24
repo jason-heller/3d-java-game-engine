@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
+
 import core.Resources;
 import gl.res.Texture;
 import gl.res.TextureUtils;
@@ -81,7 +84,7 @@ public class ArcLoadTextures {
 					byte[] bumpMapData = Squish.decompressImage(null, width, height, textureData, compType);
 					String bumpTexName = '%' + textureName;
 					textures[i++] = bumpTexName;
-					t = TextureUtils.createTexture(bumpMapData, material, width, height, true);
+					t = TextureUtils.createTexture(bumpMapData, GL11.GL_RGB, material, width, height, true);
 					textureDatas.add(t);
 				}
 				
@@ -90,7 +93,7 @@ public class ArcLoadTextures {
 					byte[] specMapData = Squish.decompressImage(null, width, height, textureData, compType);
 					String specTexName = '&' + textureName;
 					textures[i++] = specTexName;
-					t = TextureUtils.createTexture(specMapData, material, width, height, true);
+					t = TextureUtils.createTexture(specMapData, GL30.GL_R8, material, width, height, true);
 					textureDatas.add(t);
 				}
 			} else {

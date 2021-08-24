@@ -2,11 +2,14 @@ package scene.entity.object;
 
 import org.joml.Vector3f;
 
+import dev.cmd.Console;
 import gl.res.Model;
 import scene.entity.Spawnable;
 
 public class SolidPhysProp extends HoldableEntity implements Spawnable {
 
+	private float emfLevel = 0f;
+	
 	public SolidPhysProp() {
 		super("", new Vector3f());
 		solid = true;
@@ -33,5 +36,15 @@ public class SolidPhysProp extends HoldableEntity implements Spawnable {
 		this.setModel("cube");
 		this.setTexture("default");
 		return true;
+	}
+	
+
+	
+	public void ghostInteraction() {
+		emfLevel = 3;
+	}
+	
+	public float getEmfLevel() {
+		return emfLevel;
 	}
 }

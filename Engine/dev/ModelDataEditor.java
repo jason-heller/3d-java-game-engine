@@ -1,93 +1,131 @@
 package dev;
 
-import org.joml.Vector4f;
+import org.joml.Vector3f;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 
 import core.Application;
-import gl.Window;
+import dev.cmd.Console;
 import gl.res.mesh.ImageTag;
 import gl.res.mesh.MeshData;
 import gl.res.mesh.MeshTag;
 import gl.res.mesh.TextTag;
 import io.Input;
 import scene.PlayableScene;
+import scene.mapscene.MapScene;
 import scene.viewmodel.ViewModel;
 import scene.viewmodel.ViewModelHandler;
 import ui.UI;
+import util.Colors;
 
 public class ModelDataEditor {
 	private ViewModelHandler handler;
 	
 	private MeshData meshData;
-	private MeshTag meshTag;
-	private int meshTagId = 0;
 	
-	private float heldTimer = 0f;
+	private float grabX, grabY;
+	private MeshTag grabbedItem = null, hoveredItem = null;
+	
 	private float offset = .1f;
 	
 	private boolean type = false;
 	private String typedText = "";
 	
-	private Vector4f viewportOrig;
+	private boolean dragW = false, dragH = false;
 	
 	private void editMeshTag() {
-		boolean ctrl = Input.isDown(Keyboard.KEY_LCONTROL) || Input.isDown(Keyboard.KEY_RCONTROL);
+		if (meshData == null) return;
+		MapScene scene = (MapScene)Application.scene;
+		scene.getViewModelHandler().clearSway();
+
+		float mx = (Mouse.getX() - 280) / 360f;
+		float my = (Mouse.getY() - 680) / 360f;
+
 		
-		if (Input.isPressed(Keyboard.KEY_EQUALS)) {
-			meshTagId++;
-			if (meshTagId == meshData.getStructs().size()) {
-				meshTagId = 0;
+		hoveredItem = null;
+		
+		float tx = 0, ty = 0, tw = 0, th = 0;
+		
+		for(MeshTag tag : meshData.getTags()) {
+			tx = tag.getOffset().x;
+			ty = tag.getOffset().y;
+			tw = tag.getWidth() / 720f;
+			th = tag.getHeight() / 720f;
+			if (mx > tx && my > ty && mx < tx + tw && my < ty + th) {
+				hoveredItem = tag;
+				break;
 			}
 		}
-		if (Input.isPressed(Keyboard.KEY_MINUS)) {
-			meshTagId--;
-			if (meshTagId == -1) {
-				meshTagId = meshData.getStructs().size() - 1;
+		
+		if (Input.isPressed(Input.KEY_LMB) && hoveredItem != null) {
+			grabbedItem = hoveredItem;
+			grabX = mx - hoveredItem.getOffset().x;
+			grabY = my - hoveredItem.getOffset().y;
+			
+			if (hoveredItem instanceof ImageTag) {
+				if (mx > tx + tw-.05f) {
+					dragW = true;
+					grabX -= ((ImageTag)grabbedItem).getViewport()[2] / 720f;
+				}
+				if (my > ty + th-.05f) {
+					dragH = true;
+					grabY += ((ImageTag)grabbedItem).getViewport()[3] / 720f;
+				}
+			}
+				
+		}
+		
+		if (Input.isReleased(Input.KEY_LMB)) {
+			grabbedItem = null;
+			dragW = dragH = false;
+		}
+		
+		if (grabbedItem != null) {
+			hoveredItem = grabbedItem;
+			if (dragW) {
+				((ImageTag)grabbedItem).getViewport()[2] = (int)((mx - grabX) * 360f);
+				Console.log("X", (int)((mx - grabX) * 360f));
+			} else if (dragH) {
+				((ImageTag)grabbedItem).getViewport()[3] = (int)((-my + grabY) * 360f);
+				Console.log(my,grabY);
+			} else {
+				grabbedItem.getOffset().x = (mx - grabX);
+				grabbedItem.getOffset().y = (my - grabY);
+			}
+		}
+		
+		if (hoveredItem != null) {
+			int xPixel = (int) (hoveredItem.getOffset().x * 360f);
+			int yPixel = (int) (-hoveredItem.getOffset().y * 360f);
+			xPixel += 280f;
+			Vector3f color = (hoveredItem == grabbedItem) ? Colors.RED : Colors.BLUE;
+			int width = (int) hoveredItem.getWidth() / 2;
+			int height = (int) hoveredItem.getHeight() / 2;
+			UI.drawHollowRect(xPixel, yPixel, width,
+					height, 1, color);
+
+			if (mx > tx + tw-.05f) {
+				int x = xPixel + width;
+				int y = yPixel + height / 2;
+				UI.drawLine(x, y, x + 12, y, 1, Colors.GREEN);
+			}
+
+			if (my > ty + th-.05f) {
+				int x = xPixel + width / 2;
+				int y = yPixel;
+				UI.drawLine(x, y, x, y - 12, 1, Colors.GREEN);
+
 			}
 			
+
+			UI.drawString("tag: " + hoveredItem.getClass().getSimpleName() + " (" + hoveredItem + ")" + "\n" +
+					"snap: " + offset +
+					"\npos: " + hoveredItem.getOffset() +
+					"\nscale: " + hoveredItem.getScale(), 2, 350, .25f, false);
 		}
 		
-		if (Input.getMouseDWheel() > 0) {
-			if (ctrl) {
-				if (offset <= .1f) {
-					offset -= .025f;
-				} else {
-					offset -= .1f;
-				}
-			} else {
-				meshTag.setScale(meshTag.getScale() - offset);
-			}
-		} else if (Input.getMouseDWheel() < 0) {
-			if (ctrl) {
-				if (offset <= .1f) {
-					offset += .025f;
-				} else {
-					offset += .1f;
-				}
-			} else {
-				meshTag.setScale(meshTag.getScale() + offset);
-			}
-		}
-		
-		if (Input.isDown(Keyboard.KEY_RIGHT)) {
-			shiftTag(offset, 0f, 0f);
-		} else if (Input.isDown(Keyboard.KEY_LEFT)) {
-			shiftTag(-offset, 0f, 0f);
-		} else if (Input.isDown(Keyboard.KEY_UP)) {
-			shiftTag(0f, offset, 0f);
-		} else if (Input.isDown(Keyboard.KEY_DOWN)) {
-			shiftTag(0, -offset, 0f);
-		} else {
-			heldTimer = 0f;
-		}
-		
-		UI.drawString("tag: " + meshTag.getClass().getSimpleName() + " (" + meshTagId + ")" + "\n" +
-				"snap: " + offset +
-				"\npos: " + meshTag.getOffset() +
-				"\nscale: " + meshTag.getScale(), 2, 350);
-		
-		if (meshTag instanceof TextTag) {
-			TextTag textTag = (TextTag)meshTag;
+		if (hoveredItem instanceof TextTag) {
+			TextTag textTag = (TextTag)hoveredItem;
 			
 			if (Input.isPressed(Keyboard.KEY_C)) {
 				textTag.setCentered(!textTag.isCentered());
@@ -103,11 +141,11 @@ public class ModelDataEditor {
 			}
 			
 			UI.drawString(
-					"[C]entered: " + textTag.isCentered(), 2, 450);
+					"[C]entered: " + textTag.isCentered(), 2, 450, .25f, false);
 		}
 		
-		if (meshTag instanceof ImageTag) {
-			ImageTag imgTag = (ImageTag)meshTag;
+		if (hoveredItem instanceof ImageTag) {
+			ImageTag imgTag = (ImageTag)hoveredItem;
 			
 			int[] viewport = imgTag.getViewport();
 			viewport[0] = (int) imgTag.getOffset().x;
@@ -131,21 +169,13 @@ public class ModelDataEditor {
 			}
 			
 			UI.drawString(
-					"[C]entered: " + imgTag.isCentered(), 2, 450);
+					"[C]entered: " + imgTag.isCentered(), 2, 450, .25f, false);
 		}
 		
 		if (type) {
 			typedText += Input.getTypedKey();
 			UI.drawString("Typed: "+typedText, 500, 720/2, false);
 		}
-	}
-
-	private void shiftTag(float x, float y, float z) {
-		if (heldTimer == 0f || heldTimer > 1f) {
-			float s = meshTag.getScale();
-			meshTag.getOffset().add(x*s, y*s, z*s);
-		}
-		heldTimer += Window.deltaTime;
 	}
 
 	public void update() {
@@ -165,30 +195,8 @@ public class ModelDataEditor {
 				continue;
 			}
 			
-			if (meshTagId >= meshData.getStructs().size()) {
-				meshTagId = 0;
-			}
-			
-			MeshTag tag = meshData.getStructs().get(meshTagId);
-			if (tag == null) {
-				continue;
-			}
-			
-			meshTag = tag;
-			
-			if (tag instanceof ImageTag) {
-				viewportOrig = new Vector4f();
-				viewportOrig.x = ((ImageTag)tag).getViewport()[0];
-				viewportOrig.y = ((ImageTag)tag).getViewport()[1];
-				viewportOrig.z = ((ImageTag)tag).getViewport()[2];
-				viewportOrig.w = ((ImageTag)tag).getViewport()[3];
-			}
-			
 			break;
 		}
-		
-		if (meshTag == null)
-			return;
 		
 		editMeshTag();
 	}
@@ -196,10 +204,15 @@ public class ModelDataEditor {
 	public void toggle() {
 		if (handler != null) {
 			handler = null;
+			Input.requestMouseGrab();
 		} else if (Application.scene instanceof PlayableScene) {
 			PlayableScene scene = (PlayableScene)Application.scene;
 			
 			handler = scene.getViewModelHandler();
+			Debug.god = true;
+			Debug.fullbright = true;
+			Console.send("ghost_freeze");
+			Input.requestMouseRelease();
 		}
 		
 	}

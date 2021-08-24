@@ -2,6 +2,8 @@ package shader;
 
 import org.lwjgl.opengl.GL20;
 
+import dev.cmd.Console;
+
 public abstract class Uniform {
 
 	private static final int NOT_FOUND = -1;
@@ -20,7 +22,7 @@ public abstract class Uniform {
 	protected void storeUniformLocation(int programID) {
 		location = GL20.glGetUniformLocation(programID, name);
 		if (location == NOT_FOUND) {
-			System.err.println("No uniform variable called " + name + " found!");
+			Console.warning("No uniform variable called " + name + " found!");
 		}
 	}
 

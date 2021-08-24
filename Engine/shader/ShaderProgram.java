@@ -25,6 +25,11 @@ public class ShaderProgram {
 		GL20.glAttachShader(programID, fragmentShaderID);
 		bindAttributes(inVariables);
 		GL20.glLinkProgram(programID);
+		if (GL20.glGetProgrami(programID, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
+		    System.err.println("Program failed to link");
+		    System.err.println(GL20.glGetProgramInfoLog(programID, GL20.glGetProgrami(programID, GL20.GL_INFO_LOG_LENGTH)));
+		    System.exit(-1);
+		}
 		GL20.glDetachShader(programID, vertexShaderID);
 		GL20.glDetachShader(programID, fragmentShaderID);
 		GL20.glDeleteShader(vertexShaderID);
@@ -41,6 +46,11 @@ public class ShaderProgram {
 		GL20.glAttachShader(programID, fragmentShaderID);
 		bindAttributes(inVariables);
 		GL20.glLinkProgram(programID);
+		if (GL20.glGetProgrami(programID, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
+		    System.err.println("Program failed to link");
+		    System.err.println(GL20.glGetProgramInfoLog(programID, GL20.glGetProgrami(programID, GL20.GL_INFO_LOG_LENGTH)));
+		    System.exit(-1);
+		}
 		GL20.glDetachShader(programID, vertexShaderID);
 		GL20.glDetachShader(programID, geometryShaderID);
 		GL20.glDetachShader(programID, fragmentShaderID);
@@ -88,8 +98,10 @@ public class ShaderProgram {
 		GL20.glShaderSource(shaderID, shaderSource);
 		GL20.glCompileShader(shaderID);
 		if (GL20.glGetShaderi(shaderID, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
-			System.out.println(GL20.glGetShaderInfoLog(shaderID, 500));
+
 			System.err.println("Could not compile shader " + path);
+			System.err.println(GL20.glGetShaderInfoLog(shaderID, 500));
+			System.err.println(GL20.glGetProgramInfoLog(programID, GL20.glGetProgrami(programID, GL20.GL_INFO_LOG_LENGTH)));
 			System.exit(-1);
 		}
 		return shaderID;

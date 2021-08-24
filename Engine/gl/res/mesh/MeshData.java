@@ -27,7 +27,7 @@ public class MeshData {
 		this.defaultTexture = defaultTexture;
 	}
 
-	public LinkedList<MeshTag> getStructs() {
+	public LinkedList<MeshTag> getTags() {
 		return structs;
 	}
 

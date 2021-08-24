@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.joml.Vector3f;
 import org.lwjgl.input.Keyboard;
+
 import core.Application;
 import dev.Debug;
 import io.Input;
@@ -85,6 +86,19 @@ public class Console {
 	public static boolean isVisible() {
 		return visible;
 	}
+	
+	public static void warning(Object... x) {
+		for(Object obj : x) {
+			log("#yWarning: "+obj);
+		}
+	}
+	
+	public static void severe(Object... objects) {
+		for (Object obj : objects) {
+			log("#rSevere: " + obj);
+			System.err.println(objects);
+		}
+	}
 
 	public static void log(Object... x) {
 		String s = "";
@@ -101,8 +115,9 @@ public class Console {
 		log(s);
 	}
 
-	public static void log(Object text) {
-		final String[] lines = text.toString().split("\n");
+	public static void log(String text) {
+		final String[] lines = StrUtils.splitByWidth(Font.consoleFont, text, WIDTH, FONT_SIZE);
+		
 		for (final String line : lines) {
 			log.add(line);
 			
@@ -342,13 +357,13 @@ public class Console {
 			UI.drawImage(border);
 			UI.drawImage(backdrop);
 
-			UI.drawString(Font.consoleFont, "Console", x + 2, y, .25f, 1280, false).setDepth(-9999);
+			UI.drawString(Font.consoleFont, "Console", x + 2, y, .25f, 1280, false).setDepth(-Integer.MAX_VALUE);
 
 			final int lineBottomViewInd = lineViewInd + VISIBLE_LINES - 1;
 			for (int i = lineViewInd; i < log.size() && i < lineBottomViewInd; i++) {
 				final int lineY = y + HEADER_HEIGHT + BORDER_WIDTH + (i - lineViewInd) * FONT_HEIGHT;
 				UI.drawString(Font.consoleFont, log.get(i), x + BORDER_WIDTH * 2, lineY, FONT_SIZE, 1280, false)
-						.setDepth(-9999);
+						.setDepth(-Integer.MAX_VALUE);
 			}
 
 			int predWidth = 16;
@@ -364,15 +379,16 @@ public class Console {
 				final String color = lineCopyInd == i ? "#w" : "#s";
 
 				UI.drawString(Font.consoleFont, color + predictions.get(i), x + BORDER_WIDTH * 2, lineY, FONT_SIZE,
-						1280, false).setDepth(-9999);
+						1280, false).setDepth(-Integer.MAX_VALUE);
 			}
 
 			final String blinker = System.currentTimeMillis() % 750 > 375 ? "|" : "";
 			
-			String[] inputSpace = input.split(" ");
-
-			UI.drawString(Font.consoleFont, ">" + input + blinker, x + BORDER_WIDTH * 2,
-					y + BORDER_WIDTH + (VISIBLE_LINES + 1) * FONT_HEIGHT, FONT_SIZE, 1280, false).setDepth(-99999);
+			String[] inputTrunc = StrUtils.splitByWidth(Font.consoleFont, ">" + input, WIDTH-12, FONT_SIZE);
+			String cont = (inputTrunc.length > 1) ? "..." : blinker;
+			
+			UI.drawString(Font.consoleFont, inputTrunc[0] + cont, x + BORDER_WIDTH * 2,
+					y + BORDER_WIDTH + (VISIBLE_LINES + 1) * FONT_HEIGHT, FONT_SIZE, 1280, false).setDepth(-Integer.MAX_VALUE);
 		}
 
 		final int mx = Input.getMouseX();
@@ -440,7 +456,7 @@ public class Console {
 			final int lineY = boxY + (i) * FONT_HEIGHT;
 
 			UI.drawString(Font.consoleFont, "#s" + preds.get(i), x + 28 + BORDER_WIDTH * 2, lineY, FONT_SIZE,
-					1280, false).setDepth(-9999);
+					1280, false).setDepth(-Integer.MAX_VALUE);
 		}
 	}
 }

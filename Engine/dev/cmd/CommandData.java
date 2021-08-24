@@ -5,8 +5,8 @@ import static dev.cmd.CommandType.SETTER;
 
 import core.Application;
 import dev.Debug;
+import dev.EnvMapBuilder;
 import dev.MemDebug;
-import dev.ModelDataEditor;
 import gl.Camera;
 import gl.Window;
 import gl.arc.ArcRenderLightGeneric;
@@ -46,7 +46,10 @@ enum CommandData {
 	ghost_force_move(true),
 	ghost_force_action(true),
 	ghost_force_hunt(true),
+	ghost_freeze(true),
 	viewmodel_edit(true),
+	speak(false),
+	build_environment_maps(EnvMapBuilder.class, false),
 	
 	// Getters
 	version("VERSION", Application.class, GETTER, false),

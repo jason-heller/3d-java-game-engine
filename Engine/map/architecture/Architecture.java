@@ -15,6 +15,7 @@ import org.lwjgl.opengl.GL14;
 
 import core.Resources;
 import dev.Debug;
+import dev.cmd.Console;
 import geom.AxisAlignedBBox;
 import geom.CollideUtils;
 import geom.MTV;
@@ -28,11 +29,11 @@ import gl.light.DynamicLightHandler;
 import gl.particle.ParticleEmitter;
 import gl.res.Texture;
 import gl.skybox._3d.SkyboxCamera;
+import map.architecture.components.ArcClip;
 import map.architecture.components.ArcFace;
 import map.architecture.components.ArcHeightmap;
 import map.architecture.components.ArcLightCube;
 import map.architecture.components.ArcNavigation;
-import map.architecture.components.ArcTextureMapping;
 import map.architecture.components.ArcTextureData;
 import map.architecture.components.ArcTriggerClip;
 import map.architecture.functions.ArcFuncHandler;
@@ -65,8 +66,6 @@ public class Architecture {
 	private BspLeaf currentLeaf = null;
 	
 	public Vector3f[] vertices;
-	public ArcFace[] faces;
-	
 	private List<ParticleEmitter> emitters = new ArrayList<ParticleEmitter>();
 	
 	private ArcTextureData textureData;
@@ -81,6 +80,7 @@ public class Architecture {
 	private LinkedList<BspLeaf> audible = new LinkedList<>();
 	
 	private List<ArcHeightmap> renderedHeightmaps = new ArrayList<>();
+	private Map<Integer, Texture> environmentMaps;
 	
 	
 	public Architecture(Scene scene) {
@@ -245,9 +245,14 @@ public class Architecture {
 	public void cleanUp() {
 		bsp.cleanUp();
 		final Texture[] textures = textureData.getTextures();
-		for(Texture texture : textures) {
+		for(Texture texture : textures) 
 			texture.delete();
+		
+		if (environmentMaps != null) {
+			for(Texture texture : environmentMaps.values()) 
+				texture.delete();
 		}
+		
 		lightmap.delete();
 	}
 
@@ -364,7 +369,7 @@ public class Architecture {
 				for(ArcFace face : faces) {
 					
 					if (face.texMapping == -1) continue;
-					ArcTextureMapping texData = bsp.getTextureMappings()[face.texMapping];
+					//ArcTextureMapping texData = bsp.getTextureMappings()[face.texMapping];
 					//if (texData.textureId == -1) continue;
 					
 					float dist = CollideUtils.convexPolygonRay(bsp, face, org, dir);
@@ -396,5 +401,47 @@ public class Architecture {
 
 	public void setTextureData(ArcTextureData textureData) {
 		this.textureData = textureData;
+	}
+
+	public List<BspLeaf> getVisibleLeavesIntersecting(AxisAlignedBBox box) {
+		Vector3f max = Vector3f.add(box.getCenter(), box.getBounds());
+		Vector3f min = Vector3f.sub(box.getCenter(), box.getBounds());
+		List<BspLeaf> leaves = new ArrayList<>();
+		for (BspLeaf leaf : this.renderedLeaves) {
+			if (leaf.intersects(max, min)) {
+				leaves.add(leaf);
+			}
+		}
+		return leaves;
+	}
+
+	public void setEnvironmentMaps(Map<Integer, Texture> environmentMaps) {
+		this.environmentMaps = environmentMaps;
+		Console.log("Loaded environment maps");
+	}
+	
+	public Texture getEnvironmentMap(Vector3f position) {
+		float closest = Float.POSITIVE_INFINITY;
+		int clipIndex = -1;
+		
+		if (environmentMaps == null)
+			return Resources.DEFAULT;
+		
+		for(int index : environmentMaps.keySet()) {
+			ArcClip clip = bsp.clips[index];
+			Vector3f center = clip.bbox.getCenter();
+			
+			float dist = Vector3f.distanceSquared(center, position);
+			
+			if (dist < closest) {
+				closest = dist;
+				clipIndex = index;
+			}
+		}
+		
+		if (clipIndex == -1)
+			return Resources.DEFAULT;
+		
+		return environmentMaps.get(clipIndex);
 	}
 }

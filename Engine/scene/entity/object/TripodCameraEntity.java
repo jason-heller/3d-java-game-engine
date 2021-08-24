@@ -6,7 +6,6 @@ import geom.AxisAlignedBBox;
 import gl.post.NightVisionShader;
 import scene.PlayableScene;
 import scene.entity.Entity;
-import scene.mapscene.MapScene;
 import scene.mapscene.item.TripodCameraItem;
 
 public class TripodCameraEntity extends Entity {
@@ -15,7 +14,7 @@ public class TripodCameraEntity extends Entity {
 	private boolean damaged;
 	
 	private AxisAlignedBBox bbox;
-	
+
 	public TripodCameraEntity(Vector3f pos, Vector3f normal, float yRot) {
 		super("sensor");
 		this.pos = pos;

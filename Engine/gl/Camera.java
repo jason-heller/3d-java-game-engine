@@ -359,6 +359,12 @@ public class Camera {
 		this.projectionMatrix = createProjectionMatrix();
 	}
 
+	public void clearEffectRotations() {
+		screenShake.zero();
+		flinch.zero();
+		swayDir.zero();
+	}
+	
 	public void updateViewMatrix() {
 		viewMatrix.identity();
 

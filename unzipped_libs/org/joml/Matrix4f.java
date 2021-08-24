@@ -1723,6 +1723,34 @@ public class Matrix4f implements Serializable, Externalizable {
 		return this;
 	}
 
+	public Matrix4f setRow(float m[], int row) {
+		switch(row) {
+		case 0:
+			m00 = m[0];
+			m01 = m[1];
+			m02 = m[2];
+			m03 = m[3];
+			break;
+		case 1:
+			m10 = m[0];
+			m11 = m[1];
+			m12 = m[2];
+			m13 = m[3];
+			break;
+		case 2:
+			m20 = m[0];
+			m21 = m[1];
+			m22 = m[2];
+			m23 = m[3];
+		default:
+			m30 = m[0];
+			m31 = m[1];
+			m32 = m[2];
+			m33 = m[3];
+		}
+		return this;
+	}
+	
 	/**
 	 * Set the values in the matrix using a FloatBuffer. The results will look like
 	 * this:<br>

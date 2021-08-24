@@ -5,8 +5,6 @@ uniform samplerCube sampler;
 out vec4 out_colour;
 out vec4 out_brightness;
 uniform vec3 viewDir;
-in float lightAmt;
-in float lightY;
 
 
 void main(void){

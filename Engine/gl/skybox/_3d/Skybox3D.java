@@ -10,7 +10,7 @@ import core.Resources;
 import dev.Debug;
 import gl.Camera;
 import gl.Render;
-import gl.arc.ArcShader;
+import gl.arc.ArcShaderBase;
 import gl.skybox.Skybox;
 import gl.skybox.Skybox2D;
 import map.architecture.Architecture;
@@ -21,13 +21,13 @@ import map.architecture.vis.Pvs;
 
 public class Skybox3D implements Skybox {
 	
-	private ArcShader shader;
+	private ArcShaderBase shader;
 	private SkyboxCamera skyboxCamera;
 	
 	private Skybox2D skybox2D;
 	
 	public Skybox3D(SkyboxCamera skyboxCamera, Bsp bsp, Pvs pvs) {
-		this.shader = new ArcShader();
+		this.shader = new ArcShaderBase();
 		this.skyboxCamera = skyboxCamera;
 		skyboxCamera.updateLeaf(bsp, pvs);
 		
@@ -47,18 +47,15 @@ public class Skybox3D implements Skybox {
 		matrix.translate(position);
 		matrix.scale(skyboxCamera.getScale());
 		
-		
-		Matrix4f tempMatrix = new Matrix4f(camera.getViewMatrix());
-		camera.getViewMatrix().set(matrix);
-		camera.updateProjection();
-		
 		shader.start();
 		
 		GL20.glEnableVertexAttribArray(0);
 		GL20.glEnableVertexAttribArray(1);
 		GL20.glEnableVertexAttribArray(2);
-		shader.projectionMatrix.loadMatrix(camera.getProjectionMatrix());
-		shader.viewMatrix.loadMatrix(matrix);
+
+		Matrix4f skyProjView = new Matrix4f();
+		Matrix4f.mul(camera.getProjectionMatrix(), matrix, skyProjView);
+		shader.projectionViewMatrix.loadMatrix(skyProjView);
 
 		//shader.sampler.loadTexUnit(0);
 		shader.lightmap.loadTexUnit(1);
@@ -68,7 +65,6 @@ public class Skybox3D implements Skybox {
 				
 				arc.getTextures()[cluster.getDiffuseId()].bind(0);
 				cluster.getModel().bind(0,1,2);
-				// shader.modelMatrix.loadMatrix(object.getMatrix());
 				GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, cluster.getModel().getVertexCount());
 				Render.drawCalls++;
 			}
@@ -79,9 +75,6 @@ public class Skybox3D implements Skybox {
 		GL20.glDisableVertexAttribArray(2);
 		GL30.glBindVertexArray(0);
 		shader.stop();
-		
-		camera.getViewMatrix().set(tempMatrix);
-		camera.updateProjection();
 		
 		GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 		

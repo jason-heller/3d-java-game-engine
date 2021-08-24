@@ -7,9 +7,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import core.Application;
-import core.Resources;
 import dev.Debug;
-import dev.cmd.Console;
 import geom.AxisAlignedBBox;
 import geom.CollideUtils;
 import geom.MTV;
@@ -27,7 +25,6 @@ import map.architecture.components.ArcFace;
 import map.architecture.components.ArcHeightmap;
 import map.architecture.components.ArcStaticObject;
 import map.architecture.components.ArcTriggerClip;
-import map.architecture.util.ArcUtil;
 import map.architecture.vis.Bsp;
 import map.architecture.vis.BspLeaf;
 import scene.PlayableScene;
@@ -62,7 +59,6 @@ public abstract class PhysicsEntity extends Entity {
 	protected static final float EPSILON = 0.01f;
 	private static final float STEP_HEIGHT = 3f;
 
-	protected AxisAlignedBBox bbox;
 	public Vector3f vel = new Vector3f();
 	private Vector3f lastPos = new Vector3f();
 	

@@ -2,7 +2,7 @@ package map.architecture.util;
 
 import org.joml.Vector3f;
 
-import dev.cmd.Console;
+import geom.Plane;
 import gl.line.LineRender;
 import map.architecture.components.ArcEdge;
 import map.architecture.components.ArcFace;
@@ -11,10 +11,11 @@ import map.architecture.vis.Bsp;
 
 public class ArcUtil {
 	
-	public static Vector3f getFaceTangent(Vector3f[] vertices, ArcEdge[] edges, int[] surfEdges, ArcTextureMapping[] texMappings, ArcFace face) {
+	public static Vector3f getFaceTangent(Vector3f[] vertices, ArcEdge[] edges, int[] surfEdges, Plane[] planes, ArcTextureMapping[] texMappings, ArcFace face) {
 		Vector3f dPos1 = getEdgeVector(vertices, edges, surfEdges, face.firstEdge);
 		Vector3f dPos2 = getEdgeVector(vertices, edges, surfEdges, face.firstEdge + face.numEdges - 1);
-
+		dPos2.negate();
+		
 		ArcTextureMapping texMap = texMappings[face.texMapping];
 		
 		// Note: Ignored texels[n][4] since it's irrelevant to the delta
@@ -27,10 +28,17 @@ public class ArcUtil {
 				(dPos2.x * texMap.texels[0][0] + dPos2.y * texMap.texels[0][1] + dPos2.z * texMap.texels[0][2]),
 				(dPos2.x * texMap.texels[1][0] + dPos2.y * texMap.texels[1][1] + dPos2.z * texMap.texels[1][2])
 		};
+
+		float r = (dTex1[0] * dTex2[1] - dTex1[1] * dTex2[0]);
+		Vector3f A = Vector3f.mul(dPos1, dTex2[1]);
+		Vector3f B = Vector3f.mul(dPos2, dTex1[1]);
+		Vector3f diff = Vector3f.sub(A, B);
+		Vector3f tangent = Vector3f.div(diff, r).normalize();
 		
-		//float r = 1f / (dTex1[0] * dTex2[1] - dTex1[1] * dTex2[0]);
-		//return Vector3f.mul(Vector3f.sub(Vector3f.mul(dPos1, dTex2[1]), Vector3f.mul(dPos2, dTex1[1])), r);
-		return Vector3f.sub(Vector3f.mul(dPos1, dTex2[1]), Vector3f.mul(dPos2, dTex1[1])).normalize();
+		//Vector3f normal = planes[face.planeId].normal;
+		
+		// tangent = (Vector3f.sub(tangent, Vector3f.negate(normal).mul(normal.dot(tangent)))).normalize();
+		return tangent;
 	}
 	
 
@@ -76,7 +84,7 @@ public class ArcUtil {
 			
 			edgeNormal.set(p2).sub(p1);
 			edgeNormal.set(edgeNormal.y * faceNormal.z - edgeNormal.z * faceNormal.y,
-					edgeNormal.x * faceNormal.z - edgeNormal.z * faceNormal.y,
+					edgeNormal.x * faceNormal.z - edgeNormal.z * faceNormal.x,
 					edgeNormal.x * faceNormal.y - edgeNormal.y * faceNormal.x);
 			edgeDist = (edgeNormal.x * p1.x + edgeNormal.y * p1.y + edgeNormal.z * p1.z);
 

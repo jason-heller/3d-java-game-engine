@@ -25,4 +25,7 @@ public abstract class MeshTag {
 	public void setScale(float scale) {
 		this.scale = scale;
 	}
+	
+	public abstract float getWidth();
+	public abstract float getHeight();
 }

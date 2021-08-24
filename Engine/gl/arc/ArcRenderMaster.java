@@ -20,6 +20,7 @@ import map.architecture.vis.Bsp;
 import map.architecture.vis.BspLeaf;
 import map.architecture.vis.Cluster;
 import scene.Scene;
+import scene.mapscene.MapScene;
 
 public class ArcRenderMaster {
 
@@ -44,10 +45,11 @@ public class ArcRenderMaster {
 		
 		bsp.objects.render(camera, arc, clipPlane, lightProjMatrix);
 		
-		ArcHeightmapRender.renderHeightmaps(camera, arc, arc.getRenderedHeightmaps(), clipPlane, hasLightmap, lightProjMatrix, lights);
-		
-		ArcRenderLightGeneric.startRender(camera, clipPlane, hasLightmap, lightProjMatrix, lights);
-		
+		ArcHeightmapRender.renderHeightmaps(camera, arc, arc.getRenderedHeightmaps(), clipPlane, hasLightmap,
+				lightProjMatrix, lights);
+
+		ArcRenderLightGeneric.restartShaders(camera, arc, clipPlane, lightProjMatrix, lights, hasLightmap);
+
 		for(BspLeaf leaf : renderedLeaves) {
 			
 			if (leaf.isUnderwater && clipPlane.w == Float.POSITIVE_INFINITY) {
@@ -63,14 +65,22 @@ public class ArcRenderMaster {
 			}
 			
 			for(Cluster cluster : leaf.getMeshes()) {
-				
-				if (!camera.getFrustum().containsBoundingBox(leaf.max, leaf.min)) {continue;}
+				if (!camera.getFrustum().containsBoundingBox(leaf.max, leaf.min))
+					continue;
+
+				//Vector3f center = Vector3f.add(leaf.max, leaf.min).mul(.5f);
+				//if (Vector3f.distanceSquared(camera.getPosition(), center) > 300*300)
+				//	ArcRenderLightGeneric.startRender((MapScene) scene, arc, clipPlane, hasLightmap);
+				//else
+				ArcRenderLightGeneric.startRender((MapScene) scene, arc, clipPlane, hasLightmap, lightProjMatrix,
+						lights, cluster);
 
 				ArcRenderLightGeneric.render(camera, arc, cluster);
+				// ArcRenderLightGeneric.finishRender(arc);
 			}
 		}
 		
-		ArcRenderLightGeneric.finishRender();
+		
 		
 	}
 	

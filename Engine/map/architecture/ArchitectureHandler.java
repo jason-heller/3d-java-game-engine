@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import org.joml.Vector3f;
@@ -16,6 +17,8 @@ import geom.Plane;
 import gl.Camera;
 import gl.arc.ArcRenderMaster;
 import gl.line.LineRender;
+import gl.res.Texture;
+import io.EnvironmentMapFileLoader;
 import map.architecture.components.ArcNavNode;
 import map.architecture.components.ArcNavigation;
 import map.architecture.components.ArcRoom;
@@ -75,7 +78,10 @@ public class ArchitectureHandler {
 	}
 
 	public void load(Scene scene, Vector3f vec, String path) {
-		architecture = ArcLoader.load(scene, path, vec, true);
+		architecture = ArcLoader.load(scene, path, vec);
+		Map<Integer, Texture> envMaps = EnvironmentMapFileLoader.readEMP(path);
+		if (envMaps != null)
+			architecture.setEnvironmentMaps(envMaps);
 	}
 	
 	public void cleanUp() {

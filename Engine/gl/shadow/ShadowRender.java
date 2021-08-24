@@ -63,6 +63,12 @@ public class ShadowRender {
 			shader.lightSpaceMatrix.loadMatrix(lightSpaceMatrix);
 			shader.modelMatrix.loadMatrix(new Matrix4f());
 			for(BspLeaf leaf : leaves) {
+				//Vector3f bounds = Vector3f.sub(leaf.max, leaf.min).mul(0.5f);
+				Vector3f center = Vector3f.add(leaf.max, leaf.min).mul(0.5f);
+				float diffCutoff = (light.getOuterCutoff() - light.getCutoff()) + 100;
+				if (Vector3f.distanceSquared(camera.getPosition(), center) > diffCutoff * diffCutoff)
+					continue;
+				
 				Cluster[] clusters = leaf.getMeshes();
 				for(Cluster cluster : clusters) {
 					cluster.getModel().bind(0);

@@ -103,10 +103,6 @@ public class Lightmap {
 					byte[] expbuffer = subarrayChar(lighting, lightOffset + 3, lightOffset + byteCount); // Exponent (char)
 
 					int k = 0;
-					
-					if ( face.lmIndex == 174712) {
-						System.err.println(node.width + ", " +node.height + ", " +node.x + ", " + node.y);
-					}
 
 					// Fill out the lightmap, minus borders
 					for (int y = 0; y < height; ++y) {

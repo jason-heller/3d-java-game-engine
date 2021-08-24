@@ -4,12 +4,10 @@ import gl.res.Model;
 
 public class Cluster {
 	
-	private int diffuseId, bumpMapId;
+	private int diffuseId;
+	private int bumpMapId = -1;
+	private int specMapId = -1;
 	private Model model;
-
-	// NOTE: We leave bumpMapId = 0 if there is none, since no bump map will use
-	// that index anyways and since we use it as a flag for the shader (0 = no
-	// bumpmap, 1+ = has a bumpmap)
 
 	public Cluster(Model model, int diffuseId) {
 		this.model = model;
@@ -30,6 +28,14 @@ public class Cluster {
 
 	public void setBumpMapId(int bumpMapId) {
 		this.bumpMapId = bumpMapId;
+	}
+
+	public int getSpecMapId() {
+		return specMapId;
+	}
+	
+	public void setSpecMapId(int specMapId) {
+		this.specMapId = specMapId;
 	}
 
 }

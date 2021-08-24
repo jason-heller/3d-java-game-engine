@@ -19,7 +19,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.joml.Vector3f;
 
@@ -40,7 +39,7 @@ public class ArcLoader {
 	private static final byte EXPECTED_GAME_ID = 3;
 	private static final byte EXPECTED_FILE_VERSION = 4;
 	
-	public static Architecture load(Scene scene, String mapFileName, Vector3f offset, boolean doRender) {
+	public static Architecture load(Scene scene, String mapFileName, Vector3f offset) {
 		DataInputStream in = null;
 		String fileName = "maps/" + mapFileName + ".arc";
 
@@ -100,7 +99,6 @@ public class ArcLoader {
 			arc.setProperties(mapName, mapVer, gameId);
 
 			arc.pvs = pvs;
-			arc.faces = bsp.faces;		// Redundant
 			arc.setNavigation(nav);
 			arc.setTextureData(texData);
 			

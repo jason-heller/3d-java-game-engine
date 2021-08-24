@@ -39,6 +39,8 @@ public class ViewModelHandler {
 	public static float viewmodelTurnSway = .2f;
 	public static float viewmodelSwayAmount = .04f;
 	
+	private Matrix4f camMatrix = new Matrix4f();
+	
 	public ViewModelHandler() {
 		drawnModels = new ViewModel[MAX_MODELS];
 		
@@ -89,7 +91,7 @@ public class ViewModelHandler {
 		lastPitch = camera.getEffectedPitch();
 		lastCamPos.set(camera.getPosition());
 		
-		Matrix4f camMatrix = new Matrix4f();
+		camMatrix.identity();
 		Vector3f pos = new Vector3f(camera.getPosition());
 		pos.add(camera.getDirectionVector());
 		camMatrix.translate(pos);
@@ -112,6 +114,12 @@ public class ViewModelHandler {
 			Render.renderViewModel(model, texture, Matrix4f.mul(m, matrix, null), lights);
 
 		}
+	}
+	
+	public void clearSway() {
+		sway.zero();
+		swayYaw = 0f;
+		swayPitch = 0f;
 	}
 	
 	public void clearAllModels() {

@@ -100,7 +100,7 @@ public class Controls {
 		} catch (final FileNotFoundException e) {
 			return;
 		} catch (final IOException e) {
-			System.err.println("ERR: malformatted config file.");
+			Console.warning("malformatted controls file.");
 		}
 	}
 
@@ -113,7 +113,7 @@ public class Controls {
 				bw.write("custom:" + Keyboard.getKeyName(key) + "=" + customBinds.get(key) + "\n");
 			}
 		} catch (final IOException e) {
-			System.err.println("ERR: malformatted config file.");
+			Console.warning("malformatted controls file.");
 		}
 	}
 

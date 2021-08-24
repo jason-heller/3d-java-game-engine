@@ -2,8 +2,8 @@ package scene.mapscene.item;
 
 import org.joml.Vector3f;
 
-import audio.recognition.Speech;
-import dev.cmd.Console;
+import audio.speech.Phrase;
+import audio.speech.SpeechHandler;
 import scene.entity.hostile.GhostEntity;
 import scene.mapscene.MapScene;
 import scene.viewmodel.ViewModel;
@@ -31,39 +31,27 @@ public class SpiritBoxItem extends Item {
 		GhostEntity ghost = scene.getGhost();
 		float distToPlayerSqr = Vector3f.distanceSquared(ghost.pos, scene.getPlayer().pos);
 		if (distToPlayerSqr <= RANGE_SQR) {// && ghost.raycastToPlayer(scene.getArchitecture())
-			String last = Speech.getResultText();
-			if (!last.equals("<unk>")) {
-				Console.log("Heard: "+ last);
+			Phrase phrase = SpeechHandler.checkoutLastPhrase();
+			
+			if (phrase != null) {
+				processVoice(ghost, phrase);
 			}
 			
-			processVoice(ghost, last);
-			Speech.clearResultText();
 		}
 	}
 
-	private void processVoice(GhostEntity ghost, String said) {
-		switch(said) {
-		case "are you here":
-		case "are you there":
-		case "are you dead":
-		case "are you a ghost":
-		case "are you a spirit":
-		case "is this place haunted":
-			// I guess yes is the only answer
+	private void processVoice(GhostEntity ghost, Phrase phrase) {
+		switch(phrase) {
+		case LOCATION_INQUIRY:
 			ghost.aggression++;
+
+			SpeechHandler.speak("here");
 			break;
-		case "where are you":
-			ghost.aggression++;
-			break;
-		case "where did you die":
-			ghost.aggression++;
-			break;
-		case "show yourself":
-		case "go to hell":
-		case "fuck you":
-		case "reveal yourself":
-		case "go fuck yourself ":
+		case ANTAGONIZE:
 			ghost.aggression+=3;
+			break;
+		case TEST:
+			SpeechHandler.speak("What the fuck did you just fucking say about me, you little bitch? I'll have you know I graduated top of my class in the Navy Seals, and I've been involved in numerous secret raids on Al-Quaeda, and I have over 300 confirmed kills. I am trained in gorilla warfare and I'm the top sniper in the entire US armed forces. You are nothing to me but just another target. I will wipe you the fuck out with precision the likes of which has never been seen before on this Earth, mark my fucking words. You think you can get away with saying that shit to me over the Internet? Think again, fucker. As we speak I am contacting my secret network of spies across the USA and your IP is being traced right now so you better prepare for the storm, maggot. The storm that wipes out the pathetic little thing you call your life. You're fucking dead, kid. I can be anywhere, anytime, and I can kill you in over seven hundred ways, and that's just with my bare hands. Not only am I extensively trained in unarmed combat, but I have access to the entire arsenal of the United States Marine Corps and I will use it to its full extent to wipe your miserable ass off the face of the continent, you little shit. If only you could have known what unholy retribution your little \"clever\" comment was about to bring down upon you, maybe you would have held your fucking tongue. But you couldn't, you didn't, and now you're paying the price, you goddamn idiot. I will shit fury all over you and you will drown in it. You're fucking dead, kiddo.");
 			break;
 		}
 	}

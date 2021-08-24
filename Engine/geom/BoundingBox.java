@@ -36,7 +36,12 @@ public class BoundingBox {
 	}
 
 	public BoundingBox(Vector3f center, Vector3f max, Vector3f min) {
-		this.bounds = Vector3f.sub(max, min).mul(35);//.div(2f);
+		this(center, Vector3f.sub(max, min));
+
+	}
+	
+	public BoundingBox(Vector3f center, Vector3f bounds) {
+		this.bounds = bounds;
 		this.center = center;
 		this.X = new Vector3f(Vector3f.X_AXIS);
 		this.Y = new Vector3f(Vector3f.Y_AXIS);
@@ -358,5 +363,13 @@ public class BoundingBox {
 		Vector3f.rotateVector(Y, rotation);
 		Vector3f.rotateVector(Z, rotation);
 		bounds.mul(scale);
+	}
+
+	public Vector3f getCenter() {
+		return center;
+	}
+	
+	public Vector3f getBounds() {
+		return bounds;
 	}
 }

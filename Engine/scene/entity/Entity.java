@@ -4,6 +4,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import core.Resources;
+import geom.AxisAlignedBBox;
 import gl.Window;
 import gl.anim.Animator;
 import gl.res.Model;
@@ -12,6 +13,8 @@ import map.architecture.vis.BspLeaf;
 import scene.PlayableScene;
 
 public abstract class Entity {
+	private static final AxisAlignedBBox NO_BOUNDINGBOX = new AxisAlignedBBox(Vector3f.ZERO, Vector3f.ZERO);
+	
 	public Vector3f pos = new Vector3f();
 	public Vector3f rot = new Vector3f();
 	private Matrix4f mat = new Matrix4f();
@@ -30,6 +33,8 @@ public abstract class Entity {
 	public Vector3f[] lighting = new Vector3f[6];
 	
 	protected BspLeaf leaf;
+
+	protected AxisAlignedBBox bbox = NO_BOUNDINGBOX;
 	
 	protected float deactivationRange = Float.POSITIVE_INFINITY;
 	
@@ -122,5 +127,9 @@ public abstract class Entity {
 
 	public BspLeaf getLeaf() {
 		return leaf;
+	}
+
+	public AxisAlignedBBox getBBox() {
+		return bbox;
 	}
 }

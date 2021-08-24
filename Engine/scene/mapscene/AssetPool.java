@@ -33,6 +33,8 @@ public class AssetPool {
 		addModel("camera", "models/camera.mod");
 		addModel("cam_tripod", "models/cam_tripod.mod");
 		addModel("tablet", "models/tablet.mod");
+		addModel("emf", "models/emf.mod");
+		addTexture("emf", "models/emf.png");
 		
 		Resources.addObjModel("trash", "entity/prop/trash.obj");
 		addTexture("trash", "entity/prop/trash.png");

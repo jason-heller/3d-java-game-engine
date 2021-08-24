@@ -56,7 +56,7 @@ public class ArcFuncHandler {
 
 		List<ArcFunction> funcList = functions.get(c);
 		if (funcList == null) {
-			Console.log("#yWarning: Map command \"" + command.name() + "\" was called, but the map has no associated functions to use.");
+			Console.warning("Map command \"" + command.name() + "\" was called, but the map has no associated functions to use.");
 			Console.log("\"" + cmd + "\"");
 			return;
 		}

@@ -9,6 +9,7 @@ import javax.swing.JOptionPane;
 import org.lwjgl.opengl.Display;
 
 import audio.AudioHandler;
+import audio.speech.SpeechHandler;
 import dev.cmd.Console;
 import gl.Render;
 import gl.Window;
@@ -56,6 +57,7 @@ public class Application {
 		//System.setProperty("org.lwjgl.librarypath", new File("lib/windows").getAbsolutePath());
 		initOpenGL();
 		AudioHandler.init();
+		SpeechHandler.init();
 		Settings.init();
 		Controls.init();
 		Window.create();
@@ -77,6 +79,7 @@ public class Application {
 		while ((!Display.isCloseRequested() && !forceClose)) {
 			
 			Window.update();
+
 			UI.update();
 			scene.update();
 			
@@ -111,20 +114,21 @@ public class Application {
 			}*/
 		}
 
+		cleanUp();
+		
+		Thread.sleep(100);
+		System.exit(0);
+	}
+
+	private static void cleanUp() {
 		scene.cleanUp();
 		Render.cleanUp();
-
-		//SpeechRecognizer_Old.cleanUp();
-		
-		// Thread.sleep(50);
 		Resources.cleanUp();
 		AudioHandler.cleanUp();
+		SpeechHandler.cleanUp();
 		Window.destroy();
 		Settings.save();
 		Controls.save();
-		
-		Thread.sleep(1000);
-		System.exit(0);
 	}
 
 	private static void initOpenGL() {

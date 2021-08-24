@@ -231,6 +231,10 @@ public class ArcHeightmap {
 		float px = x - origin.x;
 		float pz = z - origin.z;
 		
+		if (px < 0 || pz < 0 || px > bounds.getWidth()*2f || pz > bounds.getLength()*2f) {
+			return Float.NEGATIVE_INFINITY;
+		}
+		
 		int xCounter = (int) (px / strideX.x);
 		int zCounter = (int) (pz / strideZ.z);
 		

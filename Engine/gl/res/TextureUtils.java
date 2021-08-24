@@ -14,6 +14,7 @@ import org.lwjgl.opengl.GLContext;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
+import dev.cmd.Console;
 import gl.Render;
 import io.FileUtils;
 
@@ -31,11 +32,16 @@ class TextureData {
 	private boolean transparent;
 	private float bias = Render.defaultBias;
 	private int numRows = 1;
+	private int format = GL11.GL_RGBA;
 
 	public TextureData(ByteBuffer buffer, int width, int height) {
 		this.buffer = buffer;
 		this.width = width;
 		this.height = height;
+	}
+	
+	public int getFormat() {
+		return format;
 	}
 
 	public float getBias() {
@@ -108,9 +114,15 @@ class TextureData {
 }
 
 public class TextureUtils {
+
+	
 	public static Texture createTexture(byte[] rgba, byte material, int width, int height, boolean mipmap) {
-		final ByteBuffer buf = BufferUtils.createByteBuffer(rgba.length);
-		buf.put(rgba);
+		return createTexture(rgba, GL11.GL_RGBA, material, width, height, mipmap);
+	}
+	
+	public static Texture createTexture(byte[] colorData, int format, byte material, int width, int height, boolean mipmap) {
+		final ByteBuffer buf = BufferUtils.createByteBuffer(colorData.length);
+		buf.put(colorData);
 		buf.flip();
 
 		final TextureData textureData = new TextureData(buf, width, height);
@@ -123,21 +135,22 @@ public class TextureUtils {
 		return tex;
 	}
 
-	public static Texture createTexture(byte[][] rgba, int width, int height) {
+	public static Texture createTexture(byte[][] rgba, int width, int height, boolean hasAlpha) {
 		final int texID = GL11.glGenTextures();
 		GL13.glActiveTexture(GL13.GL_TEXTURE0);
 		GL11.glBindTexture(GL13.GL_TEXTURE_CUBE_MAP, texID);
 
-		final ByteBuffer buf = ByteBuffer.allocateDirect(width * height * 3);
+		final ByteBuffer buf = ByteBuffer.allocateDirect(width * height * (hasAlpha ? 4 : 3));
+		int format = hasAlpha ? GL11.GL_RGBA : GL11.GL_RGB;
 		for (int i = 0; i < 6; i++) {
 			buf.put(rgba[i]);
 
 			buf.flip();
-			GL11.glTexImage2D(GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL11.GL_RGB, width, height, 0, GL11.GL_RGB,
+			GL11.glTexImage2D(GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format, width, height, 0, GL11.GL_RGB,
 					GL11.GL_UNSIGNED_BYTE, buf);
 			buf.clear();
 		}
-
+		
 		GL11.glTexParameteri(GL13.GL_TEXTURE_CUBE_MAP, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 		GL11.glTexParameteri(GL13.GL_TEXTURE_CUBE_MAP, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
 		GL11.glTexParameteri(GL13.GL_TEXTURE_CUBE_MAP, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
@@ -271,13 +284,13 @@ public class TextureUtils {
 			}
 		}
 		} catch(Exception e) {
-			System.err.println(byteArr.length +", " + i + ", " + pixelIndex);
+			Console.log(byteArr.length +", " + i + ", " + pixelIndex);
 			int index = (pixelIndex % size) + (newLinePxStripe * (pixelIndex / size));	// Index into pixel of partition
-			System.err.println("pixel #" + index);
+			Console.log("pixel #" + index);
 			index += size * size * i;	// Index into current partition
-			System.err.println("pixel pos" + index);
+			Console.log("pixel pos" + index);
 			index *= 4;					// Scale to start of ARGB data
-			System.err.println("data pos" + index);
+			Console.log("data pos" + index);
 			
 			e.printStackTrace();
 		}
@@ -300,7 +313,7 @@ public class TextureUtils {
 			in.close();
 		} catch (final Exception e) {
 			e.printStackTrace();
-			System.err.println("Tried to load texture " + path + " , didn't work");
+			Console.log("Tried to load texture " + path + " , didn't work");
 			return null;
 		}
 		return new TextureData(buffer, width, height);
@@ -318,7 +331,7 @@ public class TextureUtils {
 						data.getHeight(), 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data.getBuffer());
 			}
 		} else {
-			GL11.glTexImage2D(data.type, 0, GL11.GL_RGBA, data.getWidth(), data.getHeight(), 0, GL12.GL_BGRA,
+			GL11.glTexImage2D(data.type, 0, data.getFormat(), data.getWidth(), data.getHeight(), 0, GL12.GL_BGRA,
 					GL11.GL_UNSIGNED_BYTE, data.getBuffer());
 		}
 

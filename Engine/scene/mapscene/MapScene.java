@@ -3,10 +3,11 @@ package scene.mapscene;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import audio.recognition.Speech;
+import audio.speech.SpeechHandler;
 import core.Application;
 import dev.cmd.Console;
 import gl.Camera;
+import gl.Window;
 import gl.skybox.Skybox;
 import gl.skybox.Skybox2D;
 import gl.skybox._3d.Skybox3D;
@@ -18,14 +19,16 @@ import scene.entity.EntityHandler;
 import scene.entity.hostile.GhostEntity;
 import scene.entity.util.PlayerEntity;
 import scene.entity.util.PlayerHandler;
+import ui.UI;
 
 public class MapScene extends PlayableScene {
 	
+	private static final float HOUR_LENGTH = 120;
 	private Skybox skybox;
 	private ItemHandler itemHandler;
 	private GhostEntity ghost;
 	
-	private Speech speech;
+	private float time = 0f;
 	
 	public MapScene() {
 		super();
@@ -36,13 +39,16 @@ public class MapScene extends PlayableScene {
 		EntityHandler.addEntity(player);
 		arcHandler.getArchitecture().callCommand("spawn_player");
 		arcHandler.getArchitecture().callCommand(player, "trigger_soundscape");
-		
-		ghost = new GhostEntity(player, arcHandler.getArchitecture().getNavigation());
-		EntityHandler.addEntity(ghost);
-		GhostPoi poi = ghost.findNextPoi();
-		ghost.pos.set(poi.getPosition());
-		ghost.pos.y += ghost.getBBox().getHeight();
-		ghost.changeTarget();
+		if (arcHandler.getArchitecture().bsp.rooms.length > 1) {
+			ghost = new GhostEntity(player, arcHandler.getArchitecture().getNavigation());
+			EntityHandler.addEntity(ghost);
+			GhostPoi poi = ghost.findNextPoi();
+			ghost.pos.set(poi.getPosition());
+			ghost.pos.y += ghost.getBBox().getHeight();
+			ghost.changeTarget();
+		} else {
+			Console.warning("No rooms exist in this map, cannot spawn ghost.");
+		}
 		
 		//AudioHandler.loop("white_noise");
 		//AudioHandler.loop("cicadas");
@@ -58,8 +64,7 @@ public class MapScene extends PlayableScene {
 		
 		itemHandler = new ItemHandler(this, viewModelHandler);
 		
-		speech = new Speech();
-		speech.start();
+		SpeechHandler.start();
 	}
 
 	@Override
@@ -70,7 +75,7 @@ public class MapScene extends PlayableScene {
 	@Override
 	public void cleanUp() {
 		super.cleanUp();
-		speech.stop();
+		SpeechHandler.stop();
 		if (arcHandler.isSkyboxEnabled())
 			skybox.cleanUp();
 	}
@@ -82,14 +87,19 @@ public class MapScene extends PlayableScene {
 	
 	@Override
 	public void update() {
+		if (isLoading) {
+			isLoading = false;
+		}
 		super.update();
+		
+		time += Window.deltaTime;
+		int hours = (int)(time / HOUR_LENGTH);
+		String time = "TIME: 0" + hours + ":00" + " AM";
+		UI.drawString(time, 640, 10, .3f, true);
 		
 		itemHandler.update();
 		
 		if (ui.isPaused()) return;
-		if (isLoading) {
-			isLoading = false;
-		}
 		
 		//speechRecog.update();
 		
@@ -99,11 +109,11 @@ public class MapScene extends PlayableScene {
 			if (key == 0 || Console.isVisible()) {
 				return;
 			}
-			
+
 			player.reset();
-			Console.send("map "+PlayableScene.currentMap);
+			Console.send("map " + PlayableScene.currentMap);
 		}
-		
+
 	}
 
 	@Override

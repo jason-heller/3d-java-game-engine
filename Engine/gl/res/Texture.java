@@ -40,7 +40,19 @@ public class Texture {
 		GL11.glBindTexture(type, id);
 		Render.textureSwaps++;
 	}
+	
+	public void unbind(int unit) {
+		GL13.glActiveTexture(GL13.GL_TEXTURE0 + unit);
+		GL11.glBindTexture(type, 0);
+		Render.textureSwaps++;
+	}
 
+	public static void unbindTexture(int unit) {
+		GL13.glActiveTexture(GL13.GL_TEXTURE0 + unit);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+		Render.textureSwaps++;
+	}
+	
 	public void delete() {
 		GL11.glDeleteTextures(id);
 	}
@@ -51,10 +63,6 @@ public class Texture {
 
 	public boolean isTransparent() {
 		return transparent;
-	}
-
-	public void unbind() {
-		GL11.glBindTexture(type, 0);
 	}
 	
 	public void setMaterial(byte mat) {

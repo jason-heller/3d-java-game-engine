@@ -1,24 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry excluding="sphinx4-master/|sphinx4-master/" kind="src" path="unzipped_libs"/>
+	<classpathentry excluding="sphinx4-master/" kind="src" path="unzipped_libs"/>
 	<classpathentry kind="src" path="Engine"/>
-	<classpathentry kind="src" path="edu"/>
-	<classpathentry kind="lib" path="lib/lwjgl_util.jar"/>
-	<classpathentry kind="lib" path="lib/lwjgl.jar">
+	<classpathentry kind="src" path="dll"/>
+	<classpathentry exported="true" kind="lib" path="lib/lwjgl_util.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lwjgl.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="jar:platform:/resource/NBW_Engine/lib/doc/lwjgl_doc.zip!/"/>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="NBW_Engine/lib/windows"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/slick.jar"/>
-	<classpathentry kind="lib" path="lib/PNGDecoder.jar"/>
-	<classpathentry kind="lib" path="lib/jogg-0.0.7.jar"/>
-	<classpathentry kind="lib" path="lib/jorbis-0.0.15.jar"/>
-	<classpathentry kind="lib" path="lib/freetts/mbrola.jar"/>
-	<classpathentry kind="lib" path="lib/sphinx4.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/cmudict.jar"/>
-	<classpathentry kind="lib" path="lib/kryo-2.23.1-SNAPSHOT-all-debug.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry exported="true" kind="lib" path="lib/slick.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/PNGDecoder.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jogg-0.0.7.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jorbis-0.0.15.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/freetts/mbrola.jar"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="lib/cmudict.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/kryo-2.23.1-SNAPSHOT-all-debug.jar"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/vosk-0.3.21.jar"/>
+	<classpathentry kind="lib" path="lib/jna-5.7.0.jar"/>
+	<classpathentry kind="lib" path="lib/freetts/cmu_time_awb.jar"/>
+	<classpathentry kind="lib" path="lib/freetts/cmu_us_kal.jar"/>
+	<classpathentry kind="lib" path="lib/freetts/cmudict04.jar"/>
+	<classpathentry kind="lib" path="lib/freetts/cmulex.jar"/>
+	<classpathentry kind="lib" path="lib/freetts/cmutimelex.jar"/>
+	<classpathentry kind="lib" path="lib/freetts/en_us.jar"/>
+	<classpathentry kind="lib" path="lib/freetts/freetts-jsapi10.jar"/>
+	<classpathentry kind="lib" path="lib/freetts/freetts.jar"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>

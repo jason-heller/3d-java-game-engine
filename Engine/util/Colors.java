@@ -31,15 +31,11 @@ public class Colors {
 	public static final Vector3f DK_GREY = new Vector3f(0.2f, 0.2f, 0.2f);
 	public static final Vector3f GOLD = new Vector3f(.83f, .68f, .21f);
 
+	public static final Vector3f TEAL = hexToRgb("008080");
+
 	public static final Vector3f GUI_BORDER_COLOR = DK_GREY;
 	public static final Vector3f GUI_BACKGROUND_COLOR = BLACK;
 	public static final Vector3f GUI_ACCENT_COLOR = DK_VIOLET;
-
-	public static final Vector3f OAK = MathUtil.rgb(176, 128, 94);
-	public static final Vector3f CLAY = MathUtil.rgb(239, 146, 127);
-	public static final Vector3f CHERRY_BLOSSOM = MathUtil.rgb(133, 100, 64);
-	public static final Vector3f JAPANESE_DOOR = MathUtil.rgb(218, 191, 149);
-	public static final Vector3f PINE = MathUtil.rgb(226, 143, 81);
 
 	public static Vector3f alertColor() {
 		final float alpha = 0.5f + (float) Math.sin(System.currentTimeMillis() % 1000 / 250f) * 0.5f;
@@ -96,6 +92,18 @@ public class Colors {
 		Random r = new Random();
 		r.setSeed(seed);
 		return new Vector3f(r.nextFloat(), r.nextFloat(), r.nextFloat());
+	}
+	
+	public static Vector3f hexToRgb(String hex) {
+		String rHex = hex.substring(0, 2);
+		String gHex = hex.substring(2, 4);
+		String bHex = hex.substring(4);
+		
+		float red = Integer.parseInt(rHex, 16) / 255f;
+		float green = Integer.parseInt(gHex, 16) / 255f;
+		float blue = Integer.parseInt(bHex, 16) / 255f;
+		
+		return new Vector3f(red, green, blue);
 	}
 
 	public static Vector3f hsvToRgb(float hue, float saturation, float value) {

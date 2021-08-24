@@ -46,12 +46,6 @@ public class ArcClip {
 				return true;
 			break;
 
-		case GRATE: // Effectively just a copy of "SOLID" for the time being
-			if (entity instanceof PhysicsEntity) {
-				return true;
-			}
-			break;
-
 		case LADDER:
 			if (entity instanceof PhysicsEntity) {
 				PhysicsEntity physEnt = (PhysicsEntity) entity;

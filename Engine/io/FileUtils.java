@@ -12,6 +12,8 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
+import dev.cmd.Console;
+
 public class FileUtils {
 	public static final String WORKING_DIRECTORY = Paths.get(".").toAbsolutePath().normalize().toString();
 	public static final String SETTINGS_FOLDER = WORKING_DIRECTORY + "/" + "settings";
@@ -43,7 +45,7 @@ public class FileUtils {
 			final BufferedReader reader = new BufferedReader(isr);
 			return reader;
 		} catch (final Exception e) {
-			System.err.println("Failed to reader for " + path);
+			Console.severe("Failed to reader for " + path);
 			throw e;
 		}
 	}

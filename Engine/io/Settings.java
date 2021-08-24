@@ -12,6 +12,7 @@ import java.util.Map;
 
 import audio.AudioHandler;
 import dev.Debug;
+import dev.cmd.Console;
 import gl.Camera;
 import gl.Render;
 import gl.Window;
@@ -126,7 +127,7 @@ public class Settings {
 		} catch (final FileNotFoundException e) {
 			return;
 		} catch (final IOException e) {
-			System.err.println("ERR: malformatted config file.");
+			Console.warning("malformatted settings file.");
 		}
 	}
 
@@ -136,7 +137,7 @@ public class Settings {
 				bw.write(line + "=" + settings.get(line) + "\n");
 			}
 		} catch (final IOException e) {
-			System.err.println("ERR: malformatted config file.");
+			Console.warning("malformatted settings file.");
 		}
 	}
 }

@@ -1,6 +1,5 @@
 package scene.entity.hostile;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.SplittableRandom;
 
@@ -11,6 +10,7 @@ import audio.Source;
 import core.Application;
 import dev.Debug;
 import dev.cmd.Console;
+import geom.AxisAlignedBBox;
 import gl.Window;
 import gl.entity.EntityRender;
 import map.architecture.Architecture;
@@ -24,9 +24,9 @@ import scene.PlayableScene;
 import scene.entity.Entity;
 import scene.entity.EntityHandler;
 import scene.entity.Spawnable;
+import scene.entity.object.SolidPhysProp;
 import scene.entity.object.TripodCameraEntity;
 import scene.entity.util.NavigableEntity;
-import scene.entity.util.PhysicsEntity;
 import scene.entity.util.PlayerEntity;
 import scene.entity.util.PlayerHandler;
 import scene.mapscene.MapScene;
@@ -45,7 +45,7 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 	private boolean corporeal = false;
 	
 	public float aggression = 0f;
-	private boolean attacking = false, preAttack = false;
+	private GhostState state = GhostState.WANDERING;
 
 	private static final float BBOX_WIDTH = 2f;
 	private static final float BBOX_HEIGHT = 6f;
@@ -82,7 +82,10 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 	}
 
 	@Override
-	public void update(PlayableScene scene) {	
+	public void update(PlayableScene scene) {
+		if (state == GhostState.FROZEN) {
+			return;
+		}
 		//UI.drawString((int)aggression + ", " + (int)(nextActionTime-this.actionTimer), 1f, true, this.getMatrix()).markAsTemporary();
 		super.update(scene);
 		
@@ -100,11 +103,10 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 				doAction();
 			}
 		}
-		
-		if (attacking) {
+
+		if (state == GhostState.ATTACK) {
 			// Try to find player and kill them
 			lookTimer += Window.deltaTime;
-			
 			// Periodically raycast towards the player, if no walls are hit, head directly towards player
 			if (lookTimer > .25f) {
 				lookTimer = 0f;
@@ -153,22 +155,24 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 	}
 	
 	public void doAction() {
-		if (preAttack) {
-			attacking = true;
-			preAttack = false;
+		if (state == GhostState.PRE_ATTACK) {
+			state = GhostState.ATTACK;
 
 			navTarget.set(player.pos);
 			return;
 		}
 		
-		if (attacking) {
+		if (state == GhostState.ATTACK) {
 			return;
 		}
 		
 		SplittableRandom r = new SplittableRandom();
 		Architecture arc = ((MapScene)Application.scene).getArchitecture();
 
-		List<Entity> entities = new ArrayList<>();
+
+		AxisAlignedBBox box = new AxisAlignedBBox(pos, new Vector3f(75,75,75));
+		List<BspLeaf> leaves = arc.getVisibleLeavesIntersecting(box);
+		List<Entity> entities = EntityHandler.getEntities(leaves);
 		
 		for(BspLeaf leaf : arc.getCluster(this.leaf)) {
 			List<Entity> ents = EntityHandler.getEntities(leaf);
@@ -181,7 +185,6 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 			int randEnt = r.nextInt(entities.size());
 			
 			Entity entity = entities.get(randEnt);
-			Console.log(entity);
 			
 			if (entity == this) return;
 			
@@ -195,13 +198,14 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 					source.play("ghost_voice");
 				}
 			}
-			else if (entity instanceof PhysicsEntity) {
-				PhysicsEntity physEnt = (PhysicsEntity)entity;
+			else if (entity instanceof SolidPhysProp) {
+				SolidPhysProp physEnt = (SolidPhysProp)entity;
 
 				float rx = ((float)r.nextDouble()-0.5f)*2f;
 				float rz = ((float)r.nextDouble()-0.5f)*2f;
 				Vector3f randDir = new Vector3f(rx, 5f, rz);
 				physEnt.accelerate(randDir, 900f);
+				physEnt.ghostInteraction();
 			} else {
 				if (entity instanceof TripodCameraEntity) {
 					TripodCameraEntity tripod = (TripodCameraEntity)entity;
@@ -219,13 +223,13 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 		to.div(toLen);
 		BspRaycast ray = arc.raycast(pos, to);
 		float dist = ray == null ? Float.POSITIVE_INFINITY : ray.getDistance();
-		
+		//LineRender.drawLine(pos, Vector3f.add(pos, Vector3f.mul(to, dist)));
 		return (dist >= toLen + 1);
 	}
 
 	public void startAttack() {
 		// nextActionTime = 120;
-		preAttack = true;
+		state = GhostState.PRE_ATTACK;
 		corporeal = true;
 		Console.log("Time 2 kill");
 		actionTimer = 3f;
@@ -237,14 +241,14 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 		lookTimer = 0f;
 		corporeal = false;
 		PlayerHandler.setThreatened(false);
-		attacking = false;
+		state = GhostState.WANDERING;
 		Console.log("Time 2 vibe");
 		actionsSinceLastAttack = 0;
 		aggression = (int)(aggression / 2.5f);
 	}
 	
 	public boolean isAttacking() {
-		return attacking || preAttack;
+		return (state == GhostState.ATTACK || state == GhostState.PRE_ATTACK);
 	}
 
 	public void changeTarget() {
@@ -270,5 +274,13 @@ public class GhostEntity extends NavigableEntity implements Spawnable {
 		setNavigation(navigation);
 		changeTarget();
 		return true;
+	}
+
+	public GhostState getState() {
+		return state;
+	}
+	
+	public void setState(GhostState state) {
+		this.state = state;
 	}
 }
