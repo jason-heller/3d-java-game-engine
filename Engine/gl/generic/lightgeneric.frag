@@ -6,6 +6,7 @@ in vec3 pass_worldPos;
 in vec4[4] shadowCoords;
 in vec3 lightColor;
 
+uniform vec4 color;
 uniform sampler2D diffuse;
 
 out vec4 out_color;
@@ -34,10 +35,10 @@ float ShadowCalculation(vec4 projLightSpace, int i) {
 } 
 
 void main(void){
-	vec4 color, light;
-	color = texture(diffuse, pass_textureCoords.xy);
+	vec4 albedo, light;
+	albedo = texture(diffuse, pass_textureCoords.xy);
 	
-	if (color.a < 0.5)
+	if (albedo.a < 0.5)
 		discard;
 		
 	// Spotlight
@@ -65,8 +66,9 @@ void main(void){
 		intensity += clamp((theta - cutoff[i].y) / epsilon, 0.0, 1.0) / dist;
 	}
 
-	color.a = 1.0;
+	albedo.a = 1.0;
 	float lightScale = max(intensity, lightMin);
-	out_color = (color * (lightColor + vec3(lightScale)));
+	out_color = (albedo * vec4(lightColor + vec3(lightScale), 1.0));
+	out_color = mix(out_color, vec4(color.xyz, 1.0), color.w);
 	out_brightness = vec4(0.0);
 }

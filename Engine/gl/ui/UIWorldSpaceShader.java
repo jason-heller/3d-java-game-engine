@@ -3,7 +3,7 @@ package gl.ui;
 import shader.ShaderProgram;
 import shader.UniformBoolean;
 import shader.UniformFloat;
-import shader.UniformMatrix;
+import shader.UniformMat4;
 import shader.UniformVec3;
 import shader.UniformVec4;
 
@@ -18,8 +18,8 @@ public class UIWorldSpaceShader extends ShaderProgram {
 	public UniformBoolean centered = new UniformBoolean("centered");
 	public UniformFloat opacity = new UniformFloat("opacity");
 	public UniformFloat rotation = new UniformFloat("rot");
-	public UniformMatrix projectionViewMatrix = new UniformMatrix("projectionViewMatrix");
-	public UniformMatrix worldMatrix = new UniformMatrix("worldMatrix");
+	public UniformMat4 projectionViewMatrix = new UniformMat4("projectionViewMatrix");
+	public UniformMat4 worldMatrix = new UniformMat4("worldMatrix");
 
 	public UIWorldSpaceShader() {
 		super(VERTEX_FILE, FRAGMENT_FILE, "in_vertices", "in_uvs");

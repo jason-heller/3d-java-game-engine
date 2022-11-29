@@ -13,26 +13,27 @@ import org.lwjgl.opengl.GL11;
 import audio.AudioHandler;
 import dev.cmd.Console;
 import gl.anim.Animation;
-import gl.fbo.FrameBuffer;
+import gl.res.AnimModel;
 import gl.res.Model;
 import gl.res.ModelUtils;
 import gl.res.Texture;
 import gl.res.TextureUtils;
-import gl.res.mesh.MeshData;
 import gr.zdimensions.jsquish.Squish;
-import io.AniFileLoader;
-import io.ModFileLoader;
+import io.MD5AnimLoader;
+import io.MFLoader;
 import map.ground.TerrainUtils;
 
 public class Resources {
-	public static final Model QUAD2D = ModelUtils.quad2DModel();
-
-	public static Texture DEFAULT, NO_TEXTURE;
-
 	private static Map<String, Texture> textureMap = new HashMap<String, Texture>();
 	private static Map<String, Model> modelMap = new HashMap<String, Model>();
 	private static Map<String, Animation> animationMap = new HashMap<String, Animation>();
 	private static Map<String, Integer> soundMap = new HashMap<String, Integer>();
+	
+	public static final Model QUAD2D = ModelUtils.quad2DModel();
+	public static final Model ERROR = Resources.addObjModel("error", "error.obj");
+	public static final AnimModel ERROR_ANIM = createErrAnim();
+
+	public static Texture DEFAULT, NO_TEXTURE;
 
 	public static Texture addCompressedTexture(String key, String path) {
 		DataInputStream in = null;
@@ -67,18 +68,24 @@ public class Resources {
 		return null;
 	}
 
-	public static Model addModel(String key, byte[] data) {
-		final Model mdl = ModFileLoader.readModFile(key, data);
-		modelMap.put(key, mdl);
-		return mdl;
+	private static AnimModel createErrAnim() {
+		AnimModel errAnim = new AnimModel(1);
+		errAnim.addModel(0, ERROR);
+		
+		Resources.addTexture("error", "error.png");
+		ERROR.defaultTexture = "error";
+		// ERROR.setSkeleton(Skeleton.NO_SKELETON);
+		
+		return errAnim;
 	}
 
 	public static void addAnimation(String key, Animation animation) {
 		animationMap.put(key, animation);
 	}
-
-	public static void addAnimations(String key, String path) {
-		AniFileLoader.readAniFile(key, path);
+	
+	public static void addAnimation(String key, String path) {
+		final Animation animation = MD5AnimLoader.load(path);
+		animationMap.put(key, animation);
 	}
 
 	/**
@@ -89,14 +96,12 @@ public class Resources {
 	 * @param path           the path to the resource's file
 	 * @return the resource
 	 */
-	public static Model addModel(String key, String path) {
-		final Model model = ModFileLoader.readModFile(key, path);
-		MeshData meshData = model.getMeshData();
-		if (!meshData.getDefaultTexture().equals("default")) {
-			Resources.addTexture(key, "models/" + meshData.getDefaultTexture() + ".png");
+	public static AnimModel addModel(String key, String path) {
+		final AnimModel animModel = MFLoader.readMF(key, path);
+		for(int i = 0; i < animModel.getModels().length; i++) {
+			modelMap.put(key + i, animModel.getModel(i));
 		}
-		modelMap.put(key, model);
-		return model;
+		return animModel;
 	}
 
 	/**
@@ -159,23 +164,16 @@ public class Resources {
 		final Texture tex = TextureUtils.createTexture(decompressedData, material, width, height, mipmap);
 		return addTexture(key, tex);
 	}
-
-	public static Texture addTexture(String key, FrameBuffer fbo) {
-		if (fbo.hasTextureBuffer()) {
-			return addTexture(key, fbo, false);
-		}
-
-		return addTexture(key, fbo, true);
-	}
-
-	public static Texture addTexture(String key, FrameBuffer fbo, boolean isDepthTexBuffer) {
-		return textureMap.put(key, new Texture(isDepthTexBuffer ? fbo.getDepthBufferTexture() : fbo.getTextureBuffer(),
-				fbo.getWidth(), fbo.getHeight(), false, 1));
+	
+	public static Texture addTexture(String key, int textureId, int width, int height) {
+		return textureMap.put(key, new Texture(textureId, width, height, false, 1));
 	}
 
 	public static Texture addTexture(String key, String path) {
+
 		final Texture tex = TextureUtils.createTexture("res/" + path);
-		textureMap.put(key, tex);
+		if (tex != null)
+			textureMap.put(key, tex);
 		return tex;
 	}
 
@@ -243,7 +241,8 @@ public class Resources {
 	}
 
 	public static Model getModel(String key) {
-		return modelMap.get(key);
+		Model model = modelMap.get(key);
+		return model == null ? ERROR : model;
 	}
 
 	public static String getSound(int index) {
@@ -263,7 +262,7 @@ public class Resources {
 
 	public static Texture getTexture(String key) {
 		final Texture texture = textureMap.get(key);
-		return texture == null ? Resources.getTexture("default") : texture;
+		return texture == null ? Resources.DEFAULT : texture;
 	}
 
 	public static void removeTexture(String key) {
@@ -307,11 +306,10 @@ public class Resources {
 
 	public static void initBaseResources() {
 		DEFAULT = addTexture("default", "default.png");
-		NO_TEXTURE = Resources.addTexture("none", "flat.png");
+		NO_TEXTURE = addTexture("none", "flat.png");
 
-		//Resources.addTexture("skybox", "default.png");
-		Resources.addTexture("noise", "noise.png");
-		Resources.addObjModel("cube", "cube.obj");
-		Resources.addSound("click", "lighter_click.ogg");
+		addTexture("noise", "noise.png");
+		addObjModel("cube", "cube.obj");
+		addSound("click", "lighter_click.ogg");
 	}
 }

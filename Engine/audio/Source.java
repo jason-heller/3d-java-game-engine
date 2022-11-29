@@ -35,7 +35,7 @@ public class Source {
 	}
 
 	public void defaultAttenuation() {
-		setAttenuation(15f, 64f);
+		setAttenuation(5f, 10f, 40f);
 	}
 
 	public void delete() {
@@ -112,7 +112,7 @@ public class Source {
 		AL10.alSourcef(sourceId, AL10.AL_REFERENCE_DISTANCE, referenceDistance);
 		AL10.alSourcef(sourceId, AL10.AL_MAX_DISTANCE, maxDistance);
 	}
-
+	
 	public void setGain(float vol) {
 		this.vol = vol;
 		AL10.alSourcef(sourceId, AL10.AL_GAIN, AudioHandler.volume * vol * (isMusic ? AudioHandler.musicVolume : AudioHandler.sfxVolume));

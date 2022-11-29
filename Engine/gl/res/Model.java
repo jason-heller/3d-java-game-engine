@@ -9,8 +9,6 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
-import dev.cmd.Console;
-import geom.AxisAlignedBBox;
 import gl.anim.component.Skeleton;
 import gl.res.mesh.MeshData;
 
@@ -32,10 +30,12 @@ public class Model {
 	private int vertexCount;
 	private Vector3f[] navMesh = null;
 
-	private float height;
 	public Vector3f center, bounds;
 	
-	private Skeleton skeleton;
+	public String defaultTexture = "default";
+	
+	private Skeleton skeleton = null;
+	public String name;
 
 	private Model(int id) {
 		this.id = id;
@@ -135,10 +135,6 @@ public class Model {
 		dataVbos.add(dataVbo);
 	}
 
-	public float getHeight() {
-		return height;
-	}
-
 	public int getIndexCount() {
 		return indexCount;
 	}
@@ -157,10 +153,6 @@ public class Model {
 
 	public int getVertexCount() {
 		return vertexCount;
-	}
-
-	public void setHeight(float height) {
-		this.height = height;
 	}
 
 	public void setNavMesh(Vector3f[] navMesh) {

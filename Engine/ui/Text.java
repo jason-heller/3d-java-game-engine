@@ -28,7 +28,7 @@ public class Text implements Component {
 	private int depth = UI.DEPTH_SEQUENTIAL;
 
 	private int alignment = ALIGN_LEFT;
-	private int lineWidth = 1280;
+	private int lineWidth = UI.width;
 
 	public Text(Font font, String text, int x, int y, float textSize, boolean centered) {
 		this.font = font;

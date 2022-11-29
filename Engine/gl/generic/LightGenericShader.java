@@ -2,8 +2,8 @@ package gl.generic;
 
 import shader.ShaderProgram;
 import shader.UniformFloatArray;
+import shader.UniformMat4;
 import shader.UniformMat4Array;
-import shader.UniformMatrix;
 import shader.UniformSampler;
 import shader.UniformSamplerArray;
 import shader.UniformVec2Array;
@@ -19,8 +19,8 @@ public class LightGenericShader extends ShaderProgram {
 	//protected UniformSampler bumpMap = new UniformSampler("bumpMap");
 	//protected UniformSampler specMap = new UniformSampler("specMap");
 
-	public UniformMatrix projectionViewMatrix = new UniformMatrix("projectionViewMatrix");
-	public UniformMatrix modelMatrix = new UniformMatrix("modelMatrix");
+	public UniformMat4 projectionViewMatrix = new UniformMat4("projectionViewMatrix");
+	public UniformMat4 modelMatrix = new UniformMat4("modelMatrix");
 	
 	public UniformVec3Array lights = new UniformVec3Array("lights", 6);
 	
@@ -33,10 +33,11 @@ public class LightGenericShader extends ShaderProgram {
 	public UniformFloatArray strength = new UniformFloatArray("strength", 4);
 
 	public UniformSamplerArray shadowMap = new UniformSamplerArray("shadowMap", 4);
+	public UniformVec4 color = new UniformVec4("color");
 
 	public LightGenericShader() {
 		super(VERTEX_SHADER, FRAGMENT_SHADER, "in_vertices", "in_uvs", "in_normals");
 		super.storeAllUniformLocations(diffuse, projectionViewMatrix, modelMatrix, lights, lightPos, lightDir,
-				cutoff, strength, clipPlane, lightSpaceMatrix, shadowMap);
+				cutoff, strength, clipPlane, lightSpaceMatrix, shadowMap, color);
 	}
 }

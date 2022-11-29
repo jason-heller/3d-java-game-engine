@@ -45,7 +45,7 @@ public class ModDataFileLoader {
 	private static void addImageTag(Map<String, String> tags) {
 		Vector3f offset = getVec3Tag(tags, "offset",new Vector3f());
 		String field = getStringTag(tags, "field", "");
-		Vector4f viewport = getVec4Tag(tags, "image_viewport", new Vector4f(0, 0, 1280, 720));
+		Vector4f viewport = getVec4Tag(tags, "image_viewport", new Vector4f(0, 0, Window.getWidth(), Window.getHeight()));
 		Vector3f color = getVec3Tag(tags, "color", Colors.WHITE);
 		float scale = getRealTag(tags, "scale", 1f);
 		boolean centered = getBoolTag(tags, "centered", false);

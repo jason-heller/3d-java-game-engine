@@ -3,7 +3,7 @@ package scene;
 import org.joml.Vector3f;
 
 import audio.AudioHandler;
-import core.Application;
+import core.App;
 import core.Resources;
 import io.Controls;
 import io.Input;
@@ -21,10 +21,6 @@ public class PlayableSceneUI {
 	private final OptionsPanel options;
 	
 	private final PlayableScene scene;
-	
-	private final int CROSSHAIR_SIZE = 8;
-	private final int CROSSHAIR_THICKNESS = 1;
-	private final Vector3f CROSSHAIR_COLOR = new Vector3f(1, 1, 1);
 	
 	private boolean paused;
 	
@@ -51,7 +47,7 @@ public class PlayableSceneUI {
 					break;
 				case 2:
 					options.setFocus(false);
-					Application.changeScene(MainMenu.class);
+					App.changeScene(MainMenu.class);
 					break;
 				}
 			}
@@ -64,18 +60,11 @@ public class PlayableSceneUI {
 	}
 	
 	public void update() {
-		if (scene.isLoading) {
-			UI.drawRect(0, 0, 1280, 720, Colors.BLACK).setDepth(-999);
-			UI.drawString("Loading", 640, 360, true).setDepth(-1000);
+		if (scene.isLoading)
 			return;
-		}
 		
-		UI.drawString(Application.VERSION, 5, 5, .25f, false);
+		UI.drawString(App.VERSION, 5, 5, .25f, false);
 
-		UI.drawRect(639 - CROSSHAIR_THICKNESS, 359 - CROSSHAIR_SIZE, 2 * CROSSHAIR_THICKNESS + 2, 2 * CROSSHAIR_THICKNESS + 2,
-				Colors.BLACK);
-		UI.drawRect(640 - CROSSHAIR_THICKNESS, 360 - CROSSHAIR_SIZE, 2 * CROSSHAIR_THICKNESS, 2 * CROSSHAIR_THICKNESS,
-				CROSSHAIR_COLOR);
 		if (Input.isPressed(Controls.get("pause"))) {
 			if (!paused) {
 				pause();
@@ -85,7 +74,7 @@ public class PlayableSceneUI {
 		}
 		
 		if (paused) {
-			UI.drawRect(0, 0, 1280, 720, Colors.BLACK).setOpacity(.5f);
+			UI.drawRect(0, 0, UI.width, UI.height, Colors.BLACK).setOpacity(.5f);
 			if (options.isFocused()) {
 				options.update();
 				options.draw();

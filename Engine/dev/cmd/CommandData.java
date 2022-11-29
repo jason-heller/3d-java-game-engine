@@ -3,13 +3,13 @@ package dev.cmd;
 import static dev.cmd.CommandType.GETTER;
 import static dev.cmd.CommandType.SETTER;
 
-import core.Application;
+import core.App;
 import dev.Debug;
 import dev.EnvMapBuilder;
 import dev.MemDebug;
 import gl.Camera;
 import gl.Window;
-import gl.arc.ArcRenderLightGeneric;
+import gl.arc.ArcFaceRender;
 import io.Controls;
 import map.architecture.ArchitectureHandler;
 import scene.entity.util.PhysicsEntity;
@@ -52,10 +52,10 @@ enum CommandData {
 	build_environment_maps(EnvMapBuilder.class, false),
 	
 	// Getters
-	version("VERSION", Application.class, GETTER, false),
-	os_name("operatingSystem", Application.class, GETTER, false),
-	os_arch("osArchitecture", Application.class, GETTER, false),
-	natives_path("nativesPath", Application.class, GETTER, false),
+	version("VERSION", App.class, GETTER, false),
+	os_name("operatingSystem", App.class, GETTER, false),
+	os_arch("osArchitecture", App.class, GETTER, false),
+	natives_path("nativesPath", App.class, GETTER, false),
 	
 	// Setters
 	enable_console("allowConsole", Debug.class, SETTER, false),
@@ -85,7 +85,6 @@ enum CommandData {
 	phys_player_speed_max("maxSpeed", PlayerHandler.class, SETTER, true),
 	phys_player_speed_air_max("maxAirSpeed", PlayerHandler.class, SETTER, true),
 	phys_player_speed_water_max("maxWaterSpeed", PlayerHandler.class, SETTER, true),
-	phys_player_speed_crouch_max("maxSpeedCrouch", PlayerHandler.class, SETTER, true),
 	phys_player_accel("accelSpeed", PlayerHandler.class, SETTER, true),
 	phys_player_accel_air("airAccel", PlayerHandler.class, SETTER, true),
 	phys_player_accel_water("waterAccel", PlayerHandler.class, SETTER, true),
@@ -94,7 +93,7 @@ enum CommandData {
 	phys_friction("friction", PhysicsEntity.class, SETTER, true),
 	phys_friction_air("airFriction", PhysicsEntity.class, SETTER, true),
 	god("god", Debug.class, SETTER, true),
-	fullrender("fullRender", ArcRenderLightGeneric.class, SETTER, false),
+	fullrender("fullRender", ArcFaceRender.class, SETTER, false),
 	velocity_vectors("velocityVectors", Debug.class, SETTER, true);
 
 	Command command;

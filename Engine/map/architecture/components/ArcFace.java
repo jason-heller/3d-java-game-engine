@@ -12,6 +12,6 @@ public class ArcFace {
 	public short numEdges;
 	public short texMapping;
 
-	public float lightmapOffsetX, lightmapOffsetY;
+	public float[] lightmapOffsetX, lightmapOffsetY;
 	public float lightmapScaleX, lightmapScaleY;
 }

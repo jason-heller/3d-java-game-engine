@@ -1,6 +1,5 @@
 package map.architecture.read;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,11 +14,17 @@ import map.architecture.functions.commands.PathNode;
 import map.architecture.functions.commands.SoundScape;
 import map.architecture.functions.commands.SpawnPoint;
 import scene.entity.EntityHandler;
-import scene.entity.object.RopePointEntity;
 import scene.entity.object.SolidPhysProp;
+import scene.entity.object.map.AmbientSource;
+import scene.entity.object.map.DecalEntity;
+import scene.entity.object.map.LightPointEntity;
+import scene.entity.object.map.LightSpotEntity;
+import scene.entity.object.map.RopePointEntity;
+import scene.entity.util.LightStyle;
+import util.CounterInputStream;
 
 public class ArcLoadEntities {
-	static void readEntities(Architecture arc, DataInputStream in) throws IOException {
+	static void readEntities(Architecture arc, CounterInputStream in) throws IOException {
 		int numEnts = in.readInt();
 		
 		for (int i = 0; i < numEnts; i++) {
@@ -62,13 +67,36 @@ public class ArcLoadEntities {
 				break;
 			case "rope_node":
 				RopePointEntity rpe = new RopePointEntity(readVec3(tags, "pos"), tags.get("name"), tags.get("next"),
-						readFloat(tags, "give"), readInt(tags, "precision"), readVec3(tags, "color"), readFloat(tags, "speed"));
+						readFloat(tags, "give"), readInt(tags, "precision"), readVec3(tags, "color"),
+						readFloat(tags, "speed"));
 				EntityHandler.addEntity(rpe);
+				break;
+			case "light_point":
+				
+				LightPointEntity lpe = new LightPointEntity(readVec3(tags, "pos"),
+						LightStyle.getStyleFromId(readInt(tags, "style")), readFloat(tags, "attn_linear"),
+						readFloat(tags, "attn_quadratic"), readVec3(tags, "color"));
+				EntityHandler.addEntity(lpe);
+				break;
+			case "light_spot":
+				LightSpotEntity lse = new LightSpotEntity(readVec3(tags, "pos"), readVec3(tags, "rot"),
+						LightStyle.getStyleFromId(readInt(tags, "style")), readFloat(tags, "attn_linear"),
+						readFloat(tags, "attn_quadratic"), readVec3(tags, "color"));
+				EntityHandler.addEntity(lse);
+				break;
+			case "sfx_source":
+				AmbientSource ambientSource = new AmbientSource(tags.get("name"), readVec3(tags, "pos"),
+						tags.get("sfx"), readFloat(tags, "vol"), readFloat(tags, "dist"));
+				EntityHandler.addEntity(ambientSource);
+				break;
+			case "decal":
+				DecalEntity decal = new DecalEntity(readVec3(tags, "pos"), tags.get("tex"));
+				EntityHandler.addEntity(decal);
 				break;
 			}
 		}
 	}
-	
+
 	private static float readFloat(Map<String, String> tags, String string) {
 		String data = tags.get(string);
 		return data.equals("") ? 0f : Float.parseFloat(data);

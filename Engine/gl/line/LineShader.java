@@ -1,13 +1,13 @@
 package gl.line;
 
 import shader.ShaderProgram;
-import shader.UniformMatrix;
+import shader.UniformMat4;
 
 public class LineShader extends ShaderProgram {
-	private static final String VERTEX_SHADER = "gl/line/line.vert";
-	private static final String FRAGMENT_SHADER = "gl/line/line.frag";
+	protected static final String VERTEX_SHADER = "gl/line/line.vert";
+	protected static final String FRAGMENT_SHADER = "gl/line/line.frag";
 
-	public UniformMatrix projectionViewMatrix = new UniformMatrix("projectionViewMatrix");
+	public UniformMat4 projectionViewMatrix = new UniformMat4("projectionViewMatrix");
 
 	public LineShader() {
 		super(VERTEX_SHADER, FRAGMENT_SHADER);

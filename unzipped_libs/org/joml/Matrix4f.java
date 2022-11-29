@@ -1204,6 +1204,20 @@ public class Matrix4f implements Serializable, Externalizable {
 		m13 = nm13;
 
 		return this;
+		
+		/*float n = (float) (1.0f/Math.sqrt(quat.x*quat.x+quat.y*quat.y+quat.z*quat.z+quat.w*quat.w));
+		float qx = quat.x*n;
+		float qy = quat.y*n;
+		float qz = quat.z*n;
+		float qw = quat.w*n;
+		
+		Matrix4f q = new Matrix4f(1.0f - 2.0f*qy*qy - 2.0f*qz*qz, 2.0f*qx*qy - 2.0f*qz*qw, 2.0f*qx*qz + 2.0f*qy*qw, 0.0f,
+			    2.0f*qx*qy + 2.0f*qz*qw, 1.0f - 2.0f*qx*qx - 2.0f*qz*qz, 2.0f*qy*qz - 2.0f*qx*qw, 0.0f,
+			    2.0f*qx*qz - 2.0f*qy*qw, 2.0f*qy*qz + 2.0f*qx*qw, 1.0f - 2.0f*qx*qx - 2.0f*qy*qy, 0.0f,
+			    0.0f, 0.0f, 0.0f, 1.0f);
+		
+		this.set(q.mul(this));
+		return this;*/
 	}
 
 	public void rotate(Vector3f rotation) {

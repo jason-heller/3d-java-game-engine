@@ -5,7 +5,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 
 import gl.Render;
-import gl.fbo.FrameBuffer;
+import gl.fbo.FBO;
 import shader.UniformFloat;
 import shader.UniformSampler;
 import shader.UniformVec3;
@@ -29,7 +29,7 @@ public class WaveShader extends PostShader {
 		this.color.loadVec3(waterColor);
 	}
 
-	public void render(FrameBuffer frameBuffer) {
+	public void render(FBO frameBuffer) {
 		// bindFbo();
 
 		start();
@@ -37,7 +37,7 @@ public class WaveShader extends PostShader {
 
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		GL13.glActiveTexture(GL13.GL_TEXTURE0);
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, frameBuffer.getTextureBuffer());
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, frameBuffer.getColorBuffer());
 		GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
 		Render.drawCalls++;
 		stop();

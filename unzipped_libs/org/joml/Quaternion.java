@@ -290,7 +290,7 @@ public class Quaternion implements Serializable, Externalizable {
 	 * Multiply a by b and store the results in dest.
 	 */
 	public static void mul(Quaternion a, Quaternion b, Quaternion dest) {
-		if (a != dest && b != dest) {
+		/*if (a != dest && b != dest) {
 			dest.x = a.x * b.x - a.y * b.y - a.z * b.z - a.w * b.w;
 			dest.y = a.x * b.y + a.y * b.x + a.z * b.w - a.w * b.z;
 			dest.z = a.x * b.z - a.y * b.w + a.z * b.x + a.w * b.y;
@@ -298,7 +298,12 @@ public class Quaternion implements Serializable, Externalizable {
 		} else {
 			dest.set(a.x * b.x - a.y * b.y - a.z * b.z - a.w * b.w, a.x * b.y + a.y * b.x + a.z * b.w - a.w * b.z,
 					a.x * b.z - a.y * b.w + a.z * b.x + a.w * b.y, a.x * b.w + a.y * b.z - a.z * b.y + a.w * b.x);
-		}
+		}*/
+
+		dest.x=(a.x*b.w)+(a.w*b.x)+(a.y*b.z)-(a.z*b.y);
+		dest.y=(a.y*b.w)+(a.w*b.y)+(a.z*b.x)-(a.x*b.z);
+		dest.z=(a.z*b.w)+(a.w*b.z)+(a.x*b.y)-(a.y*b.x);
+		dest.w=(a.w*b.w)-(a.x*b.x)-(a.y*b.y)-(a.z*b.z);
 	}
 
 	public static Quaternion negate(Quaternion q) {
@@ -382,7 +387,16 @@ public class Quaternion implements Serializable, Externalizable {
 		x = newX;
 		y = newY;
 		z = newZ;
-		w = 1.0f;
+		w = calculateQuatW(x, y, z);
+	}
+	
+	public void calculateQuatW() {
+		w = calculateQuatW(x, y, z);
+	}
+
+	public static float calculateQuatW(float qx, float qy, float qz) {
+		float t = 1f - (qx * qx) - (qy * qy) - (qz * qz);
+		return (t < 0f) ? 0f : -(float)Math.sqrt(t);
 	}
 
 	public Quaternion(float newX, float newY, float newZ, float newW) {
@@ -820,7 +834,7 @@ public class Quaternion implements Serializable, Externalizable {
 	}
 
 	public Matrix4f toRotationMatrix() {
-		final Matrix4f matrix = new Matrix4f();
+		Matrix4f matrix = new Matrix4f();
 		final float xy = x * y;
 		final float xz = x * z;
 		final float xw = x * w;
@@ -860,5 +874,22 @@ public class Quaternion implements Serializable, Externalizable {
 		out.writeFloat(y);
 		out.writeFloat(z);
 		out.writeFloat(w);
+	}
+	
+	/*template<typename T, qualifier Q>
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<3, T, Q> operator*(qua<T, Q> const& q, vec<3, T, Q> const& v)
+	{
+	    vec<3, T, Q> const QuatVector(q.x, q.y, q.z);
+	    vec<3, T, Q> const uv(glm::cross(QuatVector, v));
+	    vec<3, T, Q> const uuv(glm::cross(QuatVector, uv));
+
+	    return v + ((uv * q.w) + uuv) * static_cast<T>(2);
+	}*/
+
+	public Vector3f rotate(Vector3f v) {
+		Vector3f quatVector = new Vector3f(x, y, z);
+		Vector3f uv = Vector3f.cross(quatVector, v);
+		Vector3f uuv = Vector3f.cross(quatVector, uv);
+		return Vector3f.add(v, Vector3f.add(Vector3f.mul(uv, w), uuv).mul(2f));
 	}
 }

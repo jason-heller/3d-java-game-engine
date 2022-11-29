@@ -19,12 +19,9 @@ uniform mat4 lightDir;
 uniform mat4[MAX_LIGHTS] lightSpaceMatrix;
 
 out mat4 pass_lightPos;
-out mat4 pass_lightDir;
 out mat4 shadowCoords;
 
-uniform vec3 cameraPos;
-
-out vec3 specularCoords;
+out vec3 pass_vertices;
 
 void main(void){
 
@@ -39,11 +36,9 @@ void main(void){
 	pass_worldPos = worldPos.xyz;
 	
 	for(int i = 0; i < MAX_LIGHTS; i++) {
-		shadowCoords[i] = lightSpaceMatrix[i] * vec4(worldPos.xyz, 1.0);
-		pass_lightPos[i] = vec4((lightPos[i].xyz) - pass_worldPos, lightPos[i].w);
-		pass_lightDir[i] = vec4(lightDir[i].xyz, lightDir[i].w);
+		shadowCoords[i] = lightSpaceMatrix[i] * vec4(in_position, 1.0);
+		pass_lightPos[i] = vec4((lightPos[i].xyz) - in_position, lightPos[i].w);\
 	}
 	
-	vec3 camVector = normalize(worldPos.xyz - cameraPos);
-	specularCoords = reflect(camVector, in_normals);
+	pass_vertices = in_position;
 }

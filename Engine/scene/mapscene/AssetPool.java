@@ -1,10 +1,10 @@
-package scene.mapscene;
+ package scene.mapscene;
 
 import java.util.LinkedList;
 import java.util.Queue;
 
 import core.Resources;
-import dev.cmd.Console;
+import io.DOOMLoader;
 
 public class AssetPool {
 	private static Queue<String> loadedTextures = new LinkedList<>();
@@ -14,30 +14,13 @@ public class AssetPool {
 	public static void loadInGameAssets() {
 		addTexture("dmg_screen_effect", "gui/jelly.png");
 		addTexture("dmg_slash", "gui/slash.png");
-
-		addSound("walk_rock", "walk_rock.ogg", 1, true);
-		addSound("walk_dirt", "walk_dirt.ogg", 2, true);
-		addSound("walk_mud", "walk_mud.ogg", 3, true);
-		addSound("walk_grass", "walk_grass.ogg", 3, true);
-		addSound("ghost_voice", "ghost/ghost_voice.ogg", 3, true);
-		addSound("fall", "player/fall.ogg");
 		
-		addSound("cicadas", "ambient/cicadas.ogg");
-		addSound("white_noise", "ambient/white_noise.ogg");
+		Resources.addModel("untitled", "models/bob_lamp_update.MF");
 		
-		addSound("spiritbox", "tool/spiritbox.ogg");
-		addSound("camera_snap", "tool/camera_snap.ogg");
-		addSound("place", "tool/place_wall.ogg");
-		
-		addModel("spiritbox", "models/spiritbox.mod");
-		addModel("camera", "models/camera.mod");
-		addModel("cam_tripod", "models/cam_tripod.mod");
-		addModel("tablet", "models/tablet.mod");
-		addModel("emf", "models/emf.mod");
-		addTexture("emf", "models/emf.png");
-		
-		Resources.addObjModel("trash", "entity/prop/trash.obj");
-		addTexture("trash", "entity/prop/trash.png");
+		//addModel("weight_transfer_skater", "models/weight_transfer_skater.mod");
+		//AnimModel test = Resources.addAnimatedModel("weight_transfer_skater", "src/res/models/bob_lamp_update_export.mod");
+		//Resources.addAnimation("test_anim", "src/res/models/bob_lamp_update.md5anim");
+		DOOMLoader.load("src/res/models/bob_lamp_update.DOOM");
 	}
 
 	private static void addModel(String key, String val) {

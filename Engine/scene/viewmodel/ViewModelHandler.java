@@ -4,7 +4,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
-import core.Application;
+import core.App;
 import gl.Camera;
 import gl.Render;
 import gl.TexturedModel;
@@ -44,7 +44,7 @@ public class ViewModelHandler {
 	public ViewModelHandler() {
 		drawnModels = new ViewModel[MAX_MODELS];
 		
-		Camera camera = Application.scene.getCamera();
+		Camera camera = App.scene.getCamera();
 		lastYaw = camera.getEffectedYaw();
 		lastPitch = camera.getEffectedPitch();
 		lastCamPos = camera.getPosition();
@@ -54,7 +54,7 @@ public class ViewModelHandler {
 	
 	public void render(PlayableScene scene) {
 
-		Camera camera = Application.scene.getCamera();
+		Camera camera = App.scene.getCamera();
 		
 		if (camera.getFocus() != scene.getPlayer()) {
 			return;

@@ -1,18 +1,17 @@
 package map.architecture.read;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.List;
 
-import core.Resources;
 import io.FileUtils;
 import map.architecture.components.ArcObjects;
 import map.architecture.components.ArcStaticObject;
 import map.architecture.vis.Bsp;
+import util.CounterInputStream;
 
 public class ArcLoadObjects {
 	
-	static void readObjects(Bsp bsp, List<ArcStaticObject> objects, DataInputStream in) throws IOException {
+	static void readObjects(Bsp bsp, List<ArcStaticObject> objects, CounterInputStream in) throws IOException {
 		String[] objModelReference = new String[in.readShort()];
 		for(int i = 0; i < objModelReference.length; i++) {
 			objModelReference[i] = FileUtils.readString(in);

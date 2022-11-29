@@ -14,6 +14,7 @@ import map.architecture.components.ArcEdge;
 import map.architecture.components.ArcFace;
 import map.architecture.components.ArcTextureMapping;
 import map.architecture.util.ArcUtil;
+import scene.entity.util.LightStyle;
 
 public class BspLeaf {
 	
@@ -36,6 +37,8 @@ public class BspLeaf {
 		Map<Integer, List<ArcFace>> faceMap = new HashMap<>();
 
 		int lastFace = firstFace + numFaces;
+		int numClusters = 0;
+		
 		for (int j = firstFace; j < lastFace; j++) {
 			ArcFace face = faces[leafFaceIndices[j]];
 			if (face.texMapping == -1) continue;
@@ -48,6 +51,8 @@ public class BspLeaf {
 
 			if (tex.equals("INVIS"))
 				continue;
+			
+			numClusters++;
 
 			if (faceMap.containsKey(id)) {
 				faceMap.get(id).add(face);
@@ -60,27 +65,30 @@ public class BspLeaf {
 
 		// Build model for each partition
 
-		clusters = new Cluster[faceMap.keySet().size()];
+		clusters = new Cluster[numClusters];
 
 		int mdlIndex = 0;
 		for (int id : faceMap.keySet()) {
 			
-			List<ArcFace> partitionedFaces = faceMap.get(id);
-			int numVerts = 0;
-			for (ArcFace face : partitionedFaces) {
-				numVerts += face.numEdges - 2;
-			}
-			numVerts *= 3;
+			for(ArcFace face : faceMap.get(id)) {
+				//List<ArcFace> partitionedFaces = faceMap.get(id);
+				int numVerts = face.numEdges - 2;
+				//for (ArcFace face : partitionedFaces) {
+				//	numVerts += face.numEdges - 2;
+				//}
+				numVerts *= 3;
 
-			float[] mdlVerts = new float[numVerts * 3];
-			float[] mdlTxtrs = new float[numVerts * 4];
-			float[] mdlNorms = new float[numVerts * 3];
-			float[] mdlTangents = new float[numVerts * 3];
+				float[] mdlVerts = new float[numVerts * 3];
+				float[] mdlTxtrs = new float[numVerts * 4];
+				float[] mdlNorms = new float[numVerts * 3];
+				float[] mdlTangents = new float[numVerts * 3];
 
-			int v = 0, t = 0, n = 0, tng = 0;
-			
-			for (int i = partitionedFaces.size() - 1; i >= 0; i--) {
-				ArcFace face = partitionedFaces.get(i);
+				int v = 0, t = 0, n = 0, tng = 0;
+				
+				// Fullbright maps might have the offsets be null
+				float lmOffX = face.lightmapOffsetX == null ? 0 : face.lightmapOffsetX[0];
+				float lmOffY = face.lightmapOffsetY == null ? 0 : face.lightmapOffsetY[0];
+				
 				int lastEdge = face.firstEdge + face.numEdges;
 
 				Vector3f tangent = ArcUtil.getFaceTangent(vertices, edges, surfEdges, planes, texMappings, face);
@@ -113,8 +121,8 @@ public class BspLeaf {
 					mdlTxtrs[t++] = ((texVecs[1][0] * vert.x + texVecs[1][1] * vert.y + texVecs[1][2] * vert.z) + texVecs[1][3]);
 					ls = ((lm[0][0] * vert.x + lm[0][1] * vert.y + lm[0][2] * vert.z) + lm[0][3] - face.lmMins[0]) / (face.lmSizes[0] + 1);
 					lt = ((lm[1][0] * vert.x + lm[1][1] * vert.y + lm[1][2] * vert.z) + lm[1][3] - face.lmMins[1]) / (face.lmSizes[1] + 1);
-					ls = (ls * face.lightmapScaleX) + face.lightmapOffsetX;
-					lt = (lt * face.lightmapScaleY) + face.lightmapOffsetY;
+					ls = (ls * face.lightmapScaleX) + lmOffX;
+					lt = (lt * face.lightmapScaleY) + lmOffY;
 
 					mdlTxtrs[t++] = ls;
 					mdlTxtrs[t++] = lt;
@@ -128,8 +136,8 @@ public class BspLeaf {
 					mdlTxtrs[t++] = ((texVecs[1][0] * vert.x + texVecs[1][1] * vert.y + texVecs[1][2] * vert.z) + texVecs[1][3]);
 					ls = ((lm[0][0] * vert.x + lm[0][1] * vert.y + lm[0][2] * vert.z) + lm[0][3] - face.lmMins[0]) / (face.lmSizes[0] + 1);
 					lt = ((lm[1][0] * vert.x + lm[1][1] * vert.y + lm[1][2] * vert.z) + lm[1][3] - face.lmMins[1]) / (face.lmSizes[1] + 1);
-					ls = (ls * face.lightmapScaleX) + face.lightmapOffsetX;
-					lt = (lt * face.lightmapScaleY) + face.lightmapOffsetY;
+					ls = (ls * face.lightmapScaleX) + lmOffX;
+					lt = (lt * face.lightmapScaleY) + lmOffY;
 					mdlTxtrs[t++] = ls;
 					mdlTxtrs[t++] = lt;
 					
@@ -141,38 +149,38 @@ public class BspLeaf {
 					mdlTxtrs[t++] = ((texVecs[1][0] * vert.x + texVecs[1][1] * vert.y + texVecs[1][2] * vert.z) + texVecs[1][3]);
 					ls = ((lm[0][0] * vert.x + lm[0][1] * vert.y + lm[0][2] * vert.z) + lm[0][3] - face.lmMins[0]) / (face.lmSizes[0] + 1);
 					lt = ((lm[1][0] * vert.x + lm[1][1] * vert.y + lm[1][2] * vert.z) + lm[1][3] - face.lmMins[1]) / (face.lmSizes[1] + 1);
-					ls = (ls * face.lightmapScaleX) + face.lightmapOffsetX;
-					lt = (lt * face.lightmapScaleY) + face.lightmapOffsetY;
+					ls = (ls * face.lightmapScaleX) + lmOffX;
+					lt = (lt * face.lightmapScaleY) + lmOffY;
 					mdlTxtrs[t++] = ls;
 					mdlTxtrs[t++] = lt;
 				}
+
+				Model model = Model.create();
+				model.bind();
+				model.createAttribute(0, mdlVerts, 3);
+				model.createAttribute(1, mdlTxtrs, 4);
+				model.createAttribute(2, mdlNorms, 3);
+				model.createAttribute(3, mdlTangents, 3);
+				model.unbind();
+				
+				clusters[mdlIndex] = new Cluster(model, id, face);
+				
+				for(int i = 1; i < 3; i++) {
+					if (textureList.length - i == id) 
+						break;
+
+					char texTypeIdentifier = textureList[id + i].charAt(0);
+
+					if (texTypeIdentifier == '$')
+						break;
+					if (texTypeIdentifier == '%')
+						clusters[mdlIndex].setBumpMapId(id + i);
+					else if (texTypeIdentifier == '&')
+						clusters[mdlIndex].setSpecMapId(id + i);
+				}
+
+				mdlIndex++;
 			}
-
-			Model model = Model.create();
-			model.bind();
-			model.createAttribute(0, mdlVerts, 3);
-			model.createAttribute(1, mdlTxtrs, 4);
-			model.createAttribute(2, mdlNorms, 3);
-			model.createAttribute(3, mdlTangents, 3);
-			model.unbind();
-			
-			clusters[mdlIndex] = new Cluster(model, id);
-			
-			for(int i = 1; i < 3; i++) {
-				if (textureList.length - i == id) 
-					break;
-
-				char texTypeIdentifier = textureList[id + i].charAt(0);
-
-				if (texTypeIdentifier == '$')
-					break;
-				if (texTypeIdentifier == '%')
-					clusters[mdlIndex].setBumpMapId(id + i);
-				else if (texTypeIdentifier == '&')
-					clusters[mdlIndex].setSpecMapId(id + i);
-			}
-
-			mdlIndex++;
 		}
 	}
 
@@ -213,6 +221,15 @@ public class BspLeaf {
 		if (min.z > max2.z || max.z < min2.z) return false;
 	    
 	    return true;
+	}
+
+	public void setAlpha(LightStyle style, float alpha) {
+		for(Cluster cluster : this.clusters) {
+			if (!cluster.hasAlternativeStyles())
+				continue;
+			
+			cluster.setAlpha(style, alpha);
+		}
 	}
 
 }

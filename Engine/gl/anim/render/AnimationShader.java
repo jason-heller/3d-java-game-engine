@@ -3,19 +3,19 @@ package gl.anim.render;
 import shader.ShaderProgram;
 import shader.UniformFloat;
 import shader.UniformMat4Array;
-import shader.UniformMatrix;
+import shader.UniformMat4;
 import shader.UniformSampler;
 import shader.UniformVec3;
 
 public class AnimationShader extends ShaderProgram {
 
-	private static final int MAX_JOINTS = 25;
+	private static final int MAX_JOINTS = 35;
 
-	private static final String VERTEX_SHADER = "gl/anim/render/anim.vert";
-	private static final String FRAGMENT_SHADER = "gl/anim/render/anim.frag";
+	protected static final String VERTEX_SHADER = "gl/anim/render/anim.vert";
+	protected static final String FRAGMENT_SHADER = "gl/anim/render/anim.frag";
 
-	protected UniformMatrix projectionViewMatrix = new UniformMatrix("projectionViewMatrix");
-	protected UniformMatrix modelMatrix = new UniformMatrix("modelMatrix");
+	protected UniformMat4 projectionViewMatrix = new UniformMat4("projectionViewMatrix");
+	protected UniformMat4 modelMatrix = new UniformMat4("modelMatrix");
 	protected UniformVec3 lightDirection = new UniformVec3("lightDirection");
 	protected UniformVec3 cameraPos = new UniformVec3("cameraPos");
 

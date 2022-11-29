@@ -11,6 +11,7 @@ import gl.res.Model;
 import gl.res.Texture;
 import map.architecture.vis.BspLeaf;
 import scene.PlayableScene;
+import util.Colors;
 
 public abstract class Entity {
 	private static final AxisAlignedBBox NO_BOUNDINGBOX = new AxisAlignedBBox(Vector3f.ZERO, Vector3f.ZERO);
@@ -22,14 +23,13 @@ public abstract class Entity {
 	
 	public boolean visible = true;
 	
-	protected Model model;
+	private Model model;
 	protected Texture texture;
 	private Animator animator;
 	
 	protected String name;
 	
 	public boolean deactivated;
-	private boolean uniqueModel = false, uniqueTexture = false;
 	public Vector3f[] lighting = new Vector3f[6];
 	
 	protected BspLeaf leaf;
@@ -37,6 +37,9 @@ public abstract class Entity {
 	protected AxisAlignedBBox bbox = NO_BOUNDINGBOX;
 	
 	protected float deactivationRange = Float.POSITIVE_INFINITY;
+	
+	private Vector3f color = new Vector3f(1f, 1f, 1f);
+	private float colorBlendFactor = 0f;
 	
 	public void setLeaf(BspLeaf leaf) {
 		this.leaf = leaf;
@@ -55,32 +58,32 @@ public abstract class Entity {
 	
 	public void setModel(Model model) {
 		this.model = model;
+		if (this.model == Resources.ERROR) {
+			this.texture = Resources.getTexture("error");
+		}
 	}
 	
 	public void setModel(String model) {
 		this.model = Resources.getModel(model);
+		if (this.model == Resources.ERROR) {
+			this.texture = Resources.getTexture("error");
+		}
 	}
-	
+
 	public void setTexture(Texture texture) {
+		if (this.model == Resources.ERROR)
+			return;
 		this.texture = texture;
 	}
-	
+
 	public void setTexture(String texture) {
+		if (this.model == Resources.ERROR)
+			return;
 		this.texture = Resources.getTexture(texture);
 	}
-	
+
 	public void setAnimator(Animator animator) {
 		this.animator = animator;
-	}
-	
-	public void setModelUnique(String key, String modelPath) {
-		model = Resources.addModel(key, modelPath);
-		uniqueModel = true;
-	}
-	
-	public void setTextureUnique(String key, String texturePath) {
-		texture = Resources.addTexture(key, texturePath);
-		uniqueTexture = true;
 	}
 
 	public void update(PlayableScene scene) {
@@ -91,6 +94,13 @@ public abstract class Entity {
 		Vector3f[] targetLight = scene.getArchitecture().getLightsAt(pos);
 		for(int i = 0; i < 6; i++) {
 			lighting[i] = Vector3f.lerp(targetLight[i], lighting[i], 10f * Window.deltaTime);
+		}
+		
+		if (animator != null) 
+			animator.update();
+		
+		if (this.model == Resources.ERROR) {
+			this.setColor(Colors.alertColor());
 		}
 		
 	}
@@ -112,14 +122,6 @@ public abstract class Entity {
 	}
 
 	public void cleanUp() {
-		if (uniqueModel) {
-			model.cleanUp();
-		}
-		
-		if (uniqueTexture) {
-			texture.delete();
-		}
-		
 		if (animator != null) {
 			animator.destroy();
 		}
@@ -131,5 +133,22 @@ public abstract class Entity {
 
 	public AxisAlignedBBox getBBox() {
 		return bbox;
+	}
+	
+	public Vector3f getColor() {
+		return color;
+	}
+
+	public float getColorBlendFactor() {
+		return colorBlendFactor;
+	}
+	
+	public void setColor(Vector3f color) {
+		this.setColor(color, 0.5f);
+	}
+
+	public void setColor(Vector3f color, float colorBlendFactor) {
+		this.color = color;
+		this.colorBlendFactor = colorBlendFactor;
 	}
 }

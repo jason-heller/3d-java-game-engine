@@ -1,7 +1,5 @@
 package map.architecture.vis;
 
-import java.util.List;
-
 import org.joml.Vector3f;
 
 public class BspNode {

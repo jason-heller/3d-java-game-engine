@@ -15,7 +15,6 @@ import gl.res.TextureUtils;
 import map.architecture.components.ArcFace;
 
 public class Lightmap {
-	//private List<Integer> lightmap;
 	private Texture texture;
 	private static LMNode rootNode;
 	private static final int SIZE = 1024;
@@ -24,7 +23,6 @@ public class Lightmap {
 	public static int[] filteringQualities = new int[] {GL11.GL_NEAREST, GL11.GL_LINEAR};
 	
 	public Lightmap() {
-		//lightmap = new ArrayList<Integer>();
 		rootNode = new LMNode(0,0,SIZE,SIZE);
 		
         byte[] rgba = new byte[4*SIZE*SIZE];
@@ -35,9 +33,7 @@ public class Lightmap {
         	rgba[i+3] = -1;
         }
 
-       // buf.flip();
         texture = TextureUtils.createTexture(rgba, (byte)0, SIZE, SIZE, false);
-        //texture.bind(0);
         Resources.addTexture("lightmap", texture);
         setFiltering(Render.shadowQuality);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
@@ -74,11 +70,12 @@ public class Lightmap {
 			int width = (int)face.lmSizes[0] + 1;
 			int height = (int)face.lmSizes[1] + 1;
 			
-			if(height <= 0 || width <= 0) { continue; }
+			if (height <= 0 || width <= 0) 
+				continue;
 			
 			if (face.lmIndex == -1) {
-				face.lightmapOffsetX = 1;
-                face.lightmapOffsetY = 1;
+				face.lightmapOffsetX = new float[] {1};
+                face.lightmapOffsetY = new float[] {1};
                 face.lightmapScaleX = 1 / (float)SIZE;
                 face.lightmapScaleY = 1 / (float)SIZE;
 				continue;
@@ -90,17 +87,24 @@ public class Lightmap {
 				if (styles[numStyles] == -1)
 					break;
 			}
-			LMNode node = allocateRect(width+2, height+2, null);
 
-			if (node != null) {
-				int byteCount = width * height * 4;
-				int borderedByteCount = (width + 2) * (height + 2) * 4; // includes border
-				int rowBytes = (width + 2) * 4;
-				int[] lightmap = new int[borderedByteCount];
-				for (int j = 0; j < numStyles; ++j) {
-					int lightOffset = face.lmIndex + (byteCount * j);
-					int[] lightbuffer = subarray(lighting, lightOffset, lightOffset + byteCount); // byte
-					byte[] expbuffer = subarrayChar(lighting, lightOffset + 3, lightOffset + byteCount); // Exponent (char)
+			face.lightmapOffsetX = new float[numStyles];
+			face.lightmapOffsetY = new float[numStyles];
+            face.lightmapScaleX = width / (float)SIZE;
+            face.lightmapScaleY = height / (float)SIZE;
+            
+			for (int style = 0; style < numStyles; style++) {
+				LMNode node = allocateRect(width + 2, height + 2, null);
+
+				if (node != null) {
+					int size = width * height;
+					int byteCount = size * 4;
+					int borderedByteCount = (width + 2) * (height + 2) * 4; // includes border
+					int rowBytes = (width + 2) * 4;
+					int[] lightmap = new int[borderedByteCount];
+					final int dataOffset = face.lmIndex + (style * byteCount);
+					int[] lightbuffer = subarray(lighting, dataOffset, dataOffset + byteCount); // byte
+					byte[] expbuffer = subarrayChar(lighting, dataOffset + 3, dataOffset + byteCount); // Exponent (char)
 
 					int k = 0;
 
@@ -118,39 +122,24 @@ public class Lightmap {
 
 					// Generate the borders
 					lightmap = fillBorders(lightmap, width + 2, height + 2);
-				}
-				
-				texture.bind(0);
-				ByteBuffer buf = BufferUtils.createByteBuffer(lightmap.length);
-				for(int i = 0; i < lightmap.length; i++) {
-					buf.put(intToByte(lightmap[i]));
-				}
-				buf.flip();
-				GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, (int)node.x, (int)node.y, width+2, height+2, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buf);
+					
+					texture.bind(0);
+					ByteBuffer buf = BufferUtils.createByteBuffer(lightmap.length);
+					for(int i = 0; i < lightmap.length; i++) {
+						buf.put(intToByte(lightmap[i]));
+					}
+					buf.flip();
+					GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, (int) node.x, (int) node.y, width + 2, height + 2,
+							GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buf);
 
-				face.lightmapOffsetX = ((int)node.x+1) / (float)SIZE;
-                face.lightmapOffsetY = ((int)node.y+1) / (float)SIZE;
-                face.lightmapScaleX = width / (float)SIZE;
-                face.lightmapScaleY = height / (float)SIZE;
-                
-        		
-			} else {
-				Console.log("#rLIGHTMAP TOO BIG");
+					face.lightmapOffsetX[style] = ((int) node.x + 1) / (float) SIZE;
+					face.lightmapOffsetY[style] = ((int) node.y + 1) / (float) SIZE;
+	        		
+				} else {
+					Console.severe("Lightmap texture cannot fix into alloted size");
+				}
 			}
 		}
-		
-		/*ByteBuffer buf = ByteBuffer.allocateDirect(lightmapData.length);
-		buf.order(ByteOrder.nativeOrder());
-		buf.put(lightmapData, 0, lightmapData.length);
-		buf.flip();
-		GL13.glActiveTexture(GL13.GL_TEXTURE0);
-		lightmap = GL11.glGenTextures();
-		this.width = width;
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, lightmap);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB, width, width, 0, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, buf);
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);*/
 	}
 	
 	private static int clamp(float value) {
@@ -179,7 +168,6 @@ public class Lightmap {
 	}
 	
 	public void delete() {
-		//GL11.glDeleteTextures(texture);
 		texture.delete();
 		active = false;
 	}
@@ -256,10 +244,6 @@ public class Lightmap {
         
         return lightmap;
 	}
-	
-	/*private static byte clamp(int value) {
-		return (byte) (value > 127 ? 127 : (value < -128 ? -128 : value));
-	}*/
 
 	private static int[] subarray(byte[] arr, int start, int end) {
 		int len = end-start;

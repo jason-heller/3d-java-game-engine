@@ -7,8 +7,7 @@ import java.util.List;
 
 import audio.AudioHandler;
 import audio.speech.SpeechHandler;
-import core.Application;
-import dev.Debug;
+import core.App;
 import gl.Camera;
 import gl.Render;
 import gl.Window;
@@ -18,7 +17,6 @@ import scene.PlayableScene;
 import scene.entity.Entity;
 import scene.entity.EntityHandler;
 import scene.entity.SpawnHandler;
-import scene.entity.hostile.GhostState;
 import scene.entity.util.PlayerEntity;
 import scene.mapscene.MapScene;
 
@@ -53,13 +51,13 @@ public class CommandMethods {
 			return;
 		}
 		
-		if (Application.scene instanceof MapScene) {
+		if (App.scene instanceof MapScene) {
 			Input.requestMouseRelease();
 		}
 		
 		AudioHandler.stopAll();
 		PlayableScene.currentMap = map;
-		Application.changeScene(MapScene.class);
+		App.changeScene(MapScene.class);
 	}
 	
 	public static void nextmap() {
@@ -67,20 +65,20 @@ public class CommandMethods {
 	}
 	
 	public static void noclip() {
-		if (Application.scene.getCamera().getControlStyle() == Camera.FIRST_PERSON) {
-			Application.scene.getCamera().setControlStyle(Camera.SPECTATOR);
+		if (App.scene.getCamera().getControlStyle() != Camera.SPECTATOR) {
+			App.scene.getCamera().setControlStyle(Camera.SPECTATOR);
 		} else {
-			Application.scene.getCamera().setControlStyle(Camera.FIRST_PERSON);
+			App.scene.getCamera().setControlStyle(Camera.FIRST_PERSON);
 		}
 	}
 	
 	public static void spawn(String name, String cmd) {
 		PlayableScene PlayableScene;
-		if (!(Application.scene instanceof PlayableScene)) {
+		if (!(App.scene instanceof PlayableScene)) {
 			Console.log("Cannot use this command outside gameplay");
 			return;
 		} else {
-			PlayableScene = (PlayableScene)Application.scene;
+			PlayableScene = (PlayableScene)App.scene;
 		}
 		
 		/*if (!cmd.contains("\"")) {
@@ -97,11 +95,11 @@ public class CommandMethods {
 	
 	public static void kill() {
 		PlayableScene PlayableScene;
-		if (!(Application.scene instanceof PlayableScene)) {
+		if (!(App.scene instanceof PlayableScene)) {
 			Console.log("Cannot use this command outside gameplay");
 			return;
 		} else {
-			PlayableScene = (PlayableScene)Application.scene;
+			PlayableScene = (PlayableScene)App.scene;
 		}
 		
 		PlayableScene.getPlayer().takeDamage(PlayerEntity.getHp());
@@ -109,11 +107,11 @@ public class CommandMethods {
 	
 	public static void hurt(int damage) {
 		PlayableScene PlayableScene;
-		if (!(Application.scene instanceof PlayableScene)) {
+		if (!(App.scene instanceof PlayableScene)) {
 			Console.log("Cannot use this command outside gameplay");
 			return;
 		} else {
-			PlayableScene = (PlayableScene)Application.scene;
+			PlayableScene = (PlayableScene)App.scene;
 		}
 		
 		if (damage < 0) {
@@ -124,24 +122,24 @@ public class CommandMethods {
 	}
 	
 	public static void look(float yaw, float pitch, float roll) {
-		Camera camera = Application.scene.getCamera();
+		Camera camera = App.scene.getCamera();
 		camera.setYaw(yaw);
 		camera.setPitch(pitch);
 		camera.setRoll(roll);
 	}
 	
 	public static void shake(float time, float intensity) {
-		Camera camera = Application.scene.getCamera();
+		Camera camera = App.scene.getCamera();
 		camera.shake(time, intensity);
 	}
 	
 	public static void heal(int hp) {
 		PlayableScene PlayableScene;
-		if (!(Application.scene instanceof PlayableScene)) {
+		if (!(App.scene instanceof PlayableScene)) {
 			Console.log("Cannot use this command outside gameplay");
 			return;
 		} else {
-			PlayableScene = (PlayableScene)Application.scene;
+			PlayableScene = (PlayableScene)App.scene;
 		}
 		
 		if (hp < 0) {
@@ -152,11 +150,11 @@ public class CommandMethods {
 	}
 	
 	public static void tp(String a, String b, String c, String d) {
-		if (!(Application.scene instanceof PlayableScene)) {
+		if (!(App.scene instanceof PlayableScene)) {
 			Console.log("Cannot use this command outside gameplay");
 			return;
 		}
-		PlayableScene playableScene = (PlayableScene)Application.scene;
+		PlayableScene playableScene = (PlayableScene)App.scene;
 		Entity entity = null;
 		
 		if (a.startsWith("@")) {
@@ -184,11 +182,11 @@ public class CommandMethods {
 	}
 	
 	public static void tp_rel(String a, String b, String c, String d) {
-		if (!(Application.scene instanceof PlayableScene)) {
+		if (!(App.scene instanceof PlayableScene)) {
 			Console.log("Cannot use this command outside gameplay");
 			return;
 		}
-		PlayableScene playableScene = (PlayableScene)Application.scene;
+		PlayableScene playableScene = (PlayableScene)App.scene;
 		Entity entity = null;
 		
 		if (a.startsWith("@")) {
@@ -217,16 +215,16 @@ public class CommandMethods {
 	
 	public static void shadow_quality(int quality) {
 		Render.shadowQuality = quality;
-		if (Application.scene instanceof PlayableScene) {
-			PlayableScene s = (PlayableScene)Application.scene;
+		if (App.scene instanceof PlayableScene) {
+			PlayableScene s = (PlayableScene)App.scene;
 			s.getArchitecture().getLightmap().setFiltering(Render.shadowQuality);
 		}
 	}
 	
 	public static void mipmap_bias(float bias) {
 		Render.defaultBias = bias;
-		if (Application.scene instanceof PlayableScene) {
-			PlayableScene s = (PlayableScene)Application.scene;
+		if (App.scene instanceof PlayableScene) {
+			PlayableScene s = (PlayableScene)App.scene;
 			s.getArcHandler().getArchitecture().changeMipmapBias();
 		}
 	}
@@ -235,50 +233,9 @@ public class CommandMethods {
 		Render.setWaterQuality(quality);
 	}
 	
-	public static void ghost_force_action() {
-		if (Application.scene instanceof MapScene) {
-			MapScene s = (MapScene)Application.scene;
-			s.getGhost().doAction();
-		}
-	}
-	
-	public static void ghost_force_move() {
-		if (Application.scene instanceof MapScene) {
-			MapScene s = (MapScene)Application.scene;
-			s.getGhost().changeTarget();
-		}
-	}
-	
-	public static void ghost_force_hunt() {
-		if (Application.scene instanceof MapScene) {
-			MapScene s = (MapScene)Application.scene;
-			if (!s.getGhost().isAttacking()) {
-				s.getGhost().startAttack();
-			} else {
-				s.getGhost().endAttack();
-			}
-		}
-	}
-	
-	public static void ghost_freeze() {
-		if (Application.scene instanceof MapScene) {
-			MapScene s = (MapScene)Application.scene;
-			if (s.getGhost().getState() == GhostState.FROZEN) {
-				s.getGhost().setState(GhostState.WANDERING);
-			} else {
-				s.getGhost().setState(GhostState.FROZEN);
-			}
-		}
-	}
-	
-	public static void viewmodel_edit() {
-		Debug.mdEditor.toggle();
-	}
-	
-	
 	public static void fov(int fov) {
 		Camera.fov = fov;
-		Application.scene.getCamera().updateProjection();
+		App.scene.getCamera().updateProjection();
 	}
 	
 	public static void fps(int fps) {
@@ -286,7 +243,7 @@ public class CommandMethods {
 	}
 
 	public static void quit() {
-		Application.close();
+		App.close();
 	}
 	
 	public static void exit() {

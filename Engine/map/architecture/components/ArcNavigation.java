@@ -7,7 +7,7 @@ import java.util.TreeMap;
 
 import org.joml.Vector3f;
 
-import core.Application;
+import core.App;
 import geom.Plane;
 import map.architecture.vis.Bsp;
 import scene.PlayableScene;
@@ -62,7 +62,7 @@ public class ArcNavigation {
 	
 	public boolean navigateTo(NavigableEntity entity, Vector3f target) {
 		
-		Bsp bsp = ((PlayableScene)Application.scene).getArchitecture().bsp;
+		Bsp bsp = ((PlayableScene)App.scene).getArchitecture().bsp;
 
 		short[] neighbors;
 		int targetNode;

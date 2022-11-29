@@ -141,12 +141,12 @@ public class TextureUtils {
 		GL11.glBindTexture(GL13.GL_TEXTURE_CUBE_MAP, texID);
 
 		final ByteBuffer buf = ByteBuffer.allocateDirect(width * height * (hasAlpha ? 4 : 3));
-		int format = hasAlpha ? GL11.GL_RGBA : GL11.GL_RGB;
+		int format = hasAlpha ? GL12.GL_BGRA : GL11.GL_RGB;
 		for (int i = 0; i < 6; i++) {
 			buf.put(rgba[i]);
 
 			buf.flip();
-			GL11.glTexImage2D(GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format, width, height, 0, GL11.GL_RGB,
+			GL11.glTexImage2D(GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL11.GL_RGB, width, height, 0, format,
 					GL11.GL_UNSIGNED_BYTE, buf);
 			buf.clear();
 		}
@@ -304,6 +304,10 @@ public class TextureUtils {
 		ByteBuffer buffer = null;
 		try {
 			final InputStream in = FileUtils.getInputStream(path);
+			if (in == null) {
+				Console.severe("Texture file does not exist: " + path);
+				return null;
+			}
 			final PNGDecoder decoder = new PNGDecoder(in);
 			width = decoder.getWidth();
 			height = decoder.getHeight();
@@ -313,7 +317,7 @@ public class TextureUtils {
 			in.close();
 		} catch (final Exception e) {
 			e.printStackTrace();
-			Console.log("Tried to load texture " + path + " , didn't work");
+			Console.severe("Failed to load texture " + path);
 			return null;
 		}
 		return new TextureData(buffer, width, height);

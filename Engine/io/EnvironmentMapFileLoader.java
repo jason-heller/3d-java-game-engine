@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import dev.cmd.Console;
+import core.Resources;
 import gl.res.Texture;
 import gl.res.TextureUtils;
 import gr.zdimensions.jsquish.Squish;
@@ -56,7 +56,8 @@ public class EnvironmentMapFileLoader {
 					rawTextureData[currentTexture] = Squish.decompressImage(null, width, height, data, compType);
 				}
 			
-				textures.put(clipIndex, TextureUtils.createTexture(rawTextureData, width, height, true));
+				Texture texture = TextureUtils.createTexture(rawTextureData, width, height, true);
+				textures.put(clipIndex, texture);
 			}
 			
 			is.close();

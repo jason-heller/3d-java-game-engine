@@ -2,9 +2,6 @@ package geom;
 
 import org.joml.Vector3f;
 
-import gl.line.LineRender;
-import util.Colors;
-
 public class AxisAlignedBBox {
 	private Vector3f center;
 	private Vector3f bounds;
@@ -74,30 +71,30 @@ public class AxisAlignedBBox {
 		dirfrac.z = 1.0f / dir.z;
 		// lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
 		// r.org is origin of ray
-		Vector3f lb = new Vector3f(getX()-getWidth(), getY()-getHeight(), getZ()-getLength());
-		Vector3f rt = new Vector3f(getX()+getWidth(), getY()+getHeight(), getZ()+getLength());
+		Vector3f lb = new Vector3f(getX() - getWidth(), getY() - getHeight(), getZ() - getLength());
+		Vector3f rt = new Vector3f(getX() + getWidth(), getY() + getHeight(), getZ() + getLength());
 		float t = Float.NaN;
-		
-		float t1 = (lb.x - org.x)*dirfrac.x;
-		float t2 = (rt.x - org.x)*dirfrac.x;
-		float t3 = (lb.y - org.y)*dirfrac.y;
-		float t4 = (rt.y - org.y)*dirfrac.y;
-		float t5 = (lb.z - org.z)*dirfrac.z;
-		float t6 = (rt.z - org.z)*dirfrac.z;
+
+		float t1 = (lb.x - org.x) * dirfrac.x;
+		float t2 = (rt.x - org.x) * dirfrac.x;
+		float t3 = (lb.y - org.y) * dirfrac.y;
+		float t4 = (rt.y - org.y) * dirfrac.y;
+		float t5 = (lb.z - org.z) * dirfrac.z;
+		float t6 = (rt.z - org.z) * dirfrac.z;
 
 		float tmin = Math.max(Math.max(Math.min(t1, t2), Math.min(t3, t4)), Math.min(t5, t6));
 		float tmax = Math.min(Math.min(Math.max(t1, t2), Math.max(t3, t4)), Math.max(t5, t6));
 
 		// if tmax < 0, ray (line) is intersecting AABB, but whole AABB is behing us
 		if (tmax < 0) {
-		    t = tmax;
-		    return Float.POSITIVE_INFINITY;
+			t = tmax;
+			return Float.POSITIVE_INFINITY;
 		}
 
 		// if tmin > tmax, ray doesn't intersect AABB
 		if (tmin > tmax) {
-		    t = tmax;
-		    return Float.POSITIVE_INFINITY;
+			t = tmax;
+			return Float.POSITIVE_INFINITY;
 		}
 
 		t = tmin;

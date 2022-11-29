@@ -4,8 +4,8 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import core.Resources;
-import dev.cmd.Console;
-import gl.fbo.FrameBuffer;
+import gl.Window;
+import gl.fbo.FBO;
 
 public class DynamicLight {
 	
@@ -14,7 +14,7 @@ public class DynamicLight {
 	private Vector3f viewDirection;
 	private float cutoff, outerCutoff;
 	private float strength;
-	private FrameBuffer fbo;
+	private FBO fbo;
 	
 	private Matrix4f lightView;
 	
@@ -33,8 +33,8 @@ public class DynamicLight {
 		
 		this.id = id;
 		
-		fbo = new FrameBuffer(1280, 720, false, true, true, false, 1);
-		Resources.addTexture("shadow" + id, fbo, true);
+		fbo = new FBO(Window.getWidth(), Window.getHeight(), false, true);
+		Resources.addTexture("shadow" + id, fbo.getDepthBuffer(), fbo.getWidth(), fbo.getHeight());
 	}
 	
 	public void updateLightView() {
@@ -94,12 +94,12 @@ public class DynamicLight {
 		this.strength = strength;
 	}
 
-	public FrameBuffer getFbo() {
+	public FBO getFbo() {
 		return this.fbo;
 	}
 	
 	public int getShadowMap() {
-		return fbo.getDepthBufferTexture();
+		return fbo.getDepthBuffer();
 	}
 
 	public Matrix4f getLightViewMatrix() {

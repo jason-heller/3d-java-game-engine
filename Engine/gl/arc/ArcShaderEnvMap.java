@@ -1,19 +1,36 @@
 package gl.arc;
 
+import org.joml.Vector3f;
+
+import geom.AxisAlignedBBox;
+import map.architecture.components.ArcClip;
 import shader.UniformSampler;
 import shader.UniformVec3;
 
 public class ArcShaderEnvMap extends ArcShaderBase {
 
-	private static final String VERTEX_SHADER = "gl/arc/glsl/env.vert";
-	private static final String FRAGMENT_SHADER = "gl/arc/glsl/env.frag";
+	protected static final String VERTEX_SHADER = "gl/arc/glsl/env.vert";
+	protected static final String FRAGMENT_SHADER = "gl/arc/glsl/env.frag";
 
 	public UniformSampler specMap = new UniformSampler("specMap");
 	protected UniformSampler envMap = new UniformSampler("envMap");
 	public UniformVec3 cameraPos = new UniformVec3("cameraPos");
+	
+	private UniformVec3 cubemapMax = new UniformVec3("cubemapMax");
+	private UniformVec3 cubemapMin = new UniformVec3("cubemapMin");
 
 	public ArcShaderEnvMap() {
 		super(VERTEX_SHADER, FRAGMENT_SHADER);
-		addUniforms(specMap, envMap, cameraPos);
+		addUniforms(specMap, envMap, cameraPos, cubemapMax, cubemapMin);
+	}
+
+	public void loadBoundingBox(ArcClip clip) {
+		AxisAlignedBBox box = clip.bbox;
+		
+		Vector3f max = Vector3f.add(box.getCenter(), box.getBounds());
+		Vector3f min = Vector3f.sub(box.getCenter(), box.getBounds());
+
+		cubemapMax.loadVec3(max);
+		cubemapMin.loadVec3(min);
 	}
 }

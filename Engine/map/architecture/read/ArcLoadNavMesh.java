@@ -1,16 +1,16 @@
 package map.architecture.read;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.joml.Vector3f;
 
 import io.FileUtils;
 import map.architecture.components.ArcNavigation;
+import util.CounterInputStream;
 
 public class ArcLoadNavMesh {
 	
-	static void readNavMesh(ArcNavigation nav, DataInputStream in) throws IOException {
+	static void readNavMesh(ArcNavigation nav, CounterInputStream in) throws IOException {
 		short numNavElements = 0;
 		
 		numNavElements = in.readShort();

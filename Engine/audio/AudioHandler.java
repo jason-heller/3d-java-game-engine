@@ -9,7 +9,6 @@ import org.joml.Vector3f;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
-import org.lwjgl.openal.AL11;
 import org.lwjgl.openal.ALC10;
 import org.lwjgl.openal.ALCcontext;
 import org.lwjgl.openal.ALCdevice;
@@ -19,6 +18,7 @@ import org.newdawn.slick.openal.OggData;
 import org.newdawn.slick.openal.OggDecoder;
 
 import core.Resources;
+import dev.cmd.Console;
 import gl.Camera;
 import io.FileUtils;
 
@@ -103,11 +103,11 @@ public class AudioHandler {
 	public static void init() {
 		try {
 			AL.create();
-			AL10.alDistanceModel(AL11.AL_LINEAR_DISTANCE_CLAMPED);
+			AL10.alDistanceModel(AL10.AL_INVERSE_DISTANCE_CLAMPED);
 			setupEFX();
 			setupEffects();
 			setupFilters();
-			Thread.sleep(50);
+			//Thread.sleep(50);
 			
 			int i = 0;
 			for(; i < MAX_STATIC_SOURCES - MAX_LOOPING_SOURCES; i++) {
@@ -132,6 +132,12 @@ public class AudioHandler {
 		try {
 			final int buffer = AL10.alGenBuffers();
 			final InputStream in = FileUtils.getInputStream(path);
+			
+			if (in == null) {
+				Console.severe("Audio file not found: " + path);
+				return -1;
+			}
+			
 			final OggDecoder decoder = new OggDecoder();
 			final OggData ogg = decoder.getData(in);
 

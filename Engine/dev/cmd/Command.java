@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
-import core.Application;
+import core.App;
 import util.MathUtil;
 
 class Command {
@@ -365,7 +365,7 @@ class Command {
 		}
 
 		if (name.equals("quit") || name.equals("exit")) {
-			Application.close();
+			App.close();
 		}
 
 	}

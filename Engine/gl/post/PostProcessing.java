@@ -6,15 +6,17 @@ import java.util.Map;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 
+import gl.Camera;
 import gl.Render;
-import gl.fbo.FrameBuffer;
+import gl.arc.decal.DynamicDecalRender;
+import gl.fbo.FBO;
 import gl.res.Model;
 
 public class PostProcessing {
 
 	static Map<PostShader, Boolean> shaders = new HashMap<PostShader, Boolean>();
 
-	private static Model quad;
+	public static Model quad;
 
 	private static int numActiveShaders = 0;
 
@@ -28,7 +30,7 @@ public class PostProcessing {
 	public static final NightVisionShader NIGHT_VISION = new NightVisionShader();
 	public static final DefaultShader DEFAULT_SHADER = new DefaultShader();
 
-	private static final FrameBuffer[] fbos = new FrameBuffer[] {Render.screen, Render.screenPong};
+	private static final FBO[] fbos = new FBO[] {Render.screen, Render.screenPong};
 	
 	private static void addShader(PostShader shader) {
 		shaders.put(shader, false);
@@ -42,6 +44,8 @@ public class PostProcessing {
 		}
 
 		shaders.clear();
+
+		DynamicDecalRender.cleanUp();
 	}
 
 	public static void disable(PostShader shader) {
@@ -82,10 +86,12 @@ public class PostProcessing {
 		enable(V_BLUR_SHADER);
 		enable(COMBINE_SHADER);*/
 		enable(DEFAULT_SHADER);
+		
+
+		DynamicDecalRender.init();
 	}
 
-	public static void render() {
-
+	public static void render(Camera camera) {
 		quad.bind(0, 1);
 		GL13.glActiveTexture(GL13.GL_TEXTURE0);
 		GL11.glDisable(GL11.GL_DEPTH_TEST);
@@ -99,14 +105,21 @@ public class PostProcessing {
 				shaderCount++;
 				
 				if (shaderCount != numActiveShaders) {
+					// Render post
 					fbos[fboId].bind();
-					
-					shader.render(fbos[1 - fboId]);
+					fbos[1 - fboId].bindColorBuffer(0);
+					shader.render();
 					
 					fbos[fboId].unbind();
 					fboId = 1 - fboId;
 				} else {
-					shader.render(fbos[1 - fboId]);
+					fbos[1 - fboId].bindColorBuffer(0);
+					shader.render();
+					// Render directly to screen
+					// FIXME: Decal shader should be treated as a post shader instead of tacked onto
+					// the end of the post rendering process
+					//DynamicDecalRender.render(camera, fbos[1 - fboId]);	// FIXME: Move DecalRender fully out of Render class and into here
+
 				}
 			}
 		}

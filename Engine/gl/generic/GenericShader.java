@@ -3,7 +3,7 @@ package gl.generic;
 import shader.ShaderProgram;
 import shader.UniformFloatArray;
 import shader.UniformMat4Array;
-import shader.UniformMatrix;
+import shader.UniformMat4;
 import shader.UniformSampler;
 import shader.UniformSamplerArray;
 import shader.UniformVec2Array;
@@ -12,11 +12,11 @@ import shader.UniformVec4;
 
 public class GenericShader extends ShaderProgram {
 
-	private static final String VERTEX_SHADER = "gl/generic/generic.vert";
-	private static final String FRAGMENT_SHADER = "gl/generic/generic.frag";
+	protected static final String VERTEX_SHADER = "gl/generic/generic.vert";
+	protected static final String FRAGMENT_SHADER = "gl/generic/generic.frag";
 
-	public UniformMatrix projectionViewMatrix = new UniformMatrix("projectionViewMatrix");
-	public UniformMatrix modelMatrix = new UniformMatrix("modelMatrix");
+	public UniformMat4 projectionViewMatrix = new UniformMat4("projectionViewMatrix");
+	public UniformMat4 modelMatrix = new UniformMat4("modelMatrix");
 	protected UniformSampler diffuse = new UniformSampler("diffuse");
 	public UniformVec3Array lights = new UniformVec3Array("lights", 6);
 	public UniformVec4 color = new UniformVec4("color");

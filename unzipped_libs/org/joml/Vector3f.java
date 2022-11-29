@@ -49,10 +49,6 @@ public class Vector3f implements Serializable, Externalizable {
 		return Objects.hash(x, y, z);
 	}
 	
-	public static Vector3f abs(Vector3f v) {
-		return new Vector3f(Math.abs(v.x), Math.abs(v.y), Math.abs(v.z));
-	}
-
 	/**
 	 * Adds v2 to v1. Does not modify v1 or v2
 	 */
@@ -221,17 +217,15 @@ public class Vector3f implements Serializable, Externalizable {
 		return out;
 	}
 
-	public static Vector3f rotateVector(Vector3f vector, Quaternion quat) {
-		final Quaternion vecQuat = new Quaternion(vector.x, vector.y, vector.z, 0.0f);
-
-		final Quaternion quatNegate = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
-		Quaternion.negate(quatNegate);
-
-		final Quaternion resQuat = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
-		Quaternion.mul(vecQuat, quatNegate, resQuat);
-		Quaternion.mul(quat, resQuat, resQuat);
-
-		return new Vector3f(resQuat.x, resQuat.y, resQuat.z);
+	@Deprecated
+	public static Vector3f rotateVector(Vector3f v, Quaternion q) {
+		Vector3f u = new Vector3f(q.x, q.y, q.z);
+	    float s = q.w;
+	    
+	    Vector3f X = Vector3f.mul(u, 2f * u.dot(v));
+	    Vector3f Y = Vector3f.mul(v, s*s - u.dot(u));
+	    Vector3f Z = Vector3f.mul(Vector3f.cross(u, v), 2f * s);
+	    return new Vector3f(Vector3f.add(Vector3f.add(X, Y), Z));
 	}
 
 	public static Vector3f sub(Vector3f v1, Vector3f v2) {
@@ -285,7 +279,14 @@ public class Vector3f implements Serializable, Externalizable {
 	}
 
 	public Vector3f abs() {
-		return new Vector3f(Math.abs(x), Math.abs(y), Math.abs(z));
+		x = Math.abs(x);
+		y = Math.abs(y);
+		z = Math.abs(z);
+		return this;
+	}
+	
+	public static Vector3f abs(Vector3f v) {
+		return new Vector3f(Math.abs(v.x), Math.abs(v.y), Math.abs(v.z));
 	}
 
 	public Vector3f add(float _x, float _y, float _z) {

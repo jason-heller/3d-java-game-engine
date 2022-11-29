@@ -1,6 +1,5 @@
 package map.architecture.read;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -9,6 +8,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
 import core.Resources;
+import dev.cmd.Console;
 import gl.res.Texture;
 import gl.res.TextureUtils;
 import gr.zdimensions.jsquish.Squish;
@@ -16,10 +16,11 @@ import io.FileUtils;
 import map.architecture.components.ArcTextureData;
 import map.architecture.components.ArcTextureMapping;
 import map.architecture.vis.Bsp;
+import util.CounterInputStream;
 
 public class ArcLoadTextures {
 
-	static void readTextureInfo(Bsp bsp, ArcTextureData textureData, DataInputStream in,
+	static void readTextureInfo(Bsp bsp, ArcTextureData textureData, CounterInputStream in,
 			boolean hasBakedLighting) throws IOException {
 		
 		String skybox = FileUtils.readString(in);
@@ -55,11 +56,11 @@ public class ArcLoadTextures {
 
 	private static final Squish.CompressionType compType = Squish.CompressionType.DXT1;
 	
-	static void readTextureList(ArcTextureData packedAssets, DataInputStream in) throws IOException {
+	static void readTextureList(ArcTextureData packedAssets, CounterInputStream in) throws IOException {
 		String[] textures = new String[in.readInt()];
 		int i = 0;
 		List<Texture> textureDatas = new LinkedList<>();
-		
+
 		while(i < textures.length) {
 			String textureName = FileUtils.readString(in);
 			byte flags = in.readByte();
@@ -106,7 +107,7 @@ public class ArcLoadTextures {
 		}
 	}
 
-	private static byte[] readBytes(DataInputStream in, int dataLen) throws IOException {
+	private static byte[] readBytes(CounterInputStream in, int dataLen) throws IOException {
 		byte[] data = new byte[dataLen];
 		for (int l = 0; l < dataLen; l++) {
 			data[l] = in.readByte();

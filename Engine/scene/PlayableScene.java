@@ -1,12 +1,12 @@
 package scene;
 
-import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.input.Mouse;
 
 import dev.Debug;
 import gl.Camera;
 import gl.Window;
+import gl.anim.render.AnimationHandler;
 import map.architecture.Architecture;
 import map.architecture.ArchitectureHandler;
 import scene.entity.EntityHandler;
@@ -43,6 +43,7 @@ public abstract class PlayableScene implements Scene {
 		
 		arcHandler = new ArchitectureHandler();
 		
+		AnimationHandler.init();
 		entityHandler = new EntityHandler();
 		
 		ui.update();
@@ -78,6 +79,10 @@ public abstract class PlayableScene implements Scene {
 		
 		entityHandler.update(this);
 		camera.move();
+		
+		if (Debug.debugMode) {
+			Debug.update(this);
+		}
 	}
 	
 	@Override
@@ -87,15 +92,21 @@ public abstract class PlayableScene implements Scene {
 		//Vector3f[] targetLight = arc.getLightsAt(camera.getPosition());
 
 		arcHandler.debugRender(camera);
-		arcHandler.render(camera, clipPlane);
+		arcHandler.render(camera, clipPlane, true);
+		entityHandler.render(camera, arc, clipPlane);
+		AnimationHandler.render(camera, this);
+	}
+	
+	@Override
+	public void fastRender(Vector4f clipPlane) {
+
+		Architecture arc = arcHandler.getArchitecture();
+		arcHandler.render(camera, clipPlane, false);
 		entityHandler.render(camera, arc, clipPlane);
 	}
 	
 	@Override
 	public void renderNoReflect() {
-		if (Debug.debugMode) {
-			Debug.update(this);
-		}
 	}
 	
 	@Override
@@ -103,6 +114,7 @@ public abstract class PlayableScene implements Scene {
 		AssetPool.unload();
 		arcHandler.cleanUp();
 		entityHandler.cleanUp();
+		AnimationHandler.cleanUp();
 	}
 
 	public PlayableSceneUI getUi() {

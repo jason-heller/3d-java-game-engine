@@ -6,8 +6,8 @@ public class DummyEntity extends Entity implements Spawnable {
 
 	public DummyEntity() {
 		super("dummy");
-		this.setModel("camera");
-		this.setTexture("camera");
+		this.setModel("cube");
+		this.setTexture("default");
 	}
 
 	@Override

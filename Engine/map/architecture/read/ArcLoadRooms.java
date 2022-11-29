@@ -1,16 +1,16 @@
 package map.architecture.read;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 
 import io.FileUtils;
 import map.architecture.components.ArcRoom;
 import map.architecture.components.GhostPoi;
 import map.architecture.vis.Bsp;
+import util.CounterInputStream;
 
 public class ArcLoadRooms {
 	
-	static void readRooms(Bsp bsp, DataInputStream in) throws IOException {
+	static void readRooms(Bsp bsp, CounterInputStream in) throws IOException {
 		final int numRooms = in.readByte() + 1;
 		bsp.rooms = new ArcRoom[numRooms];
 		bsp.rooms[0] = ArcRoom.DEFAULT_ROOM;

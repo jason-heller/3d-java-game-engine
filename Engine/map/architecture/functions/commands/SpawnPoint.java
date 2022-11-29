@@ -2,7 +2,7 @@ package map.architecture.functions.commands;
 
 import org.joml.Vector3f;
 
-import core.Application;
+import core.App;
 import dev.cmd.Console;
 import gl.Camera;
 import map.architecture.functions.ArcFunction;
@@ -20,7 +20,7 @@ public class SpawnPoint extends ArcFunction {
 	@Override
 	public void trigger(String[] args) {
 		PhysicsEntity entity = PlayerHandler.getEntity();
-		Camera camera = Application.scene.getCamera();
+		Camera camera = App.scene.getCamera();
 		entity.pos.set(pos);
 		Console.log(pos, rot);
 		entity.vel.y = 0;

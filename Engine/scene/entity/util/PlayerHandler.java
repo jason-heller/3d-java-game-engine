@@ -4,7 +4,7 @@ import org.joml.Vector3f;
 import org.lwjgl.input.Keyboard;
 
 import audio.AudioHandler;
-import core.Application;
+import core.App;
 import gl.Camera;
 import gl.Window;
 import gl.light.DynamicLight;
@@ -21,11 +21,11 @@ public class PlayerHandler {
 	
 	public static final float WALKER_SPEED_MULTIPLIER = 0.5f;
 
-	public static float jumpVel = 20f;
+	public static float jumpVel = 40f;
 	public static float runSpeedMultiplier = 24f;
-	public static float maxSpeed = 15f, maxAirSpeed = 15f, maxWaterSpeed = 35f;
-	public static float accelSpeed = 85f, airAccel = 5f, waterAccel = 32f;
-	public static float maxSpeedCrouch = 12f;
+	public static float maxSpeed = 85f, maxAirSpeed = 85f, maxWaterSpeed = 85f;
+	public static float accelSpeed = 400f, airAccel = 20f, waterAccel = 32f;
+	public static float maxSpeedCrouch = 72f;
 	
 	public static final float CAMERA_STANDING_HEIGHT = 5f;
 	public static final float CAMERA_CROUCHING_HEIGHT = 2f;
@@ -253,7 +253,7 @@ public class PlayerHandler {
 	}
 
 	private static void setLightPos(DynamicLight light2) {
-		Camera camera = Application.scene.getCamera();
+		Camera camera = App.scene.getCamera();
 		Vector3f lookVec = camera.getDirectionVector();
 		Vector3f pos = new Vector3f(camera.getPosition());
 		pos.add(Vector3f.mul(Vector3f.cross(lookVec, Vector3f.Y_AXIS), 1f));

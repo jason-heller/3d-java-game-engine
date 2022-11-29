@@ -3,13 +3,13 @@ package scene.entity.util;
 import org.joml.Vector3f;
 
 import audio.AudioHandler;
-import core.Application;
+import core.App;
 import dev.Debug;
 import geom.MTV;
 import geom.Plane;
 import gl.Camera;
+import gl.CameraFollowable;
 import gl.Window;
-import gl.post.PostProcessing;
 import scene.PlayableScene;
 import ui.UI;
 
@@ -17,7 +17,7 @@ import ui.UI;
  * @author Jason
  *
  */
-public class PlayerEntity extends PhysicsEntity {
+public class PlayerEntity extends PhysicsEntity implements CameraFollowable {
 	
 	private Camera camera;
 	
@@ -31,8 +31,10 @@ public class PlayerEntity extends PhysicsEntity {
 	
 	private float bloodDmgIndicator = 0f;
 	
+	private Vector3f viewAngle = new Vector3f();
+	
 	public PlayerEntity(Camera camera) {
-		super("player", new Vector3f(3.5f, PlayerHandler.BBOX_HEIGHT, 3.5f));
+		super("player", new Vector3f(1f, PlayerHandler.BBOX_HEIGHT, 1f));
 		this.camera = camera;
 		camera.setFocus(this);
 		PlayerHandler.setEntity(this);
@@ -41,21 +43,16 @@ public class PlayerEntity extends PhysicsEntity {
 	
 	@Override
 	public void update(PlayableScene scene) {
-		PlayerHandler.update(Application.scene);
 		super.update(scene);
-		
-		if (submerged) {
-			fullySubmerged = camera.getPosition().y < leaf.max.y;
-			PostProcessing.underwater = this.isFullySubmerged();
-		} else {
-			PostProcessing.underwater = false;
-		}
+		PlayerHandler.update(App.scene);
 		
 		if (grounded && camera.getControlStyle() != Camera.SPECTATOR) {
 			
+			viewAngle.set(0f, this.getRotation().y, 0f);
+			
 			stepTimer += Window.deltaTime * new Vector3f(vel.x, 0f, vel.z).length();
 			
-			if (stepTimer > 6) {
+			if (stepTimer > 12) {
 				stepTimer = 0f;
 				
 				String sfx;
@@ -80,7 +77,7 @@ public class PlayerEntity extends PhysicsEntity {
 		
 		if (hp < 5 || bloodDmgIndicator > 0f) {
 			float baseDmgOpaciy = Math.max(Math.min(bloodDmgIndicator, 1f), (5f - hp) / 5f);
-			UI.drawImage("dmg_screen_effect", 0, 0, 1280, 720).setOpacity(baseDmgOpaciy);
+			UI.drawImage("dmg_screen_effect", 0, 0, UI.width, UI.height).setOpacity(baseDmgOpaciy);
 			bloodDmgIndicator -= Window.deltaTime;
 		}
 		
@@ -134,7 +131,6 @@ public class PlayerEntity extends PhysicsEntity {
 		if (vel.y < fallHeight) {
 			takeDamage((int) (-vel.y / 20f));
 			AudioHandler.play("fall");
-
 			vel.y = -PlayerHandler.jumpVel;	// TODO: Bad
 		}*/
 		
@@ -151,5 +147,20 @@ public class PlayerEntity extends PhysicsEntity {
 
 	public void reset() {
 		hp = maxHp;
+	}
+
+	@Override
+	public Vector3f getViewAngle() {
+		return viewAngle;
+	}
+
+	@Override
+	public Vector3f getPosition() {
+		return pos;
+	}
+
+	@Override
+	public Vector3f getRotation() {
+		return rot;
 	}
 }

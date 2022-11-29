@@ -2,7 +2,7 @@ package map.architecture.functions.commands;
 
 import org.joml.Vector3f;
 
-import core.Application;
+import core.App;
 import gl.Camera;
 import map.architecture.functions.ArcFunction;
 import scene.Scene;
@@ -25,7 +25,7 @@ public class CamView extends ArcFunction {
 
 	@Override
 	public void trigger(String[] args) {
-		Scene scene = Application.scene;
+		Scene scene = App.scene;
 		Camera camera = scene.getCamera();
 		Vector3f camPos = camera.getPosition();
 		Vector3f camRot = new Vector3f(camera.getYaw(), camera.getPitch(), camera.getRoll());

@@ -37,8 +37,9 @@ public class Colors {
 	public static final Vector3f GUI_BACKGROUND_COLOR = BLACK;
 	public static final Vector3f GUI_ACCENT_COLOR = DK_VIOLET;
 
+	private static final float TWOPI = (float)Math.PI * 2f;
 	public static Vector3f alertColor() {
-		final float alpha = 0.5f + (float) Math.sin(System.currentTimeMillis() % 1000 / 250f) * 0.5f;
+		final float alpha = 0.5f + (float) Math.sin((System.currentTimeMillis() % 1000 / 1000f) * TWOPI) * 0.5f;
 		return new Vector3f(alpha, alpha / 4f, alpha / 9f);
 	}
 
@@ -139,5 +140,10 @@ public class Colors {
 				* MARQUEE_COLOR_SIZE);
 		final float alpha = (pos - scrollPos % MARQUEE_COLOR_SIZE) % MARQUEE_COLOR_SIZE / (float) MARQUEE_COLOR_SIZE;
 		return new Vector3f(alpha, alpha, alpha);
+	}
+
+	public static Vector3f pickByIndex(int id) {
+		Random r = new Random(id);
+		return new Vector3f(r.nextFloat(), r.nextFloat(), r.nextFloat());
 	}
 }

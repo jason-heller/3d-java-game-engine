@@ -44,16 +44,8 @@ public class Skybox2D implements Skybox {
 		matrix.m30 = 0;
 		matrix.m31 = 0;
 		matrix.m32 = 0;
-		//matrix.rotateX(camera.getPitch());
-		shader.projectionMatrix.loadMatrix(camera.getProjectionMatrix());
-		shader.viewMatrix.loadMatrix(matrix);
-		//shader.lightDir.loadVec3(sunDirection);
 		
-		//GL11.glDisable(GL11.GL_BLEND);
-		//GL11.glCullFace(GL11.GL_BACK);
-		//GL11.glDisable(GL13.GL_MULTISAMPLE);
-		
-		//SkyboxController.getTexture().bind(0);
+		shader.projectionViewMatrix.loadMatrix(Matrix4f.mul(camera.getProjectionMatrix(), matrix, null));
 		Texture t = Resources.getTexture("skybox");
 		if (t!=null) {
 			t.bind(0);

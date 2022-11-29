@@ -7,13 +7,15 @@ import org.joml.Vector3f;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 
-import core.Application;
+import core.App;
+import core.Resources;
 import gl.Camera;
 import gl.Render;
 import gl.entity.EntityRender;
 import gl.light.DynamicLight;
 import gl.light.DynamicLightHandler;
 import gl.res.Model;
+import map.architecture.components.ArcLightCube;
 import map.architecture.vis.BspLeaf;
 import map.architecture.vis.Cluster;
 import scene.entity.Entity;
@@ -44,7 +46,7 @@ public class ShadowRender {
 				break;
 			
 			// If light is too far away, don't render shadows
-			Camera camera = Application.scene.getCamera();
+			Camera camera = App.scene.getCamera();
 			if (Vector3f.distanceSquared(light.getPosition(), camera.getPosition()) > MAX_SHADOW_RENDER_DIST_SQR) {
 				continue;
 			}
@@ -97,7 +99,7 @@ public class ShadowRender {
 			shader.stop();
 			
 			//GL11.glCullFace(GL11.GL_BACK);
-			
+			Render.renderModel(Resources.getModel("cube"), Resources.DEFAULT, new Matrix4f(), ArcLightCube.FULLBRIGHT);
 			light.getFbo().unbind();
 		}
 		

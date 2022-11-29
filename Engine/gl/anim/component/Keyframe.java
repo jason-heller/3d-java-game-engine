@@ -2,6 +2,9 @@ package gl.anim.component;
 
 import java.util.Map;
 
+import org.joml.Quaternion;
+import org.joml.Vector3f;
+
 public class Keyframe {
 
 	private final float time;
@@ -19,5 +22,4 @@ public class Keyframe {
 	public Map<Byte, JointTransform> getTransforms() {
 		return transforms;
 	}
-
 }

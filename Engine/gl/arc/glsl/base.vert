@@ -15,12 +15,13 @@ uniform mat4 projectionViewMatrix;
 uniform vec4 clipPlane;
 
 uniform mat4 lightPos;
-uniform mat4 lightDir;
 uniform mat4[MAX_LIGHTS] lightSpaceMatrix;
 
 out mat4 pass_lightPos;
-out mat4 pass_lightDir;
 out mat4 shadowCoords;
+
+const float density = .007;
+const float gradient = 1.5;
 
 void main(void){
 
@@ -37,6 +38,5 @@ void main(void){
 	for(int i = 0; i < MAX_LIGHTS; i++) {
 		shadowCoords[i] = lightSpaceMatrix[i] * vec4(worldPos.xyz, 1.0);
 		pass_lightPos[i] = vec4((lightPos[i].xyz) - pass_worldPos, lightPos[i].w);
-		pass_lightDir[i] = vec4(lightDir[i].xyz, lightDir[i].w);
 	}
 }

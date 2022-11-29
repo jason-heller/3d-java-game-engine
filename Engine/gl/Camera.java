@@ -11,6 +11,7 @@ import dev.cmd.Console;
 import geom.Frustum;
 import io.Input;
 import scene.entity.Entity;
+import scene.entity.util.PlayerEntity;
 import util.MathUtil;
 
 public class Camera {
@@ -18,7 +19,7 @@ public class Camera {
 
 	private static float zoom, targetZoom, zoomSpeed;
 
-	public static float cameraSpeed = 80f, offsetY = 0, animSpeed = 0;
+	public static float cameraSpeed = 20f, offsetY = 0, animSpeed = 0;
 
 	public static int fov = 90;
 
@@ -26,15 +27,15 @@ public class Camera {
 	public static final float FAR_PLANE = 8000f;
 
 	public static final float NEAR_PLANE = .1f;
-	public static final byte NO_CONTROL = 0, SPECTATOR = 1, FIRST_PERSON = 2;
+	public static final byte NO_CONTROL = 0, SPECTATOR = 1, FIRST_PERSON = 2, THIRD_PERSON = 3;
 	
 	private static double movementCounter = 0f;
 	
 	public static float swayFactor = 1f;
 	
-	private static Matrix4f createProjectionMatrix() {
+	private static Matrix4f createProjectionMatrix(float width, float height) {
 		final Matrix4f projectionMatrix = new Matrix4f();
-		final float aspectRatio = (float) Display.getWidth() / (float) Display.getHeight();
+		final float aspectRatio = width / height;
 		final float y_scale = (float) (1f / Math.tan(Math.toRadians((fov - zoom) / 2f)));
 		final float x_scale = y_scale / aspectRatio;
 		final float frustum_length = FAR_PLANE - NEAR_PLANE;
@@ -72,11 +73,11 @@ public class Camera {
 	private Vector3f lookAt = null;
 	private Vector3f viewDirection = new Vector3f();
 
-	private Entity focus = null;
+	private CameraFollowable focus = null;
 
 	private final boolean mouseIsGrabbed = false;
 
-	private byte controlStyle = FIRST_PERSON;
+	private byte controlStyle = NO_CONTROL;
 
 	public Camera() {
 		updateProjection();
@@ -98,7 +99,7 @@ public class Camera {
 		}
 	}
 
-	public void setFocus(Entity focus) {
+	public void setFocus(CameraFollowable focus) {
 		this.focus = focus;
 		if (focus == null) {
 			lookAt = null;
@@ -297,15 +298,17 @@ public class Camera {
 		swayDir.y += (swayTarget.y - swayDir.y)*Window.deltaTime*swaySpeed;
 		swayDir.z += (swayTarget.z - swayDir.z)*Window.deltaTime*swaySpeed;
 
+		if (controlStyle == THIRD_PERSON && focus != null) {
+			position.set(focus.getPosition());
+			float dirRad = (float) Math.toRadians(focus.getViewAngle().y);
+			position.add((float)-Math.sin(dirRad) * 20f, 10f, (float)-Math.cos(dirRad) * 20f);
+		}
 
-		if (controlStyle == NO_CONTROL && focus != null) {
-			if (lookAt == null) {
-				final Vector3f lookPos = new Vector3f(focus.pos);
-				lookAt = Vector3f.sub(position, lookPos).normalize();
-			}
-
-			rawPitch = MathUtil.lerp(rawPitch, (float) Math.toDegrees(Math.asin(lookAt.y)), .05f);
-			rawYaw = MathUtil.angleLerp(rawYaw, -(float) Math.toDegrees(Math.atan2(lookAt.x, lookAt.z)), .05f);
+		if ((controlStyle == NO_CONTROL || controlStyle == THIRD_PERSON) && focus != null) {
+			final Vector3f lookPos = new Vector3f(focus.getPosition());
+			lookAt = Vector3f.sub(position, lookPos).normalize();
+			rawPitch = MathUtil.lerp(rawPitch, (float) Math.toDegrees(Math.asin(lookAt.y)), 1f);
+			rawYaw = MathUtil.angleLerp(rawYaw, -(float) Math.toDegrees(Math.atan2(lookAt.x, lookAt.z)), 1f);
 			//angleAroundPlayer = -(rawYaw - 360);
 		} else {
 			handleControl();
@@ -356,7 +359,11 @@ public class Camera {
 	}
 
 	public void updateProjection() {
-		this.projectionMatrix = createProjectionMatrix();
+		updateProjection((float) Display.getWidth(), (float) Display.getHeight());
+	}
+	
+	public void updateProjection(float w, float h) {
+		this.projectionMatrix = createProjectionMatrix(w, h);
 	}
 
 	public void clearEffectRotations() {
@@ -440,7 +447,7 @@ public class Camera {
 		return viewModelMatrix;
 	}
 
-	public Entity getFocus() {
+	public CameraFollowable getFocus() {
 		return focus;
 	}
 }

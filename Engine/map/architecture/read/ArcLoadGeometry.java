@@ -1,6 +1,5 @@
 package map.architecture.read;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.joml.Vector3f;
@@ -10,9 +9,10 @@ import io.FileUtils;
 import map.architecture.components.ArcEdge;
 import map.architecture.components.ArcFace;
 import map.architecture.vis.Bsp;
+import util.CounterInputStream;
 
 public class ArcLoadGeometry {
-	static void readGeometry(Bsp bsp, Vector3f offset, DataInputStream in) throws IOException {
+	static void readGeometry(Bsp bsp, Vector3f offset, CounterInputStream in) throws IOException {
 		// Planes
 		Plane[] planes = new Plane[in.readInt()];
 		for (int i = 0; i < planes.length; ++i) {
@@ -59,6 +59,8 @@ public class ArcLoadGeometry {
 			faces[i].lmMins = new float[] {in.readFloat(), in.readFloat()};
 			faces[i].lmSizes = new float[] {in.readFloat(), in.readFloat()};
 			faces[i].lmStyles = new byte[] {in.readByte(), in.readByte(), in.readByte(), in.readByte()};
+			// NOTE: lmStyles has a stride of (lmSizes[0] + 1) * (lmSizes[1] + 1)
+			// totalLuxels = (number of lmStyles) * (lmSizes[0] + 1) * (lmSizes[1] + 1)
 
 		}
 		bsp.faces = faces;

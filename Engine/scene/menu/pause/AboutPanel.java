@@ -9,7 +9,6 @@ import ui.UI;
 import ui.menu.GuiButton;
 import ui.menu.GuiLabel;
 import ui.menu.GuiPanel;
-import ui.menu.layout.GuiFlowLayout;
 import ui.menu.layout.GuiRowLayout;
 import ui.menu.listener.MenuListener;
 import util.Colors;
@@ -21,7 +20,7 @@ public class AboutPanel extends GuiPanel {
 	public AboutPanel(GuiPanel parent) {
 		super(parent, 264, 300, 762, 520);
 		GuiRowLayout rowLayout = new GuiRowLayout(192, 24);
-		setLayout(rowLayout, x, y, 1280, 720);
+		setLayout(rowLayout, x, y, UI.width, UI.height);
 		
 		add(new GuiLabel(x, y, "Creative Design:   "));
 		add(new GuiLabel(x, y, "#bMoose Low"));
@@ -70,7 +69,7 @@ public class AboutPanel extends GuiPanel {
 	public void update() {
 		super.update();
 		if (this.hasFocus) {
-			UI.drawRect(0, 0, 1280, 720, Colors.BLACK).setOpacity(.5f);
+			UI.drawRect(0, 0, UI.width, UI.height, Colors.BLACK).setOpacity(.5f);
 		}
 	}
 

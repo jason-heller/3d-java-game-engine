@@ -1,6 +1,5 @@
 package map.architecture.read;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.joml.Vector3f;
@@ -12,9 +11,10 @@ import map.architecture.components.ArcClip;
 import map.architecture.components.ArcTriggerClip;
 import map.architecture.components.ClipType;
 import map.architecture.vis.Bsp;
+import util.CounterInputStream;
 
 public class ArcLoadClips {
-	static void readClips(Architecture arc, DataInputStream in) throws IOException {
+	static void readClips(Architecture arc, CounterInputStream in) throws IOException {
 		Bsp bsp = arc.bsp;
 		
 		int[] clipEdges = new int[in.readShort()];

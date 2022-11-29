@@ -64,10 +64,10 @@ public class Bsp {
 		while(nextNode > -1) {
 			node = nodes[nextNode];
 			
-			if (planes[node.planeNum].classify(position, EPSILON) == Plane.IN_FRONT) {
-				nextNode = node.childrenId[0];
-			} else {
+			if (planes[node.planeNum].classify(position, EPSILON) == Plane.BEHIND) {
 				nextNode = node.childrenId[1];
+			} else {
+				nextNode = node.childrenId[0];
 			}
 		}
 		

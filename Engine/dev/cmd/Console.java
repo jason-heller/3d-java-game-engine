@@ -1,6 +1,8 @@
 package dev.cmd;
 
+import java.io.IOException;
 import java.io.PrintStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -8,7 +10,7 @@ import java.util.Set;
 import org.joml.Vector3f;
 import org.lwjgl.input.Keyboard;
 
-import core.Application;
+import core.App;
 import dev.Debug;
 import io.Input;
 import ui.Font;
@@ -52,6 +54,10 @@ public class Console {
 	private static int lineViewInd = 0;
 
 	private static PrintStream outStream;
+	
+	private static DecimalFormat df = new DecimalFormat("0.0000");
+
+	private static boolean relay = false;
 
 	public static void clear() {
 		log.clear();
@@ -60,7 +66,7 @@ public class Console {
 	public static void doSceneTick() {
 		if (visible) {
 			visible = false;
-			Application.scene.update();
+			App.scene.update();
 			visible = true;
 		}
 	}
@@ -104,10 +110,15 @@ public class Console {
 		String s = "";
 
 		for (int i = 0; i < x.length; i++) {
-			if (x[i] == null)
+			if (x[i] == null) {
 				s += "null";
-			else
-				s += x[i].toString();
+			} else {
+				if (x[i] instanceof Float) {
+					s += df.format(x[i]);
+				} else {
+					s += x[i].toString();
+				}
+			}
 			
 			s += (i == x.length - 1 ? "" : ", ");
 		}
@@ -120,6 +131,9 @@ public class Console {
 		
 		for (final String line : lines) {
 			log.add(line);
+			if (relay) {
+				System.err.println(line);
+			}
 			
 			if (log.size() > MAX_LINES) {
 				log.remove(0);
@@ -129,6 +143,10 @@ public class Console {
 				lineViewInd++;
 			}
 		}
+	}
+	
+	public static void toggleRelay() {
+		relay = !relay;
 	}
 
 	private static boolean mouseOver(int mx, int my) {
@@ -357,12 +375,12 @@ public class Console {
 			UI.drawImage(border);
 			UI.drawImage(backdrop);
 
-			UI.drawString(Font.consoleFont, "Console", x + 2, y, .25f, 1280, false).setDepth(-Integer.MAX_VALUE);
+			UI.drawString(Font.consoleFont, "Console", x + 2, y, .25f, UI.width, false).setDepth(-Integer.MAX_VALUE);
 
 			final int lineBottomViewInd = lineViewInd + VISIBLE_LINES - 1;
 			for (int i = lineViewInd; i < log.size() && i < lineBottomViewInd; i++) {
 				final int lineY = y + HEADER_HEIGHT + BORDER_WIDTH + (i - lineViewInd) * FONT_HEIGHT;
-				UI.drawString(Font.consoleFont, log.get(i), x + BORDER_WIDTH * 2, lineY, FONT_SIZE, 1280, false)
+				UI.drawString(Font.consoleFont, log.get(i), x + BORDER_WIDTH * 2, lineY, FONT_SIZE, UI.width, false)
 						.setDepth(-Integer.MAX_VALUE);
 			}
 
@@ -379,7 +397,7 @@ public class Console {
 				final String color = lineCopyInd == i ? "#w" : "#s";
 
 				UI.drawString(Font.consoleFont, color + predictions.get(i), x + BORDER_WIDTH * 2, lineY, FONT_SIZE,
-						1280, false).setDepth(-Integer.MAX_VALUE);
+						UI.width, false).setDepth(-Integer.MAX_VALUE);
 			}
 
 			final String blinker = System.currentTimeMillis() % 750 > 375 ? "|" : "";
@@ -388,7 +406,7 @@ public class Console {
 			String cont = (inputTrunc.length > 1) ? "..." : blinker;
 			
 			UI.drawString(Font.consoleFont, inputTrunc[0] + cont, x + BORDER_WIDTH * 2,
-					y + BORDER_WIDTH + (VISIBLE_LINES + 1) * FONT_HEIGHT, FONT_SIZE, 1280, false).setDepth(-Integer.MAX_VALUE);
+					y + BORDER_WIDTH + (VISIBLE_LINES + 1) * FONT_HEIGHT, FONT_SIZE, UI.width, false).setDepth(-Integer.MAX_VALUE);
 		}
 
 		final int mx = Input.getMouseX();
@@ -456,7 +474,7 @@ public class Console {
 			final int lineY = boxY + (i) * FONT_HEIGHT;
 
 			UI.drawString(Font.consoleFont, "#s" + preds.get(i), x + 28 + BORDER_WIDTH * 2, lineY, FONT_SIZE,
-					1280, false).setDepth(-Integer.MAX_VALUE);
+					UI.width, false).setDepth(-Integer.MAX_VALUE);
 		}
 	}
 }

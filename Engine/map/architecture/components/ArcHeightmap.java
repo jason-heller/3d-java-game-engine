@@ -117,10 +117,10 @@ public class ArcHeightmap {
 
 
 			uvs[u++] = (((lmVecs[0][0] * vert.x + lmVecs[0][1] * vert.y + lmVecs[0][2] * vert.z) + lmVecs[0][3]
-					- face.lmMins[0]) / (face.lmSizes[0] + 1) * face.lightmapScaleX) + face.lightmapOffsetX;
+					- face.lmMins[0]) / (face.lmSizes[0] + 1) * face.lightmapScaleX) + face.lightmapOffsetX[0];
 			float uv = (((lmVecs[1][0] * vert.x + lmVecs[1][1] * vert.y + lmVecs[1][2] * vert.z) + lmVecs[1][3]
 					- face.lmMins[1]) / (face.lmSizes[1] + 1) * face.lightmapScaleY);
-			uvs[u++] = (face.lightmapOffsetY + face.lightmapScaleY) - uv;
+			uvs[u++] = (face.lightmapOffsetY[0] + face.lightmapScaleY) - uv;
 
 			blends[i] = hVert.getBlend();
 		}

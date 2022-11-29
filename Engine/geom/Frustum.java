@@ -7,28 +7,28 @@ public class Frustum {
 
 	private final Plane[] planes = { new Plane(), new Plane(), new Plane(), new Plane(), new Plane(), new Plane() };
 
-	public boolean containsBoundingBox(Vector3f aabbMax, Vector3f aabbMin) {
+	public boolean containsBoundingBox(Vector3f boxMax, Vector3f boxMin) {
 		final Vector3f min = new Vector3f();
 
 		for (int i = 0; i < 6; i++) {
 			final Plane plane = planes[i];
 
 			if (plane.normal.x > 0) {
-				min.x = aabbMax.x;
+				min.x = boxMax.x;
 			} else {
-				min.x = aabbMin.x;
+				min.x = boxMin.x;
 			}
 
 			if (plane.normal.y > 0) {
-				min.y = aabbMax.y;
+				min.y = boxMax.y;
 			} else {
-				min.y = aabbMin.y;
+				min.y = boxMin.y;
 			}
 
 			if (plane.normal.z > 0) {
-				min.z = aabbMax.z;
+				min.z = boxMax.z;
 			} else {
-				min.z = aabbMin.z;
+				min.z = boxMin.z;
 			}
 
 			if (plane.normal.dot(min) + plane.dist > -1f) {

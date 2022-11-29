@@ -13,6 +13,8 @@ import io.FileUtils;
 public class ShaderProgram {
 
 	private int programID;
+	
+	private String name;
 
 	public ShaderProgram() {
 	}
@@ -94,6 +96,7 @@ public class ShaderProgram {
 			e.printStackTrace();
 			System.exit(-1);
 		}
+		
 		final int shaderID = GL20.glCreateShader(type);
 		GL20.glShaderSource(shaderID, shaderSource);
 		GL20.glCompileShader(shaderID);
@@ -104,6 +107,9 @@ public class ShaderProgram {
 			System.err.println(GL20.glGetProgramInfoLog(programID, GL20.glGetProgrami(programID, GL20.GL_INFO_LOG_LENGTH)));
 			System.exit(-1);
 		}
+		
+		name = path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
+		
 		return shaderID;
 	}
 
@@ -122,5 +128,9 @@ public class ShaderProgram {
 			uniform.storeUniformLocation(programID);
 		}
 		GL20.glValidateProgram(programID);
+	}
+
+	public String getName() {
+		return name;
 	}
 }

@@ -5,7 +5,7 @@ import org.lwjgl.opengl.GL13;
 
 import core.Resources;
 import gl.Render;
-import gl.fbo.FrameBuffer;
+import gl.fbo.FBO;
 import shader.UniformFloat;
 import shader.UniformSampler;
 
@@ -33,13 +33,11 @@ public class NightVisionShader extends PostShader {
 	}
 
 	@Override
-	public void render(FrameBuffer frameBuffer) {
+	public void render() {
 		start();
 		loadUniforms();
 
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-		GL13.glActiveTexture(GL13.GL_TEXTURE0);
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, frameBuffer.getTextureBuffer());
 		GL13.glActiveTexture(GL13.GL_TEXTURE1);
 		Resources.getTexture("noise").bind(1);
 		GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);

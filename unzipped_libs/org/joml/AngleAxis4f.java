@@ -34,7 +34,7 @@ import java.io.Serializable;
  *
  * @author Kai Burjack
  */
-class AngleAxis4f implements Serializable, Externalizable {
+public class AngleAxis4f implements Serializable, Externalizable {
 
 	/**
 	 * The angle in degrees.

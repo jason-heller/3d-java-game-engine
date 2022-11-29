@@ -241,7 +241,7 @@ public class BoundingBox {
 			
 		// EDGE 0
 		
-		ea = e0.abs();
+		ea = Vector3f.abs(e0);
 		e_v0 = Vector3f.cross(e0, v0);
 		e_v1 = Vector3f.cross(e0, v1);
 		e_v2 = Vector3f.cross(e0, v2);
@@ -255,7 +255,7 @@ public class BoundingBox {
 
 		// EDGE 1
 		
-		ea = e1.abs();
+		ea = Vector3f.abs(e1);
 		e_v0 = Vector3f.cross(e1, v0);
 		e_v1 = Vector3f.cross(e1, v1);
 		e_v2 = Vector3f.cross(e1, v2);
@@ -269,7 +269,7 @@ public class BoundingBox {
 
 		// EDGE 2
 		
-		ea = e2.abs();
+		ea = Vector3f.abs(e2);
 		e_v0 = Vector3f.cross(e2, v0);
 		e_v1 = Vector3f.cross(e2, v1);
 		e_v2 = Vector3f.cross(e2, v2);

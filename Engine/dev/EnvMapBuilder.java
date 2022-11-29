@@ -10,8 +10,9 @@ import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
+import org.lwjgl.opengl.GL13;
 
-import core.Application;
+import core.App;
 import geom.AxisAlignedBBox;
 import gl.Camera;
 import gl.Render;
@@ -30,19 +31,24 @@ public class EnvMapBuilder {
 	private static final int WIDTH = 64, HEIGHT = 64;
 	
 	// Yaw, Pitch
+	
 	private static final int[] DIRECTIONS = new int[] {
-		0,0, 90,0, 180,0, 270,0,
-		0,90, 0,-90
+			// +X,-X,+Y,-Y,+Z,-Z
+			//180,0, 0,0, 0,90, 0,-90, 90,0, 270,0
+			// +Z -Z -Y +Y +X -X
+			90,0, 270,0, 0,-90, 0,90, 0,0, 180,0
 	};
 	
 	public static void build_environment_maps() {
-		if (!(Application.scene instanceof MapScene))
+		if (!(App.scene instanceof MapScene))
 			return;
-		
-		MapScene scene = (MapScene)Application.scene;
+
+		MapScene scene = (MapScene)App.scene;
 		Architecture arc = scene.getArchitecture();
 
-		File outputFile = new File("src/res/env/envmap" + ".emp"); // EMP : EnviroMent maP
+		File outputFile = new File("maps/" + arc.getMapName() + ".emp"); // EMP : EnviroMent maP
+		
+		UI.hideUI = true;
 		
 		try (DataOutputStream outputStream = new DataOutputStream(new FileOutputStream(outputFile))) {
 			outputStream.writeChars("EMP");
@@ -67,21 +73,20 @@ public class EnvMapBuilder {
 		catch(IOException e) {
 			e.printStackTrace();
 		}
+
+		UI.hideUI = false;
 	}
 
 	private static void buildEnvironmentMap(ArcClip clip, int clipIndex, DataOutputStream outputStream) throws IOException {
 		AxisAlignedBBox bbox = clip.bbox;
 		Vector3f center = bbox.getCenter();
-		Camera camera = Application.scene.getCamera();
+		Camera camera = App.scene.getCamera();
 		
 		camera.getPosition().set(center);
 		camera.clearEffectRotations();
-		UI.hideUI = true;
 		
 		final int windowWidth = Window.getWidth();
 		final int windowHeight = Window.getHeight();
-		ByteBuffer buffer = BufferUtils.createByteBuffer(windowWidth * windowHeight * 3);
-		GL11.glReadPixels(0, 0, windowWidth, windowHeight, GL12.GL_BGR, GL11.GL_UNSIGNED_BYTE, buffer);
 		
 		outputStream.writeShort(clipIndex);
 		
@@ -97,22 +102,27 @@ public class EnvMapBuilder {
 		for(int i = 0; i < DIRECTIONS.length; i += 2) {
 			camera.setYaw(DIRECTIONS[i]);
 			camera.setPitch(DIRECTIONS[i + 1]);
+			camera.updateProjection(256,256);
 			camera.updateViewMatrix();
-			Render.renderPass(Application.scene);
+
+			ByteBuffer buffer = BufferUtils.createByteBuffer(windowWidth * windowHeight * 4);
+			//Render.sceneOnlyRenderPass(Application.scene);
+			Render.renderPass(App.scene);
+			GL11.glReadPixels(0, 0, windowWidth, windowHeight, GL12.GL_BGRA, GL11.GL_UNSIGNED_BYTE, buffer);
 			
 			int arrPos = 0;
 			buffer.get(arr);
 			
-			for(int j = 0; j < HEIGHT; j++) {
+			for(int j = HEIGHT-1; j != 0; j--) {
 				for(int k = 0; k < WIDTH; k++) {
 					int x = (k * strideX) + (stutterX ? k % 2 : 0);
 					int y = (j * strideY) + (stutterY ? j % 2 : 0);
-					int index = (x + (y * windowWidth)) * 3;
+					int index = (x + (y * windowWidth)) * 4;
 					buffer.position(index);
 					arr[arrPos++] = buffer.get();
 					arr[arrPos++] = buffer.get();
 					arr[arrPos++] = buffer.get();
-					arr[arrPos++] = (byte) 255;
+					arr[arrPos++] = buffer.get();
 				}
 			}
 			
@@ -121,6 +131,7 @@ public class EnvMapBuilder {
 			outputStream.write(compData);
 		}
 		
-		UI.hideUI = false;
+
+		camera.updateProjection();
 	}
 }

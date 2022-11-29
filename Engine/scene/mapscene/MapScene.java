@@ -4,54 +4,47 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import audio.speech.SpeechHandler;
-import core.Application;
+import core.App;
 import dev.cmd.Console;
 import gl.Camera;
-import gl.Window;
+import gl.anim.Animator;
 import gl.skybox.Skybox;
 import gl.skybox.Skybox2D;
 import gl.skybox._3d.Skybox3D;
 import gl.skybox._3d.SkyboxCamera;
 import io.Input;
-import map.architecture.components.GhostPoi;
 import scene.PlayableScene;
+import scene.entity.DummyEntity;
 import scene.entity.EntityHandler;
-import scene.entity.hostile.GhostEntity;
 import scene.entity.util.PlayerEntity;
-import scene.entity.util.PlayerHandler;
-import ui.UI;
 
 public class MapScene extends PlayableScene {
 	
-	private static final float HOUR_LENGTH = 120;
 	private Skybox skybox;
 	private ItemHandler itemHandler;
-	private GhostEntity ghost;
-	
-	private float time = 0f;
 	
 	public MapScene() {
 		super();
-		Application.scene = this;		// Hack to make the variable update before constructors runs
+		App.scene = this;		// Hack to make the variable update before constructors runs
 		
 		player = new PlayerEntity(camera);
 		arcHandler.load(this, new Vector3f(), PlayableScene.currentMap);
 		EntityHandler.addEntity(player);
 		arcHandler.getArchitecture().callCommand("spawn_player");
 		arcHandler.getArchitecture().callCommand(player, "trigger_soundscape");
-		if (arcHandler.getArchitecture().bsp.rooms.length > 1) {
-			ghost = new GhostEntity(player, arcHandler.getArchitecture().getNavigation());
-			EntityHandler.addEntity(ghost);
-			GhostPoi poi = ghost.findNextPoi();
-			ghost.pos.set(poi.getPosition());
-			ghost.pos.y += ghost.getBBox().getHeight();
-			ghost.changeTarget();
-		} else {
-			Console.warning("No rooms exist in this map, cannot spawn ghost.");
-		}
+		player.getPosition().y += 5;
 		
-		//AudioHandler.loop("white_noise");
-		//AudioHandler.loop("cicadas");
+		for(int i = 0; i < 6; i++) {
+			DummyEntity e = new DummyEntity();
+			e.update(this);
+			e.pos.y+=5;
+			e.scale = 2f;
+			e.setModel("untitled" + i);
+			e.setTexture(e.getModel().defaultTexture);
+			Animator anim = new Animator(e.getModel().getSkeleton(), e);
+			anim.loop("wlk_s");
+			EntityHandler.addEntity(e);
+		}
 		
 		if (arcHandler.isSkyboxEnabled()) {
 			SkyboxCamera skyCam = arcHandler.getArchitecture().getSkyCamera();
@@ -90,12 +83,8 @@ public class MapScene extends PlayableScene {
 		if (isLoading) {
 			isLoading = false;
 		}
+
 		super.update();
-		
-		time += Window.deltaTime;
-		int hours = (int)(time / HOUR_LENGTH);
-		String time = "TIME: 0" + hours + ":00" + " AM";
-		UI.drawString(time, 640, 10, .3f, true);
 		
 		itemHandler.update();
 		
@@ -103,7 +92,7 @@ public class MapScene extends PlayableScene {
 		
 		//speechRecog.update();
 		
-		if (PlayerEntity.getHp() <= 0 && Camera.offsetY < PlayerHandler.CAMERA_STANDING_HEIGHT - .2f) {
+		if (PlayerEntity.getHp() <= 0) {
 			int key = Input.getAny();
 			
 			if (key == 0 || Console.isVisible()) {
@@ -126,12 +115,17 @@ public class MapScene extends PlayableScene {
 	}
 	
 	@Override
+	public void fastRender(Vector4f clipPlane) {
+		if (arcHandler.isSkyboxEnabled())
+			skybox.render(arcHandler.getArchitecture(), camera);
+		
+		super.fastRender(clipPlane);
+		
+	}
+	
+	@Override
 	public void postRender() {
 		viewModelHandler.render(this);
-	}
-
-	public GhostEntity getGhost() {
-		return ghost;
 	}
 
 }

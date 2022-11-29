@@ -3,7 +3,7 @@ package scene.mapscene.item;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import core.Application;
+import core.App;
 import gl.Camera;
 import scene.entity.EntityHandler;
 import scene.entity.object.SolidPhysProp;
@@ -18,9 +18,9 @@ public class PhysPropSpawnerItem extends Item {
 
 	@Override
 	public void interact() {
-		Camera c = Application.scene.getCamera();
+		Camera c = App.scene.getCamera();
 		Vector3f spawnpos = Vector3f.add(c.getPosition(), Vector3f.mul(c.getDirectionVector(), 7f));
-		EntityHandler.addEntity(new SolidPhysProp(spawnpos, c.getDirectionVector(), "trash"));
+		EntityHandler.addEntity(new SolidPhysProp(spawnpos, c.getDirectionVector(), "test_skater"));
 	}
 	
 	@Override

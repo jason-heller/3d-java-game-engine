@@ -81,7 +81,7 @@ public class GuiTextbox extends GuiElement {
 						}
 					} else {
 
-						if ((value + in).length() * (text.getWidth() * 1280) < width - TEXTBOX_XSHIFT) {
+						if ((value + in).length() * (text.getWidth() * UI.width) < width - TEXTBOX_XSHIFT) {
 							value += in;
 						}
 					}

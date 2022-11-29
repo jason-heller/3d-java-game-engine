@@ -4,7 +4,7 @@ import java.util.Stack;
 
 import org.joml.Vector3f;
 
-import core.Application;
+import core.App;
 import dev.Debug;
 import gl.line.LineRender;
 import map.architecture.components.ArcEdge;
@@ -74,7 +74,7 @@ public abstract class NavigableEntity extends PhysicsEntity {
 				
 				if (neighborId == -1) return;
 				
-				Bsp bsp = ((PlayableScene)Application.scene).getArchitecture().bsp;
+				Bsp bsp = ((PlayableScene)App.scene).getArchitecture().bsp;
 				
 				//int nextNodeId = currentNode.getNeighbors()[neighborId];
 				//ArcFace face = bsp.faces[currentNode.getFaceId()];
@@ -95,7 +95,7 @@ public abstract class NavigableEntity extends PhysicsEntity {
 		}
 		
 		if (Debug.viewNavPath && navStep != null) {
-			Bsp bsp = ((PlayableScene)Application.scene).getArchitecture().bsp;
+			Bsp bsp = ((PlayableScene)App.scene).getArchitecture().bsp;
 			Vector3f lastPt = navTarget;
 			
 			ArcNavNode node = navigation.getNode(currentNodeId);

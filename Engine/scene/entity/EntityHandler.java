@@ -10,6 +10,7 @@ import org.joml.Vector4f;
 
 import gl.Camera;
 import gl.entity.EntityRender;
+import map.architecture.ActiveLeaves;
 import map.architecture.Architecture;
 import map.architecture.vis.BspLeaf;
 import scene.PlayableScene;
@@ -83,13 +84,14 @@ public class EntityHandler {
 		
 		Vector3f camPos = scene.getCamera().getPosition();
 		
-		List<BspLeaf> loaded = scene.getArchitecture().getRenderedLeaves();
-		// List<BspLeaf> unloaded = scene.getArcHandler().getArchitecture().getUnloadedLeafs();
+		ActiveLeaves activeLeaves = scene.getArchitecture().getActiveLeaves();
 		
 		entities.clear();
 		
 		// Check loaded/unloaded leaves, add/remove static entities as needed
-		for(BspLeaf leaf : loaded) {
+		activeLeaves.beginIteration();
+		while(activeLeaves.hasNext()) {
+			BspLeaf leaf = activeLeaves.next();
 			List<Entity> batch = staticEntities.get(leaf);
 			if (batch != null) {
 				entities.put(leaf, batch);

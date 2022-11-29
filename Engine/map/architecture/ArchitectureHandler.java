@@ -1,12 +1,8 @@
 package map.architecture;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -35,7 +31,6 @@ public class ArchitectureHandler {
 	
 	private static boolean changeMap = false;
 	public static String[] validMaps = new String[0];
-	private static String[] mapSequence = readMapSequenceFile();
 	private static int currentMap = 0;
 
 	public static void pollValidMaps() {
@@ -57,28 +52,14 @@ public class ArchitectureHandler {
 		}
 	}
 
-	private static String[] readMapSequenceFile() {
-		List<String> lines = new ArrayList<String>();
-		Scanner sc;
-		
-		try {
-			sc = new Scanner(new File("src/res/maps/map_sequence.txt"));
-			while (sc.hasNextLine()) {
-				lines.add(sc.nextLine());
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-
-		return lines.toArray(new String[0]);
-	}
-
 	public ArchitectureHandler() {
 		ArcRenderMaster.init();
 	}
 
 	public void load(Scene scene, Vector3f vec, String path) {
-		architecture = ArcLoader.load(scene, path, vec);
+
+		architecture = new Architecture(scene);
+		ArcLoader.load(scene, path, architecture);
 		Map<Integer, Texture> envMaps = EnvironmentMapFileLoader.readEMP(path);
 		if (envMaps != null)
 			architecture.setEnvironmentMaps(envMaps);
@@ -86,7 +67,7 @@ public class ArchitectureHandler {
 	
 	public void cleanUp() {
 		architecture.cleanUp();
-		ArcRenderMaster.cleanUp();
+		ArcRenderMaster.cleanUp(architecture);
 	}
 	
 	public void debugRender(Camera camera) {
@@ -162,10 +143,10 @@ public class ArchitectureHandler {
 		}
 	}
 
-	public void render(Camera camera, Vector4f clipPlane) {
+	public void render(Camera camera, Vector4f clipPlane, boolean withShaders) {
 		boolean hasLighting = architecture.getLightmap().isActive();
 		architecture.pollTriggers();
-		architecture.render(camera, clipPlane, hasLighting);
+		architecture.render(camera, clipPlane, hasLighting, withShaders);
 	}
 
 	public Architecture getArchitecture() {
@@ -184,7 +165,7 @@ public class ArchitectureHandler {
 
 	public void update(Camera camera) {
 		if (changeMap) {
-			Console.send("map " + mapSequence[currentMap]);
+			Console.send("map test");
 			changeMap = false;
 			return;
 		}

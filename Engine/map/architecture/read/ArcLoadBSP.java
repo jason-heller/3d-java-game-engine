@@ -1,18 +1,17 @@
 package map.architecture.read;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.joml.Vector3f;
 
-import map.architecture.components.ArcTextureData;
 import map.architecture.vis.Bsp;
 import map.architecture.vis.BspLeaf;
 import map.architecture.vis.BspNode;
+import util.CounterInputStream;
 
 public class ArcLoadBSP {
 	
-	static void readBspTree(Bsp bsp, DataInputStream in) throws IOException {
+	static void readBspTree(Bsp bsp, CounterInputStream in) throws IOException {
 		short[] leafIds = new short[in.readInt()];
 		for (int i = 0; i < leafIds.length; i++) {
 			leafIds[i] = in.readShort();

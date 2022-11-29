@@ -1,15 +1,15 @@
 package map.architecture.read;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 
 import map.architecture.Architecture;
 import map.architecture.components.ArcLightCube;
 import map.architecture.vis.Bsp;
+import util.CounterInputStream;
 
 public class ArcLoadLighting {
 
-	public static void readLighting(Architecture arc, DataInputStream in, boolean hasBakedLighting) throws IOException {
+	public static void readLighting(Architecture arc, CounterInputStream in, boolean hasBakedLighting) throws IOException {
 		Bsp bsp = arc.bsp;
 		
 		byte[] rgb = null;

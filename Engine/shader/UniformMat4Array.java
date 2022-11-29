@@ -4,13 +4,13 @@ import org.joml.Matrix4f;
 
 public class UniformMat4Array extends Uniform {
 
-	private final UniformMatrix[] matrixUniforms;
+	private final UniformMat4[] matrixUniforms;
 
 	public UniformMat4Array(String name, int size) {
 		super(name);
-		matrixUniforms = new UniformMatrix[size];
+		matrixUniforms = new UniformMat4[size];
 		for (int i = 0; i < size; i++) {
-			matrixUniforms[i] = new UniformMatrix(name + "[" + i + "]");
+			matrixUniforms[i] = new UniformMat4(name + "[" + i + "]");
 		}
 	}
 
@@ -26,7 +26,7 @@ public class UniformMat4Array extends Uniform {
 	
 	@Override
 	protected void storeUniformLocation(int programID) {
-		for (final UniformMatrix matrixUniform : matrixUniforms) {
+		for (final UniformMat4 matrixUniform : matrixUniforms) {
 			matrixUniform.storeUniformLocation(programID);
 		}
 	}

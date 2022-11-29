@@ -13,6 +13,7 @@ import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
 import dev.cmd.Console;
+import util.CounterInputStream;
 
 public class FileUtils {
 	public static final String WORKING_DIRECTORY = Paths.get(".").toAbsolutePath().normalize().toString();
@@ -36,7 +37,7 @@ public class FileUtils {
 	}
 
 	public static InputStream getInputStream(String path) {
-		return getInputStream(Class.class, path);
+		return getInputStream(FileUtils.class, path);
 	}
 
 	public static BufferedReader getReader(Class<?> c, String path) {
@@ -51,7 +52,7 @@ public class FileUtils {
 	}
 
 	public static BufferedReader getReader(String path) throws Exception {
-		return getReader(Class.class, path);
+		return getReader(FileUtils.class, path);
 	}
 
 	public static byte readByte(byte[] data) {
@@ -66,6 +67,21 @@ public class FileUtils {
 		return data[readInd++];
 	}
 
+	public static Matrix4f readMatrix4f(CounterInputStream is) throws IOException {
+		final float[] matrixArray = new float[16];
+		for (int m = 0; m < 16; m++) {
+			matrixArray[m] = is.readFloat();
+		}
+
+		final FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
+		buffer.clear();
+		buffer.put(matrixArray);
+		buffer.flip();
+		final Matrix4f matrix = new Matrix4f();
+		matrix.set(buffer);
+		return matrix;
+	}
+	
 	public static Matrix4f readMatrix4f(DataInputStream is) throws IOException {
 		final float[] matrixArray = new float[16];
 		for (int m = 0; m < 16; m++) {
@@ -81,6 +97,16 @@ public class FileUtils {
 		return matrix;
 	}
 
+	public static String readString(CounterInputStream in) throws IOException {
+		String str = "";
+		final byte len = in.readByte();
+		for (int i = 0; i < len; i++) {
+			str += in.readChar();
+		}
+
+		return str;
+	}
+	
 	public static String readString(DataInputStream in) throws IOException {
 		String str = "";
 		final byte len = in.readByte();
@@ -89,10 +115,9 @@ public class FileUtils {
 		}
 
 		return str;
-
 	}
 
-	public static Vector3f readVec3(DataInputStream in) throws IOException {
+	public static Vector3f readVec3(CounterInputStream in) throws IOException {
 		float x = in.readFloat();
 		float y = in.readFloat();
 		float z = in.readFloat();

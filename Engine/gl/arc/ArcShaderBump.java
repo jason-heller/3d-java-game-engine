@@ -4,8 +4,8 @@ import shader.UniformSampler;
 
 public class ArcShaderBump extends ArcShaderBase {
 
-	private static final String VERTEX_SHADER = "gl/arc/glsl/bump.vert";
-	private static final String FRAGMENT_SHADER = "gl/arc/glsl/bump.frag";
+	protected static final String VERTEX_SHADER = "gl/arc/glsl/bump.vert";
+	protected static final String FRAGMENT_SHADER = "gl/arc/glsl/bump.frag";
 
 	public UniformSampler bumpMap = new UniformSampler("bumpMap");
 

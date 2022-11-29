@@ -20,6 +20,7 @@ import gl.light.DynamicLight;
 import gl.light.DynamicLightHandler;
 import gl.res.Model;
 import gl.res.Texture;
+import map.architecture.ActiveLeaves;
 import map.architecture.Architecture;
 import map.architecture.vis.BspLeaf;
 
@@ -98,7 +99,10 @@ public class ArcObjects {
 			Resources.getTexture("shadow" + i).bind(1 + i);
 		}
 
-		for (BspLeaf leaf : arc.getRenderedLeaves()) {
+		ActiveLeaves activeLeaves = arc.getActiveLeaves();
+		activeLeaves.beginIteration();
+		while(activeLeaves.hasNext()) {
+			BspLeaf leaf = activeLeaves.next();
 			List<ArcStaticObject> batch = objects.get(leaf);
 			if (batch == null)
 				continue;

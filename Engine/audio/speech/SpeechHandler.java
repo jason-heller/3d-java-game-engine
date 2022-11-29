@@ -26,12 +26,12 @@ public class SpeechHandler {
 	}
 
 	public static void start() {
-		speech.start();
-		text.start();
+		//speech.start();
+		//text.start();
 	}
 	
 	public static void stop() {
-		speech.stop();
-		text.stop();
+		//speech.stop();
+		//text.stop();
 	}
 }

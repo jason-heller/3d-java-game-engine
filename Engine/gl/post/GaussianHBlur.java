@@ -2,7 +2,8 @@ package gl.post;
 
 import org.lwjgl.opengl.GL11;
 
-import gl.fbo.FrameBuffer;
+import gl.Window;
+import gl.fbo.FBO;
 import shader.UniformSampler;
 
 public class GaussianHBlur extends PostShader {
@@ -12,7 +13,7 @@ public class GaussianHBlur extends PostShader {
 	protected UniformSampler sampler = new UniformSampler("sampler");
 
 	public GaussianHBlur() {
-		super(VERTEX_SHADER, FRAGMENT_SHADER, 1280 / 8, 720 / 8);
+		super(VERTEX_SHADER, FRAGMENT_SHADER, Window.getWidth() / 8, Window.getHeight() / 8);
 		storeAllUniformLocations(sampler);
 	}
 
@@ -20,16 +21,16 @@ public class GaussianHBlur extends PostShader {
 	public void loadUniforms() {
 	}
 
-	public void render(FrameBuffer frameBuffer) {
-		bindFbo();
+	public void render(FBO frameBuffer) {
+		//bindFbo();
 
 		start();
 		loadUniforms();
 
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, frameBuffer.getTextureBuffer());
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, frameBuffer.getColorBuffer());
 		GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
 		stop();
 
-		unbindFbo();
+		//unbindFbo();
 	}
 }

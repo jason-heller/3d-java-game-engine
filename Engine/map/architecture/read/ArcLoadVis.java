@@ -1,12 +1,12 @@
 package map.architecture.read;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 
 import map.architecture.vis.Pvs;
+import util.CounterInputStream;
 
 public class ArcLoadVis {
-	static void readVis(Pvs pvs, DataInputStream in) throws IOException {
+	static void readVis(Pvs pvs, CounterInputStream in) throws IOException {
 		int numClusters = in.readInt();
 		pvs.setNumClusters(numClusters);
 

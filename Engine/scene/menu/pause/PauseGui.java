@@ -4,7 +4,7 @@ import org.joml.Vector3f;
 import org.lwjgl.input.Keyboard;
 
 import audio.AudioHandler;
-import core.Application;
+import core.App;
 import io.Input;
 import ui.Text;
 import ui.UI;
@@ -29,7 +29,7 @@ public class PauseGui {
 	public void pause() {
 		Input.requestMouseRelease();
 		if (stopTime) {
-			Application.paused = true;
+			App.paused = true;
 			AudioHandler.pause();
 		}
 		isPaused = true;
@@ -46,7 +46,7 @@ public class PauseGui {
 	public void unpause() {
 		Input.requestMouseGrab();
 		if (stopTime) {
-			Application.paused = false;
+			App.paused = false;
 			AudioHandler.unpause();
 		}
 		pause.collapse();
@@ -69,7 +69,7 @@ public class PauseGui {
 		}
 
 		if (isPaused()) {
-			UI.drawRect(0, 0, 1280, 720, Vector3f.ZERO).setOpacity(.35f);
+			UI.drawRect(0, 0, UI.width, UI.height, Vector3f.ZERO).setOpacity(.35f);
 			pause.draw();
 			UI.drawString(title);
 		}

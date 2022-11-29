@@ -1,17 +1,14 @@
 package gl.water;
 
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
-
 import core.Resources;
 import gl.Camera;
 import gl.Render;
-import gl.fbo.FrameBuffer;
+import gl.fbo.FBO;
 import gl.res.Model;
 import gl.res.Texture;
 import shader.ShaderProgram;
 import shader.UniformFloat;
-import shader.UniformMatrix;
+import shader.UniformMat4;
 import shader.UniformSampler;
 import shader.UniformVec2;
 import shader.UniformVec3;
@@ -24,7 +21,7 @@ public class WaterShader extends ShaderProgram {
 	private static final String VERTEX_SHADER = "gl/water/water.vert";
 	private static final String FRAGMENT_SHADER = "gl/water/water.frag";
 
-	public UniformMatrix projectionViewMatrix = new UniformMatrix("projectionViewMatrix");
+	public UniformMat4 projectionViewMatrix = new UniformMat4("projectionViewMatrix");
 	public UniformVec3 offset = new UniformVec3("offset");
 	public UniformVec2 scales = new UniformVec2("scales");
 	public UniformVec3 cameraPos = new UniformVec3("cameraPos");
@@ -48,14 +45,13 @@ public class WaterShader extends ShaderProgram {
 		dudv.loadTexUnit(2);
 		depth.loadTexUnit(3);
 		cameraPos.loadVec3(camera.getPosition());
-		Render.getReflectionFbo().bindTextureBuffer(0);
-		FrameBuffer refractionFbo = Render.getRefractionFbo();
-		refractionFbo.bindTextureBuffer(1);
+		Render.getReflectionFbo().bindColorBuffer(0);
+		FBO refractionFbo = Render.getRefractionFbo();
+		refractionFbo.bindColorBuffer(1);
 		
 		dudvTexture.bind(2);
 		
-		GL13.glActiveTexture(GL13.GL_TEXTURE3);
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, refractionFbo.getDepthBufferTexture());
+		refractionFbo.bindDepthBuffer(3);
 		Render.textureSwaps++;
 	}
 	

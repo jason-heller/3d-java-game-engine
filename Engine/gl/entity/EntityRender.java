@@ -20,6 +20,7 @@ import gl.light.DynamicLight;
 import gl.light.DynamicLightHandler;
 import gl.res.Model;
 import gl.res.Texture;
+import map.architecture.ActiveLeaves;
 import map.architecture.Architecture;
 import map.architecture.vis.BspLeaf;
 import scene.entity.Entity;
@@ -77,10 +78,13 @@ public class EntityRender {
 		}
 		
 		if (Debug.ambientOnly) {
-			Resources.getTexture("none").bind(0);
+			Resources.NO_TEXTURE.bind(0);
 		}
 		
-		for(BspLeaf leaf : arc.getRenderedLeaves()) {
+		ActiveLeaves activeLeaves = arc.getActiveLeaves();
+		activeLeaves.beginIteration();
+		while(activeLeaves.hasNext()) {
+			BspLeaf leaf = activeLeaves.next();
 			List<Entity> batch = entities.get(leaf);
 			if (batch == null) continue;
 			
@@ -98,22 +102,24 @@ public class EntityRender {
 	
 	private void render(Architecture arc, Camera camera, Entity entity, LightGenericShader shader) {
 		Model model = entity.getModel();
-		
-		if (model == null || !entity.visible) 
+
+		if (model == null || !entity.visible || entity.getAnimator() != null) 
 			return;
 		
 		Texture texture = entity.getTexture();
 		
 		model.getMeshData().update(model, texture, entity.getMatrix());
-		
+
 		if (!Debug.ambientOnly) {
 			if (texture == null)
-				Resources.getTexture("default").bind(0);
+				Resources.DEFAULT.bind(0);
 			else
 				texture.bind(0);
 		}
 		
 		shader.lights.loadVec3(arc.getLightsAt(entity.pos));
+		Vector3f color = entity.getColor();
+		shader.color.loadVec4(color.x, color.y, color.z, entity.getColorBlendFactor());
 		
 		if (model == billboard) {
 			Matrix4f matrix = new Matrix4f();
@@ -125,7 +131,7 @@ public class EntityRender {
 		} else {
 			shader.modelMatrix.loadMatrix(entity.getMatrix());
 		}
-		
+
 		model.bind(0, 1, 2);
 		GL11.glDrawElements(GL11.GL_TRIANGLES, model.getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
 	}

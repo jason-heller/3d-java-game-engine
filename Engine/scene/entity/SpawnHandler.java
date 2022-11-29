@@ -2,21 +2,19 @@ package scene.entity;
 
 import org.joml.Vector3f;
 
-import core.Application;
+import core.App;
 import dev.cmd.Console;
 import geom.CollideUtils;
 import gl.Camera;
 import map.architecture.Architecture;
 import map.architecture.vis.Bsp;
 import scene.PlayableScene;
-import scene.entity.hostile.GhostEntity;
-import scene.entity.hostile.TestHostileEntity;
+import scene.entity.object.NonSolidPhysProp;
 import scene.entity.object.SolidPhysProp;
 
 public enum SpawnHandler {
-	TEST_MONSTER(TestHostileEntity.class),
-	GHOST(GhostEntity.class),
-	PROP(SolidPhysProp.class),
+	PROP_SOLID(SolidPhysProp.class),
+	PROP_NONSOLID(NonSolidPhysProp.class),
 	TEST(DummyEntity.class);
 	
 	private Class<? extends Spawnable> entClass;
@@ -30,14 +28,14 @@ public enum SpawnHandler {
 	}
 	
 	public static void spawn(Architecture arc, Camera camera, String... args) {
-		if (!(Application.scene instanceof PlayableScene)) {
+		if (!(App.scene instanceof PlayableScene)) {
 			Console.log("Failed to spawn entity, must be in playable scene");
 			return;
 		}
 		
 		Bsp bsp = arc.bsp;
 		Vector3f rot = new Vector3f(camera.getYaw(), camera.getPitch(), camera.getRoll());
-		float ray = CollideUtils.raycast(arc.getRenderedLeaves(), bsp, camera.getPosition(), camera.getDirectionVector());
+		float ray = CollideUtils.raycast(arc.getActiveLeaves(), bsp, camera.getPosition(), camera.getDirectionVector());
 		if (ray == Float.POSITIVE_INFINITY) {
 			Console.log("Failed to spawn entity, invalid position");
 			return;

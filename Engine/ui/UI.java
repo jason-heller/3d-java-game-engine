@@ -29,8 +29,8 @@ public class UI {
 	private static Map<Matrix4f, Component> worldSpaceComponents = new LinkedHashMap<>();
 	private static float opacity = 1f;
 	
-	public static final float width = 1280;
-	public static final float height = 720;
+	public static final int width = 1280;
+	public static final int height = 720;
 	
 	public static boolean hideUI;
 
@@ -259,7 +259,6 @@ public class UI {
 		if (hideUI) 
 			return;
 		
-
 		renderWorldSpace(scene);
 
 		prepare();
@@ -282,8 +281,8 @@ public class UI {
 			} else {
 				// GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_COLOR);
 				final Text text = (Text) component;
-				float dx = text.offsetX / 1280f;
-				float dy = text.offsetY / 720f;
+				float dx = text.offsetX / (float)width;
+				float dy = text.offsetY / (float)height;
 				GL11.glBindTexture(GL11.GL_TEXTURE_2D, text.getFont().getTexture().id);
 				for (int i = 0; i < text.getLetters().length; i++) {
 					final Image image = text.getLetters()[i];
@@ -339,8 +338,8 @@ public class UI {
 			} else {
 				// GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_COLOR);
 				final Text text = (Text) component;
-				float dx = text.offsetX / 1280f;
-				float dy = text.offsetY / 720f;
+				float dx = text.offsetX / (float)width;
+				float dy = text.offsetY / (float)height;
 				GL11.glBindTexture(GL11.GL_TEXTURE_2D, text.getFont().getTexture().id);
 				for (int i = 0; i < text.getLetters().length; i++) {
 					final Image image = text.getLetters()[i];

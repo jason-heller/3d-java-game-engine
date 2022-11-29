@@ -42,4 +42,5 @@ void main(void){
 	}
 	
 	out_color = specularVec + (diffuseTexture * diffuseLight);
+
 }

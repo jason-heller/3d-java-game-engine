@@ -39,29 +39,36 @@ public class ArcHeightmapRender {
 		heightmapShader.lightmap.loadTexUnit(2);
 		heightmapShader.shadowMap.loadTexUnit(3);
 		
-		for(int i = 0; i < DynamicLightHandler.MAX_DYNAMIC_LIGHTS; i++) {
+		Matrix4f lightPosMatrix = new Matrix4f();
+		Matrix4f lightDirMatrix = new Matrix4f();
+		float[] lightInfo = new float[] { 0f, 0f, 0f, 0f };
+		
+		for (int i = 0; i < DynamicLightHandler.MAX_DYNAMIC_LIGHTS; i++) {
 			DynamicLight light = lights[i];
-			if (light == null) {
-				heightmapShader.strength.loadFloat(i, 0f);
+
+			if (light == null)
 				continue;
-			}
+
+			lightInfo[i] = light.getStrength();
+
 			final Vector3f pos = light.getPosition();
 			final Vector3f dir = light.getViewDirection();
-			
+
 			Matrix4f lightSpaceMatrix = new Matrix4f();
 			Matrix4f.mul(lightProjMatrix, light.getLightViewMatrix(), lightSpaceMatrix);
-			
-			heightmapShader.lightPos.loadVec3(i, pos.x, pos.y, pos.z);
-			heightmapShader.lightDir.loadVec3(i, dir.x, dir.y, dir.z);
-			heightmapShader.cutoff.loadVec2(i, light.getCutoff(), light.getOuterCutoff());
-			heightmapShader.strength.loadFloat(i, light.getStrength());
+			lightPosMatrix.setRow(new float[] { pos.x, pos.y, pos.z, light.getCutoff() }, i);
+			lightDirMatrix.setRow(new float[] { dir.x, dir.y, dir.z, light.getOuterCutoff() }, i);
 			heightmapShader.lightSpaceMatrix.loadMatrix(i, lightSpaceMatrix);
-			
+
 			Resources.getTexture("shadow" + i).bind(3 + i);
 		}
 		
+		heightmapShader.lightInfo.loadVec4(lightInfo[0], lightInfo[1], lightInfo[2], lightInfo[3]);
+		heightmapShader.lightPos.loadMatrix(lightPosMatrix);
+		heightmapShader.lightDir.loadMatrix(lightDirMatrix);
+		
 		if (Debug.fullbright || !hasLightmap) {
-			Resources.getTexture("none").bind(2);
+			Resources.NO_TEXTURE.bind(2);
 		} else {
 			Resources.getTexture("lightmap").bind(2);
 		}
@@ -69,12 +76,10 @@ public class ArcHeightmapRender {
 		for(ArcHeightmap heightmap : heightmaps) {
 			Model model = heightmap.getModel();
 			model.bind(0,1,2);
-			//int texId = arc.bsp.faces[heightmap.getFaceId()].texId;
-			//int id = arc.getPackedAssets().getTextureData()[texId].textureId;
 
 			if (Debug.ambientOnly) {
-				Resources.getTexture("none").bind(0);
-				Resources.getTexture("none").bind(1);
+				Resources.NO_TEXTURE.bind(0);
+				Resources.NO_TEXTURE.bind(1);
 			} else {
 				Texture tex = arc.getTextures()[heightmap.getTexture1()];
 				tex.bind(0);

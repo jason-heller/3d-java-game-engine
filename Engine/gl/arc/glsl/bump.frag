@@ -19,8 +19,9 @@ in mat4 pass_lightDir;
 in mat4 shadowCoords;
 
 uniform vec4 lightInfo;
+uniform mat3 lightStyles;
 
-out vec4 out_color;
+out vec4 outputColor;
 
 float ShadowCalculation(vec4 projLightSpace, vec3 normal, int i) {
     vec3 projCoords = projLightSpace.xyz / projLightSpace.w;
@@ -46,6 +47,9 @@ void main(void){
 		discard;
 	
 	light = texture(lightmap, pass_textureCoords.zw);
+	for(int i = 0; i < 3; i++) {
+		light += texture(lightmap, pass_textureCoords.zw + lightStyles[i].xy) * lightStyles[i].z;
+	}
 	
 	float intensity = 0.0;
 	float shadow = 0.0;
@@ -75,5 +79,5 @@ void main(void){
 	}
 	
 	color.a = 1.0;
-	out_color = (color * (light + max(intensity, lightMin))) * lightScale;
+	outputColor = (color * (light + max(intensity, lightMin))) * lightScale;
 }

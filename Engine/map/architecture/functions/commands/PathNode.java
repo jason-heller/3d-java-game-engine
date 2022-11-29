@@ -2,7 +2,7 @@ package map.architecture.functions.commands;
 
 import org.joml.Vector3f;
 
-import core.Application;
+import core.App;
 import dev.cmd.Console;
 import map.architecture.functions.ArcFunction;
 import scene.PlayableScene;
@@ -25,7 +25,7 @@ public class PathNode extends ArcFunction {
 
 	@Override
 	public void trigger(String[] args) {
-		PlayableScene scene = (PlayableScene)Application.scene;
+		PlayableScene scene = (PlayableScene)App.scene;
 		int target = Integer.parseInt(args[1]);
 		
 		if (this.id == target) {

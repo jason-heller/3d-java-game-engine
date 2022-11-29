@@ -6,7 +6,7 @@ import java.util.List;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-import core.Application;
+import core.App;
 import dev.Debug;
 import geom.AxisAlignedBBox;
 import geom.CollideUtils;
@@ -32,6 +32,7 @@ import scene.entity.Entity;
 import scene.entity.EntityHandler;
 import util.Colors;
 
+// TODO: Deprecate this ?
 public abstract class PhysicsEntity extends Entity {
 	
 	protected boolean grounded = false;
@@ -42,9 +43,9 @@ public abstract class PhysicsEntity extends Entity {
 	protected boolean fullySubmerged = false;
 	private boolean climbing = false;
 	
-	public static float gravity = 50f;
+	public static float gravity = 100f;
 	public static float maxGravity = -600f;
-	public static float friction = 4f;
+	public static float friction = 6f;
 	public static float airFriction = .1f;
 	
 	private float upwarp = 0f;
@@ -57,7 +58,7 @@ public abstract class PhysicsEntity extends Entity {
 
 	protected static final float SLIDE_ANGLE = .9f;
 	protected static final float EPSILON = 0.01f;
-	private static final float STEP_HEIGHT = 3f;
+	private static final float STEP_HEIGHT = 6f;
 
 	public Vector3f vel = new Vector3f();
 	private Vector3f lastPos = new Vector3f();
@@ -69,7 +70,7 @@ public abstract class PhysicsEntity extends Entity {
 	public PhysicsEntity(String name, Vector3f bounds) {
 		super(name);
 		bbox = new AxisAlignedBBox(pos, bounds);
-		arcHandler = ((PlayableScene)Application.scene).getArcHandler();
+		arcHandler = ((PlayableScene)App.scene).getArcHandler();
 	}
 
 	public void jump(float height) {

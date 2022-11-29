@@ -7,16 +7,11 @@ import org.lwjgl.input.Keyboard;
 
 import audio.AudioHandler;
 import audio.Source;
-import core.Application;
+import core.App;
 import dev.cmd.Console;
 import io.Input;
-import scene.mapscene.item.CameraItem;
-import scene.mapscene.item.EmfItem;
 import scene.mapscene.item.Item;
-import scene.mapscene.item.MotionSensorItem;
 import scene.mapscene.item.PhysPropSpawnerItem;
-import scene.mapscene.item.SpiritBoxItem;
-import scene.mapscene.item.TripodCameraItem;
 import scene.viewmodel.ViewModelHandler;
 
 public class ItemHandler {
@@ -35,11 +30,6 @@ public class ItemHandler {
 		source = AudioHandler.checkoutSource();
 		source.setAttenuation(1, 1);
 
-		addItem(new SpiritBoxItem(scene));
-		addItem(new CameraItem(scene));
-		addItem(new MotionSensorItem(scene));
-		addItem(new TripodCameraItem(scene));
-		addItem(new EmfItem(scene));
 		addItem(new PhysPropSpawnerItem(scene));
 		currentItem = null;
 	}
@@ -102,7 +92,7 @@ public class ItemHandler {
 			currentItem.update();
 		}
 		
-		source.setPosition(Application.scene.getCamera().getPosition());
+		source.setPosition(App.scene.getCamera().getPosition());
 	}
 	
 	public void equipItem(int index) {

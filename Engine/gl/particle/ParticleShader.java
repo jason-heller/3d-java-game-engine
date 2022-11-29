@@ -2,14 +2,14 @@ package gl.particle;
 
 import shader.ShaderProgram;
 import shader.UniformFloat;
-import shader.UniformMatrix;
+import shader.UniformMat4;
 
 public class ParticleShader extends ShaderProgram {
 
-	private static final String VERTEX_SHADER = "gl/particle/particle.vert";
-	private static final String FRAGMENT_SHADER = "gl/particle/particle.frag";
+	protected static final String VERTEX_SHADER = "gl/particle/particle.vert";
+	protected static final String FRAGMENT_SHADER = "gl/particle/particle.frag";
 
-	protected UniformMatrix projectionMatrix = new UniformMatrix("projectionMatrix");
+	protected UniformMat4 projectionMatrix = new UniformMat4("projectionMatrix");
 	protected UniformFloat numRows = new UniformFloat("numRows");
 
 	public ParticleShader() {

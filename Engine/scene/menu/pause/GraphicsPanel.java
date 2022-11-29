@@ -2,11 +2,12 @@ package scene.menu.pause;
 
 import org.lwjgl.opengl.DisplayMode;
 
-import core.Application;
+import core.App;
 import gl.Camera;
 import gl.Render;
 import gl.Window;
 import gl.particle.ParticleHandler;
+import map.architecture.ActiveLeaves;
 import scene.PlayableScene;
 import ui.menu.GuiDropdown;
 import ui.menu.GuiLabel;
@@ -19,7 +20,7 @@ import ui.menu.listener.SliderListener;
 
 public class GraphicsPanel extends GuiPanel {
 	private final GuiDropdown resolution;
-	private final GuiSlider fov, fps, particleCount, shadowDistance, mipmapBias;
+	private final GuiSlider fov, fps, particleCount, mapGfxQualityCutoff, mipmapBias, fboScale;
 	private final GuiSpinner fullscreen, bordered, shadowQuality;
 
 	private final DisplayMode[] resolutions;
@@ -48,7 +49,7 @@ public class GraphicsPanel extends GuiPanel {
 			@Override
 			public void onRelease(float value) {
 				Camera.fov = (int) value;
-				Application.scene.getCamera().updateProjection();
+				App.scene.getCamera().updateProjection();
 			}
 
 		});
@@ -106,12 +107,31 @@ public class GraphicsPanel extends GuiPanel {
 			@Override
 			public void onClick(String option, int index) {
 				Window.setDisplayMode(resolutions[index]);
+
+				Render.resizeFbos();
 			}
 
 		});
 
 		addWithoutLayout(resolution);
 		resolution.setPosition(x + 324, fullscreen.y - 4);
+		
+		fboScale = new GuiSlider(x, y, "Pixel Sampling Scale", 10, 100, Render.scale * 100, 5);
+		fboScale.addListener(new SliderListener() {
+
+			@Override
+			public void onClick(float value) {
+			}
+
+			@Override
+			public void onRelease(float value) {
+				Render.scale = value / 100f;
+				Render.resizeFbos();
+			}
+
+		});
+		add(fboScale);
+		
 		addSeparator();
 
 		particleCount = new GuiSlider(x, y, "max particles", 0, 300, ParticleHandler.maxParticles, 1);
@@ -139,8 +159,8 @@ public class GraphicsPanel extends GuiPanel {
 			@Override
 			public void onRelease(float value) {
 				Render.defaultBias = -value;
-				if (Application.scene instanceof PlayableScene) {
-					PlayableScene s = (PlayableScene)Application.scene;
+				if (App.scene instanceof PlayableScene) {
+					PlayableScene s = (PlayableScene)App.scene;
 					s.getArchitecture().changeMipmapBias();
 				}
 			}
@@ -149,9 +169,9 @@ public class GraphicsPanel extends GuiPanel {
 		add(mipmapBias);
 		
 		addSeparator();
-		add(new GuiLabel(x, y, "#SShadows"));
-		shadowDistance = new GuiSlider(x, y, "Shadow Distance", 16, 64, 0, 1);
-		shadowDistance.addListener(new SliderListener() {
+		//add(new GuiLabel(x, y, "#SShadows"));
+		mapGfxQualityCutoff = new GuiSlider(x, y, "Shader Distance", 100, 300, ActiveLeaves.cutoffDist, 50);
+		mapGfxQualityCutoff.addListener(new SliderListener() {
 
 			@Override
 			public void onClick(float value) {
@@ -160,12 +180,13 @@ public class GraphicsPanel extends GuiPanel {
 			@Override
 			public void onRelease(float value) {
 				int dist = (int) value;
+				ActiveLeaves.cutoffDist = dist;
 			}
 
 		});
-		add(shadowDistance);
+		add(mapGfxQualityCutoff);
 
-		shadowQuality = new GuiSpinner(x + 32, y, "Quality", Render.shadowQuality, "Low", "Medium", "High", "Very High");
+		shadowQuality = new GuiSpinner(x + 32, y, "Shadow Quality", Render.shadowQuality, "Low", "Medium", "High", "Very High");
 		shadowQuality.addListener(new MenuListener() {
 			@Override
 			public void onClick(String option, int index) {
@@ -190,8 +211,8 @@ public class GraphicsPanel extends GuiPanel {
 					//ShadowRender.updateParams();
 				}
 				
-				if (Application.scene instanceof PlayableScene) {
-					PlayableScene s = (PlayableScene)Application.scene;
+				if (App.scene instanceof PlayableScene) {
+					PlayableScene s = (PlayableScene)App.scene;
 					s.getArchitecture().getLightmap().setFiltering(Render.shadowQuality);
 				}
 			}

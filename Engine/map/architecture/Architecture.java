@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -22,7 +23,7 @@ import geom.MTV;
 import geom.Plane;
 import gl.Camera;
 import gl.Render;
-import gl.arc.ArcRenderLightGeneric;
+import gl.arc.ArcFaceRender;
 import gl.arc.ArcRenderMaster;
 import gl.light.DynamicLight;
 import gl.light.DynamicLightHandler;
@@ -46,6 +47,7 @@ import map.architecture.vis.Pvs;
 import scene.Scene;
 import scene.entity.Entity;
 import scene.entity.util.PhysicsEntity;
+import scene.mapscene.MapScene;
 
 public class Architecture {
 
@@ -62,7 +64,7 @@ public class Architecture {
 	private ArcNavigation navigation;
 	private Map<Entity, ArcTriggerClip> activeTriggers;
 	
-	private List<BspLeaf> renderedLeaves = new ArrayList<BspLeaf>();
+	private ActiveLeaves activeLeaves = new ActiveLeaves();
 	private BspLeaf currentLeaf = null;
 	
 	public Vector3f[] vertices;
@@ -96,7 +98,7 @@ public class Architecture {
 		BspLeaf cameraLeaf = bsp.walk(camera.getPosition());
 		if (cameraLeaf.clusterId != -1 && cameraLeaf != currentLeaf) {
 			currentLeaf = cameraLeaf;
-			renderedLeaves.clear();
+			activeLeaves.clear();
 			renderedHeightmaps.clear();
 			
 			int[] vis = pvs.getData(cameraLeaf, 0);
@@ -111,11 +113,11 @@ public class Architecture {
 					audible.add(leaf);
 				}
 				
-				if (vis[leaf.clusterId] == 0 && !ArcRenderLightGeneric.fullRender) {
+				if (vis[leaf.clusterId] == 0 && !ArcFaceRender.fullRender) {
 					continue;
 				}
 				
-				renderedLeaves.add(leaf);
+				activeLeaves.addLeaf(camera, leaf);
 				for(short heightmap : leaf.heightmaps) {
 					renderedHeightmaps.add(bsp.heightmaps[heightmap]);
 				}
@@ -130,7 +132,7 @@ public class Architecture {
 					BspLeaf leaf = bsp.leaves[i];
 					if (leaf.clusterId == -1) continue;
 					if (vis[leaf.clusterId] == 0) continue;
-					renderedLeaves.add(leaf);
+					activeLeaves.addLeaf(camera, leaf);
 				}	
 			}
 			
@@ -158,9 +160,12 @@ public class Architecture {
 		return leaves;
 	}
 	
-	public void render(Camera camera, Vector4f clipPlane, boolean hasLighting) {
+	public void render(Camera camera, Vector4f clipPlane, boolean hasLighting, boolean withShaders) {
 		
-		ArcRenderMaster.render(scene, clipPlane, this, hasLighting, dynamicLightHandler.getLights(), renderedLeaves);
+		if (withShaders)
+			ArcRenderMaster.render((MapScene) scene, clipPlane, this, hasLighting, dynamicLightHandler.getLights(), activeLeaves);
+		else 
+			ArcRenderMaster.fastRender((MapScene) scene, clipPlane, this, hasLighting, dynamicLightHandler.getLights(), activeLeaves);
 		
 		for (ParticleEmitter pe : emitters) {
 			pe.generateParticles(camera);
@@ -174,7 +179,7 @@ public class Architecture {
 				Matrix4f matrix = new Matrix4f();
 				matrix.translate(pos);
 				matrix.scale(2f);
-				Render.renderModel(Resources.getModel("cube"), Resources.getTexture("none"), matrix, lightCube.getLighting());
+				Render.renderModel(Resources.getModel("cube"), Resources.NO_TEXTURE, matrix, lightCube.getLighting());
 			}
 		}
 	}
@@ -278,8 +283,8 @@ public class Architecture {
 		return mapCompilerVersion;
 	}
 
-	public List<BspLeaf> getRenderedLeaves() {
-		return renderedLeaves;
+	public ActiveLeaves getActiveLeaves() {
+		return activeLeaves;
 	}
 	
 	
@@ -353,7 +358,9 @@ public class Architecture {
 		float shortestDist = Float.POSITIVE_INFINITY;
 		ArcFace collidedFace = null;
 
-		for(BspLeaf leaf : renderedLeaves) {
+		activeLeaves.beginIteration();
+		while(activeLeaves.hasNext()) {
+			BspLeaf leaf = activeLeaves.next();
 			
 			Vector3f bounds = Vector3f.sub(leaf.max, leaf.min).div(2f);
 			Vector3f center = Vector3f.add(leaf.min, bounds);
@@ -406,8 +413,10 @@ public class Architecture {
 	public List<BspLeaf> getVisibleLeavesIntersecting(AxisAlignedBBox box) {
 		Vector3f max = Vector3f.add(box.getCenter(), box.getBounds());
 		Vector3f min = Vector3f.sub(box.getCenter(), box.getBounds());
+		activeLeaves.beginIteration();
 		List<BspLeaf> leaves = new ArrayList<>();
-		for (BspLeaf leaf : this.renderedLeaves) {
+		while(activeLeaves.hasNext()) {
+			BspLeaf leaf = activeLeaves.next();
 			if (leaf.intersects(max, min)) {
 				leaves.add(leaf);
 			}
@@ -420,12 +429,12 @@ public class Architecture {
 		Console.log("Loaded environment maps");
 	}
 	
-	public Texture getEnvironmentMap(Vector3f position) {
+	public Texture getEnvironmentMap(Vector3f position, AtomicInteger clipId) {
 		float closest = Float.POSITIVE_INFINITY;
 		int clipIndex = -1;
 		
 		if (environmentMaps == null)
-			return Resources.DEFAULT;
+			return Resources.getTexture("skybox");
 		
 		for(int index : environmentMaps.keySet()) {
 			ArcClip clip = bsp.clips[index];
@@ -440,8 +449,9 @@ public class Architecture {
 		}
 		
 		if (clipIndex == -1)
-			return Resources.DEFAULT;
+			return Resources.getTexture("skybox");
 		
+		clipId.set(clipIndex);
 		return environmentMaps.get(clipIndex);
 	}
 }

@@ -15,12 +15,13 @@ uniform sampler2D lightmap;
 uniform sampler2D[MAX_LIGHTS] shadowMap;
 
 in mat4 pass_lightPos;
-in mat4 pass_lightDir;
+uniform mat4 lightDir;
 in mat4 shadowCoords;
 
 uniform vec4 lightInfo;
+uniform mat3 lightStyles;
 
-out vec4 out_color;
+out vec4 outputColor;
 
 float ShadowCalculation(vec4 projLightSpace, int i) {
     vec3 projCoords = projLightSpace.xyz / projLightSpace.w;
@@ -29,7 +30,7 @@ float ShadowCalculation(vec4 projLightSpace, int i) {
     float closestDepth = texture(shadowMap[i], projCoords.xy).r; 
     float currentDepth = projCoords.z;
    
-	float bias = max(0.005 * (1.0 - dot(pass_normals, pass_lightDir[i].xyz)), 0.01);  
+	float bias = max(0.005 * (1.0 - dot(pass_normals, lightDir[i].xyz)), 0.01);  
     float shadow = currentDepth < closestDepth + bias ? 0.0 : 1.0;
 
     return shadow;
@@ -44,6 +45,9 @@ void main(void){
 		discard;
 	
 	light = texture(lightmap, pass_textureCoords.zw);
+	for(int i = 0; i < 3; i++) {
+		light += texture(lightmap, pass_textureCoords.zw + lightStyles[i].xy) * lightStyles[i].z;
+	}
 	
 	float intensity = 0.0;
 	float shadow = 0.0;
@@ -58,17 +62,17 @@ void main(void){
 			continue;
 		
 		vec3 lightProjVec = normalize(pass_lightPos[i].xyz);
-		vec3 lightDirComp = -pass_lightDir[i].xyz;
+		vec3 lightDirComp = -lightDir[i].xyz;
 		
 		float dist = 1.0 + (length(pass_lightPos[i]) / lightInfo[i]);
 		float theta = dot(lightProjVec, lightDirComp);
 
-		float epsilon = (pass_lightPos[i].w - pass_lightDir[i].w);
+		float epsilon = (pass_lightPos[i].w - lightDir[i].w);
 		
-		intensity += (clamp(((theta - pass_lightDir[i].w) / epsilon), 0.0, 1.0) / dist);
+		intensity += (clamp(((theta - lightDir[i].w) / epsilon), 0.0, 1.0) / dist);
 	
 	}
 	
 	color.a = 1.0;
-	out_color = (color * (light + max(intensity, lightMin))) * lightScale;
+	outputColor = (color * (light + max(intensity, lightMin))) * lightScale;
 }

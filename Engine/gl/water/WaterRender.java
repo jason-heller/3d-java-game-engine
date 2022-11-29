@@ -17,17 +17,18 @@ public class WaterRender {
 	}
 	
 	public static void renderWater(Camera camera, Vector3f max, Vector3f min) {
+
 		waterShader.start();
 		waterShader.projectionViewMatrix.loadMatrix(camera.getProjectionViewMatrix());
 		
+		waterShader.setup(camera);
+
 		GL11.glEnable(GL11.GL_ALPHA);
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		
 		GL20.glEnableVertexAttribArray(0);
 		GL20.glEnableVertexAttribArray(1);
 		
-		waterShader.setup(camera);
-
 		Vector3f bounds = Vector3f.sub(max, min);
 		waterShader.offset.loadVec3(min.x, max.y, min.z);
 		waterShader.scales.loadVec2(bounds.x, bounds.z);

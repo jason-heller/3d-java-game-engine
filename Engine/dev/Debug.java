@@ -9,8 +9,6 @@ import static org.lwjgl.opengl.GL11.GL_STACK_OVERFLOW;
 import static org.lwjgl.opengl.GL11.GL_STACK_UNDERFLOW;
 import static org.lwjgl.opengl.GL11.glGetError;
 
-import java.util.List;
-
 import org.joml.Vector3f;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
@@ -25,6 +23,7 @@ import gl.line.LineRender;
 import gl.res.Model;
 import gl.res.Texture;
 import gl.res.Vbo;
+import map.architecture.ActiveLeaves;
 import map.architecture.Architecture;
 import map.architecture.components.ArcEdge;
 import map.architecture.components.ArcFace;
@@ -55,8 +54,6 @@ public class Debug {
 	public static boolean faceInfo;
 	public static boolean god;
 	public static boolean velocityVectors;
-
-	public static ModelDataEditor mdEditor = new ModelDataEditor();
 	
 	public static void checkVbo(Vbo vbo) {
 		vbo.bind();
@@ -81,9 +78,6 @@ public class Debug {
 	}
 
 	public static void update(Scene scene) {
-		
-		mdEditor.update();
-		
 		Camera camera = scene.getCamera();
 		PlayableScene playScene = ((PlayableScene) scene);
 		PlayerEntity player = playScene.getPlayer();
@@ -96,23 +90,21 @@ public class Debug {
 		String vx = String.format("%.1f", player.vel.x);
 		String vy = String.format("%.1f", player.vel.y);
 		String vz = String.format("%.1f", player.vel.z);
-		/*String rx = String.format("%.1f", camera.getYaw());
-		String ry = String.format("%.1f", camera.getPitch());
-		String rz = String.format("%.1f", camera.getRoll());*/
 		String spd = String.format("%.1f", new Vector3f(player.vel.x, player.vel.z, 0f).length());
 
 		UI.drawString(
-				 "\n#rX: " + cx + " #gY: " + cy + " #bZ: " + cz
+				"\n#rX: " + cx + " #gY: " + cy + " #bZ: " + cz
+				+ "\n#rVX: " + vx + " #gVY: " + vy + " #bVZ: " + vz
 				+ "\n" + "#wFPS: " + (int) Window.framerate + "/" + Window.maxFramerate
 				+ "\n" + "draw calls: " + Render.drawCalls
 				+ "\n" + "tex swaps: " + Render.textureSwaps
-				+ "\n" + "VX: " + vx + " VY: " + vy + " VZ: " + vz
 				+ "\n" + "speed: " + spd
-				+ "\n" + MemDebug.memoryInfo()
-				+ "\n" + camera.getDirectionVector(),
+				+ "\n" + MemDebug.memoryInfo(),
 				5, 5, .25f, false);
 		
 		MemDebug.visualizeInfo();
+		
+		//UI.drawImage("reflection", 0,0,512,512, Colors.WHITE);
 		
 		if (showCurrentRoom) {
 			ArcRoom room = bsp.rooms[player.getLeaf().room];
@@ -122,15 +114,14 @@ public class Debug {
 		}
 
 		if (viewLightmapTexture) {
-			UI.drawImage("lightmap", 1280 - 512, 720 - 512, 512, 512, Colors.WHITE);
+			UI.drawImage("lightmap", UI.width - 512, 720 - 512, 512, 512, Colors.WHITE);
 		}
 		if (viewShadowTexture0) {
-			UI.drawImage("shadow0", 1280 - 512, 720, 512, -512, Colors.WHITE);
+			UI.drawImage("shadow0", UI.width - 512, 720, 512, -512, Colors.WHITE);
 		}
 		
 		if (faceInfo) {
 			int faceId = -1;
-			List<BspLeaf> allVisible = arc.getRenderedLeaves();
 
 			Vector3f camPos = camera.getPosition();
 			Vector3f camDir = camera.getDirectionVector();
@@ -138,7 +129,9 @@ public class Debug {
 			float nearest = Float.POSITIVE_INFINITY;
 			ArcFace nearestFace = null;
 
-			for (BspLeaf leaf : allVisible) {
+			ActiveLeaves activeLeaves = arc.getActiveLeaves();
+			while(activeLeaves.hasNext()) {
+				BspLeaf leaf = activeLeaves.next();
 				for (int i = 0; i < leaf.numFaces; i++) {
 					ArcFace face = bsp.faces[bsp.leafFaceIndices[leaf.firstFace + i]];
 					float dist = CollideUtils.convexPolygonRay(bsp, face, camPos, camDir);
@@ -202,21 +195,23 @@ public class Debug {
 					UI.drawString(info, 640, 376, .175f, false);
 					
 					if (Debug.viewLightmapTexture) {
-						float u1, u2, v1, v2;
-						u1 = (tv[0][0] * A.x + tv[0][1] * A.y + tv[0][2] * A.z + tv[0][3] - nearestFace.lmMins[0]) / (nearestFace.lmSizes[0] + 1);
-						v1 = (tv[1][0] * A.x + tv[1][1] * A.y + tv[1][2] * A.z + tv[1][3] - nearestFace.lmMins[1]) / (nearestFace.lmSizes[1] + 1);
-						u2 = (tv[0][0] * B.x + tv[0][1] * B.y + tv[0][2] * B.z + tv[0][3] - nearestFace.lmMins[0]) / (nearestFace.lmSizes[0] + 1);
-						v2 = (tv[1][0] * B.x + tv[1][1] * B.y + tv[1][2] * B.z + tv[1][3] - nearestFace.lmMins[1]) / (nearestFace.lmSizes[1] + 1);
-						u1 = u1 * nearestFace.lightmapScaleX + nearestFace.lightmapOffsetX;
-						v1 = v1 * nearestFace.lightmapScaleY + nearestFace.lightmapOffsetY;
-						u2 = u2 * nearestFace.lightmapScaleX + nearestFace.lightmapOffsetX;
-						v2 = v2 * nearestFace.lightmapScaleY + nearestFace.lightmapOffsetY;
+						for(int j = 0; j < nearestFace.lightmapOffsetX.length; j++) {
+							float u1, u2, v1, v2;
+							u1 = (tv[0][0] * A.x + tv[0][1] * A.y + tv[0][2] * A.z + tv[0][3] - nearestFace.lmMins[0]) / (nearestFace.lmSizes[0] + 1);
+							v1 = (tv[1][0] * A.x + tv[1][1] * A.y + tv[1][2] * A.z + tv[1][3] - nearestFace.lmMins[1]) / (nearestFace.lmSizes[1] + 1);
+							u2 = (tv[0][0] * B.x + tv[0][1] * B.y + tv[0][2] * B.z + tv[0][3] - nearestFace.lmMins[0]) / (nearestFace.lmSizes[0] + 1);
+							v2 = (tv[1][0] * B.x + tv[1][1] * B.y + tv[1][2] * B.z + tv[1][3] - nearestFace.lmMins[1]) / (nearestFace.lmSizes[1] + 1);
+							u1 = u1 * nearestFace.lightmapScaleX + nearestFace.lightmapOffsetX[j];
+							v1 = v1 * nearestFace.lightmapScaleY + nearestFace.lightmapOffsetY[j];
+							u2 = u2 * nearestFace.lightmapScaleX + nearestFace.lightmapOffsetX[j];
+							v2 = v2 * nearestFace.lightmapScaleY + nearestFace.lightmapOffsetY[j];
 
-						u1 = (1280 - 512) + (u1 * 512);
-						u2 = (1280 - 512) + (u2 * 512);
-						v1 = (720 - 512) + (v1 * 512);
-						v2 = (720 - 512) + (v2 * 512);
-						UI.drawLine((int)u1, (int)v1, (int)u2, (int)v2, 1, Colors.RED);
+							u1 = (UI.width - 512) + (u1 * 512);
+							u2 = (UI.width - 512) + (u2 * 512);
+							v1 = (UI.height - 512) + (v1 * 512);
+							v2 = (UI.height - 512) + (v2 * 512);
+							UI.drawLine((int)u1, (int)v1, (int)u2, (int)v2, 1, Colors.RED);
+						}
 					}
 					
 					Vector3f center1 = Vector3f.add(A, B).mul(.5f);

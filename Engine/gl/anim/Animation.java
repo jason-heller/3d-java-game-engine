@@ -6,10 +6,12 @@ public class Animation {
 
 	private final float duration; // seconds
 	private final Keyframe[] frames;
+	private final int numJoints;
 
-	public Animation(float duration, Keyframe[] frames) {
+	public Animation(float duration, Keyframe[] frames, int numJoints) {
 		this.frames = frames;
 		this.duration = duration;
+		this.numJoints = numJoints;
 	}
 
 	public float getDuration() {
@@ -18,5 +20,9 @@ public class Animation {
 
 	public Keyframe[] getKeyframes() {
 		return frames;
+	}
+	
+	public int getNumJoints() {
+		return numJoints;
 	}
 }

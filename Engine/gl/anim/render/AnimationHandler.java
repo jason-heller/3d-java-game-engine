@@ -2,8 +2,10 @@ package gl.anim.render;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
+import dev.cmd.Console;
 import gl.Camera;
 import gl.Render;
 import gl.anim.Animator;
@@ -42,7 +44,8 @@ public class AnimationHandler {
 			if (entity.deactivated) continue;
 			
 			final Animator animator = entity.getAnimator();
-			animator.update();
+			
+			// animator.update();
 			entity.getTexture().bind(0);
 			shader.specularity.loadFloat(0f);
 
@@ -52,6 +55,7 @@ public class AnimationHandler {
 			entity.getModel().bind(0, 1, 2, 3, 4);
 			shader.modelMatrix.loadMatrix(entity.getMatrix());
 			shader.jointTransforms.loadMatrixArray(animator.getJointTransforms());
+			
 			GL11.glDrawElements(GL11.GL_TRIANGLES, entity.getModel().getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
 			Render.drawCalls++;
 			entity.getModel().unbind(0, 1, 2, 3, 4);

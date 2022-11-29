@@ -24,7 +24,6 @@ public class ArcTextureData {
 
 		if (!skybox.equals("")) {
 			final String root = "sky/";
-			Console.log(root + skybox + ".png");
 			Resources.addCubemap("skybox", root + skybox + ".png");
 			parent.hasSkybox = true;
 		}

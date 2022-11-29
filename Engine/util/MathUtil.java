@@ -148,6 +148,9 @@ public class MathUtil {
 	}
 	
 	public static Vector3f directionVectorToEuler(Vector3f dirNormalized, Vector3f up) {
+		if (up.equals(dirNormalized))
+			return up;
+		
 		final Vector3f side = new Vector3f(dirNormalized).cross(up).normalize();
 		up = new Vector3f(side).cross(dirNormalized);
 		

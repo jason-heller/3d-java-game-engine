@@ -6,12 +6,13 @@ import audio.AudioHandler;
 import audio.SoundEffects;
 import audio.SoundFilters;
 import audio.Source;
-import core.Application;
+import core.App;
 import core.Resources;
 import dev.cmd.Console;
 import gl.res.Texture;
 import io.Input;
 import io.Settings;
+import scene.MapPanel;
 import scene.PlayableScene;
 import scene.Scene;
 import scene.mapscene.MapScene;
@@ -30,6 +31,7 @@ public class MainMenuUI {
 	private final GuiMenu mainMenu;
 	private final OptionsPanel options;
 	private final AboutPanel about;
+	private final MapPanel maps;
 
 	private final Texture mainMenuBg;
 	
@@ -41,18 +43,18 @@ public class MainMenuUI {
 	
 	public MainMenuUI(Scene scene) {
 		this.scene = scene;
-		Resources.addSound("mus01_intro", "music/sheebyweeby.ogg");
 		musicSource = AudioHandler.playMusic("mus01_intro");
 		
 		mainMenuBg = Resources.addTexture("main_menu_bg", "gui/menu.png");
 
-		mainMenu = new GuiMenu(50, 300, "new game", "continue", "options", "about", "quit");
+		mainMenu = new GuiMenu(50, 300, "play game", "---", "options", "about", "quit");
 		mainMenu.setFocus(true);
 		mainMenu.setBordered(true);
 		options = new OptionsPanel(null);
 		about = new AboutPanel(null);
+		maps = new MapPanel(null, this);
 
-		title = new Text(Application.TITLE, 50, 125, .75f, false);
+		title = new Text(App.TITLE, 50, 125, .75f, false);
 		
 		background = new Image(mainMenuBg, 0, 0, (int) UI.width, (int) UI.height);
 
@@ -67,20 +69,17 @@ public class MainMenuUI {
 				
 				switch (index) {
 				case 0:
-					musicSource.removeEffect();
-					musicSource.removeFilter();
-					
+					maps.setFocus(true);
 					about.setFocus(false);
+					
 					if (options.isFocused()) {
 						Settings.save();
 						options.setFocus(false);
 					}
-					PlayableScene.currentMap = "tweed_02";
-					Application.changeScene(MapScene.class);
-					musicSource.stop();
 					break;
 				case 1:
 					about.setFocus(false);
+					maps.setFocus(false);
 					if (options.isFocused()) {
 						Settings.save();
 						options.setFocus(false);
@@ -89,10 +88,12 @@ public class MainMenuUI {
 				case 2:
 					options.setFocus(!options.isFocused());
 					about.setFocus(false);
+					maps.setFocus(false);
 					break;
 				case 3:
 					options.setFocus(false);
 					about.setFocus(true);
+					maps.setFocus(false);
 					break;
 				case 4:
 					Console.send("quit");
@@ -132,6 +133,9 @@ public class MainMenuUI {
 		} else if (about.isFocused()) {
 			about.update();
 			about.draw();
+		} else if (maps.isFocused()) {
+			maps.update();
+			maps.draw();
 		} else {
 			mainMenu.draw();
 		}
@@ -149,9 +153,17 @@ public class MainMenuUI {
 	}
 
 	private void drawIntroSplash() {
-		UI.drawString(Application.TITLE, 640, 125, 1f, true);
+		UI.drawString(App.TITLE, 640, 125, 1f, true);
 		UI.drawString("#wPress [space]", 640, 640, true);
 		scene.getCamera().updateViewMatrix();
+	}
+	
+	public void changeMap(String map) {
+		musicSource.removeEffect();
+		musicSource.removeFilter();
 		
+		PlayableScene.currentMap = map;
+		App.changeScene(MapScene.class);
+		musicSource.stop();
 	}
 }

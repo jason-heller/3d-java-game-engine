@@ -3,13 +3,15 @@ package gl;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 
-import core.Application;
+import core.App;
 import core.Resources;
 import dev.Debug;
-import gl.fbo.FboUtils;
-import gl.fbo.FrameBuffer;
+import dev.cmd.Console;
+import gl.fbo.FBO;
 import gl.generic.GenericShader;
 import gl.generic.LightGenericShader;
 import gl.line.LineRender;
@@ -17,13 +19,14 @@ import gl.particle.ParticleHandler;
 import gl.post.PostProcessing;
 import gl.res.Model;
 import gl.res.Texture;
+import gl.res.mesh.MeshData;
 import map.architecture.functions.commands.CamView;
 import scene.Scene;
 import ui.UI;
 
 public class Render {
 	//private static FrameBuffer screenMultisampled;
-	public static FrameBuffer screen, screenPong;
+	public static FBO screen, screenPong;
 	private static GenericShader genericShader;
 	private static LightGenericShader lightShader;
 	
@@ -32,11 +35,12 @@ public class Render {
 	
 	public static int textureSwaps = 0, drawCalls = 0;
 	
-	private static FrameBuffer reflection, refraction;
+	private static FBO reflection, refraction;
 	private static float lastWaterFboPos = Float.POSITIVE_INFINITY;
 	private static float timer = 0f;
 	
 	public static int waterQuality = 4;		// TODO: Make the resizing of this not fuck everything up
+	public static float scale = 1f;
 	
 	public static void cleanUp() {
 		genericShader.cleanUp();
@@ -56,23 +60,31 @@ public class Render {
 
 	public static void init() {
 		GL11.glEnable(GL11.GL_CULL_FACE);
-		//EntityControl.init();
-		UI.init();
-		ParticleHandler.init();
-		LineRender.init();
-
-		screen = new FrameBuffer(1280, 720, true, true, false, false, 1);// FboUtils.createTextureFbo(1280, 720);
-		screenPong = new FrameBuffer(1280, 720, true, true, false, false, 1);
-		reflection = new FrameBuffer(320 * waterQuality, 180 * waterQuality, true, true, false, false, 1);
-		refraction = new FrameBuffer(320 * waterQuality, 180 * waterQuality, true, true, true, false, 1);
 		
-		PostProcessing.init();
+		// Assets
+		final int width = (int) (Window.getWidth() * scale);
+		final int height = (int) (Window.getHeight() * scale);
+		final int widthQtr = width / 4;
+		final int heightQtr = height / 4;
+		screen 		= new FBO(width, height);
+		screenPong 	= new FBO(width, height);
+		reflection 	= new FBO(widthQtr * waterQuality, heightQtr * waterQuality, true, false);
+		refraction 	= new FBO(widthQtr * waterQuality, heightQtr * waterQuality, true, true);
+		
 		
 		Resources.initBaseResources();
 		
-		Resources.addTexture("screen", screen, false);
+		Resources.addTexture("screen", screen.getColorBuffer(), screen.getWidth(), screen.getHeight());
+		Resources.addTexture("reflection", reflection.getColorBuffer(), reflection.getWidth(), reflection.getHeight());
 
 		initGuiTextures();
+		
+		// Renderers
+		UI.init();
+		ParticleHandler.init();
+		LineRender.init();
+		
+		PostProcessing.init();
 		
 		genericShader = new GenericShader();
 		lightShader = new LightGenericShader();
@@ -90,14 +102,13 @@ public class Render {
 			renderRefractions(scene, camera, waterPlaneY);
 			renderReflections(scene, camera, waterPlaneY);
 			screen.bind();
-			}
+		}
 	}
 
 	/** The main render method for the engine, should only be called once per render pass.
 	 */
 	public static void renderPass(Scene scene) {
 		Camera camera = scene.getCamera();
-		
 		textureSwaps = 0;
 		drawCalls = 0;
 		
@@ -108,22 +119,21 @@ public class Render {
 
 			CamView.requestRender = false;
 		}
-		
+
 		screen.bind();
-		GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+		GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_COLOR_BUFFER_BIT);
+		
 		scene.render(new Vector4f(0, 1, 0, Float.POSITIVE_INFINITY));
 		scene.renderNoReflect();
 		
 		ParticleHandler.render(camera);
 		LineRender.render(camera);
-		scene.postRender();
+		
 		screen.unbind();
+
+		PostProcessing.render(camera);
 		
-		//GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_COLOR_BUFFER_BIT);
-		
-		if (PostProcessing.getNumActiveShaders() != 0) {
-			PostProcessing.render();
-		}
+		scene.postRender();
 		
 		UI.render(scene);
 		
@@ -149,7 +159,7 @@ public class Render {
 	 * @param lightDirection a vector representing the direction of ambient light in the scene
 	 */
 	public static void renderModel(Model model, Texture texture, Matrix4f matrix, Vector3f[] lights) {
-		Camera camera = Application.scene.getCamera();
+		Camera camera = App.scene.getCamera();
 		genericShader.start();
 		genericShader.projectionViewMatrix.loadMatrix(camera.getProjectionViewMatrix());
 		genericShader.lights.loadVec3(lights);
@@ -183,7 +193,7 @@ public class Render {
 	 * @param lightDirection a vector representing the direction of ambient light in the scene
 	 */
 	public static void renderViewModel(Model model, Texture texture, Matrix4f matrix, Vector3f[] lights) {
-		Camera camera = Application.scene.getCamera();
+		Camera camera = App.scene.getCamera();
 		genericShader.start();
 		genericShader.projectionViewMatrix.loadMatrix(camera.getProjectionViewMatrix());
 		
@@ -192,7 +202,7 @@ public class Render {
 		
 		
 		if (Debug.ambientOnly) {
-			Resources.getTexture("none").bind(0);
+			Resources.NO_TEXTURE.bind(0);
 		} else {
 			texture.bind(0);
 		}
@@ -207,7 +217,7 @@ public class Render {
 	private static void renderRefractions(Scene scene, Camera camera, float clipDist) {
 		refraction.bind();
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-		scene.render(new Vector4f(0, -1, 0, clipDist));
+		scene.fastRender(new Vector4f(0, -1, 0, clipDist));
 		
 		refraction.unbind();
 	}
@@ -218,7 +228,6 @@ public class Render {
 		float pitch = camera.getPitch();
 		float yaw = camera.getYaw();
 		float roll = camera.getRoll();
-
 		reflection.bind();
 		camera.setPitch(-camera.getEffectedPitch());
 		camera.setYaw(camera.getEffectedYaw());		// TODO: Broken
@@ -226,7 +235,8 @@ public class Render {
 		camera.getPosition().y -= offset;
 		camera.updateViewMatrixRaw();
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-		scene.render(new Vector4f(0, 1, 0, -clipDist));
+		// scene.render(new Vector4f(0, 1, 0, -clipDist));
+		scene.fastRender(new Vector4f(0, 1, 0, -clipDist));
 		
 		reflection.unbind();
 		camera.setPitch(pitch);
@@ -236,11 +246,11 @@ public class Render {
 		camera.updateViewMatrix();
 	}
 	
-	public static FrameBuffer getReflectionFbo() {
+	public static FBO getReflectionFbo() {
 		return reflection;
 	}
 	
-	public static FrameBuffer getRefractionFbo() {
+	public static FBO getRefractionFbo() {
 		return refraction;
 	}
 	
@@ -258,10 +268,7 @@ public class Render {
 	
 	public static void setWaterQuality(int quality) {
 		waterQuality = quality;
-		int width = 320 * waterQuality;
-		int height = 180 * waterQuality;
-		FboUtils.resize(refraction, width, height);
-		FboUtils.resize(reflection, width, height);
+		// TODO: change fbos
 	}
 
 	private static void renderCamView(Camera camera, Scene scene, Vector3f pos, Vector3f rot) {
@@ -285,5 +292,17 @@ public class Render {
 		camera.setRoll(roll);
 		camera.getPosition().set(origPos);
 		camera.updateViewMatrix();
+	}
+
+	public static void resizeFbos() {
+		//screen.unbind();
+		final int width = (int) (Window.getWidth() * scale);
+		final int height = (int) (Window.getHeight() * scale);
+		final int widthQtr = width / 4;
+		final int heightQtr = height / 4;
+		/*screen.resize(width, height);
+		screenPong.resize(width, height);
+		reflection.resize(widthQtr * waterQuality, heightQtr * waterQuality);
+		refraction.resize(widthQtr * waterQuality, heightQtr * waterQuality);*/
 	}
 }

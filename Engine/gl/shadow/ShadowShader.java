@@ -1,7 +1,7 @@
 package gl.shadow;
 
 import shader.ShaderProgram;
-import shader.UniformMatrix;
+import shader.UniformMat4;
 import shader.UniformSampler;
 import shader.UniformSamplerArray;
 import shader.UniformVec2Array;
@@ -13,8 +13,8 @@ public class ShadowShader extends ShaderProgram {
 	private static final String VERTEX_SHADER = "gl/shadow/shadow.vert";
 	private static final String FRAGMENT_SHADER = "gl/shadow/shadow.frag";
 
-	public UniformMatrix lightSpaceMatrix = new UniformMatrix("lightSpaceMatrix");
-	public UniformMatrix modelMatrix = new UniformMatrix("modelMatrix");
+	public UniformMat4 lightSpaceMatrix = new UniformMat4("lightSpaceMatrix");
+	public UniformMat4 modelMatrix = new UniformMat4("modelMatrix");
 
 	public ShadowShader() {
 		super(VERTEX_SHADER, FRAGMENT_SHADER, "position");

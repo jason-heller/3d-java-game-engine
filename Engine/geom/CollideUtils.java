@@ -5,7 +5,7 @@ import java.util.List;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-import dev.cmd.Console;
+import map.architecture.ActiveLeaves;
 import map.architecture.components.ArcEdge;
 import map.architecture.components.ArcFace;
 import map.architecture.vis.Bsp;
@@ -226,15 +226,25 @@ public class CollideUtils {
 		return new Bounds(max, min);
 	}
 
-	public static float raycast(List<BspLeaf> renderedLeaves, Bsp bsp, Vector3f orig, Vector3f dir) {
+	public static float raycast(List<BspLeaf> bspLeaves, Bsp bsp, Vector3f orig, Vector3f dir) {
 		float rayLen = Float.POSITIVE_INFINITY;
-		for(BspLeaf leaf : renderedLeaves) {
+		for(BspLeaf leaf : bspLeaves) {
 			float dist = leafRay(leaf, bsp, orig, dir);
 			if (dist < rayLen) {
 				rayLen = dist;
 			}
 		}
 		return rayLen;
+	}
+	
+	public static float raycast(ActiveLeaves activeLeaves, Bsp bsp, Vector3f orig, Vector3f dir) {
+		float rayNear = raycast(activeLeaves.getNear(), bsp, orig, dir);
+		if (rayNear <= ActiveLeaves.cutoffDist) {
+			return rayNear;
+		}
+		
+		float rayFar = raycast(activeLeaves.getFar(), bsp, orig, dir);
+		return Math.min(rayNear, rayFar);
 	}
 	
 	public static float leafRay(BspLeaf leaf, Bsp bsp, Vector3f orig, Vector3f dir) {

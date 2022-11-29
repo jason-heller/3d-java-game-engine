@@ -24,11 +24,11 @@ public class Window {
 	public static int maxFramerate = 120;
 	public static boolean hasBorder = false;
 	
-	public static int viewportWidth, viewportHeight;
 	public static boolean fullscreen;
 	public static int displayWidth = 1920;
 	public static int displayHeight = 1080;
 	public static String windowTitle = "";
+	public static long tickStartMillis;		// The current millisecond count at the start of the tick
 
 	/**
 	 * Creates the display for the game
@@ -45,7 +45,7 @@ public class Window {
 			Display.setVSyncEnabled(false);
 			// Display.setLocation(0, 0);
 			// Display.setResizable(true);
-			setDisplayMode(Window.getWidth(), Window.getHeight(), fullscreen);
+			setDisplayMode( Window.getWidth(), Window.getHeight(), fullscreen);
 			aspectRatio = Window.getWidth() / (float) Window.getHeight();
 
 			GL11.glEnable(GL13.GL_MULTISAMPLE);
@@ -54,9 +54,11 @@ public class Window {
 			System.err.println("Couldn't create display!");
 			System.exit(-1);
 		}
-		GL11.glViewport(0, 0, viewportWidth, viewportHeight);
+		// GL11.glViewport(0, 0, 1920, 1080);
 		lastFrameTime = getCurrentTime();
 		lastFramerate = lastFrameTime;
+		
+		tickStartMillis = lastFrameTime;
 	}
 
 	/**
@@ -217,16 +219,16 @@ public class Window {
 		Display.sync(maxFramerate);
 
 		// Get delta time
-		final long currentFrameTime = getCurrentTime();
-		deltaTime = (currentFrameTime - lastFrameTime) / 1000f * timeScale;
-		lastFrameTime = currentFrameTime;
+		tickStartMillis = getCurrentTime();
+		deltaTime = (tickStartMillis - lastFrameTime) / 1000f * timeScale;
+		lastFrameTime = tickStartMillis;
 		
 		if (deltaTime > 0.1f) {
 			deltaTime = 1f/maxFramerate;
 		}
 
 		// Get framerate
-		if (currentFrameTime - lastFramerate > 1000) {
+		if (tickStartMillis - lastFramerate > 1000) {
 			framerate = frameTime;
 			frameTime = 0;
 			lastFramerate += 1000;
@@ -240,13 +242,13 @@ public class Window {
 	}
 
 	public static void resetDeltaTime() {
-		final long currentFrameTime = getCurrentTime();
+		tickStartMillis = getCurrentTime();
 		if (Display.isActive()) 
-			deltaTime = (currentFrameTime - lastFrameTime) / 1000f * timeScale;
+			deltaTime = (tickStartMillis - lastFrameTime) / 1000f * timeScale;
 		else
 			deltaTime = 0f;
 		
-		lastFrameTime = currentFrameTime;
+		lastFrameTime = tickStartMillis;
 	}
 	
 	public static boolean isActive() {

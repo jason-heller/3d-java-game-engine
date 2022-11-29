@@ -49,4 +49,10 @@ public class MainMenu implements Scene {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void fastRender(Vector4f vector4f) {
+		// TODO Auto-generated method stub
+		
+	}
 }

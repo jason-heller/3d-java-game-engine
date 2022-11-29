@@ -1,6 +1,5 @@
 package map.architecture.read;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.joml.Vector3f;
@@ -10,9 +9,10 @@ import io.FileUtils;
 import map.architecture.components.ArcHeightmap;
 import map.architecture.components.ArcHeightmapVertex;
 import map.architecture.vis.Bsp;
+import util.CounterInputStream;
 
 public class ArcLoadHeightmaps {
-	static void readHeightmaps(Bsp bsp, DataInputStream in) throws IOException {
+	static void readHeightmaps(Bsp bsp, CounterInputStream in) throws IOException {
 		
 		final int numHeightVerts = in.readInt();
 		ArcHeightmapVertex[] heightmapVerts = new ArcHeightmapVertex[numHeightVerts];
