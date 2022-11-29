@@ -19,7 +19,7 @@ public abstract class Entity {
 	
 	public Vector3f pos = new Vector3f();
 	public Vector3f rot = new Vector3f();
-	private Matrix4f mat = new Matrix4f();
+	private Matrix4f modelMatrix = new Matrix4f();
 	public float scale = 1f;
 	
 	public boolean visible = true;
@@ -86,10 +86,11 @@ public abstract class Entity {
 	}
 
 	public void update(PlayableScene scene) {
-		mat.identity();
-		mat.translate(pos);
-		mat.rotate(rot);
-		mat.scale(scale);
+		modelMatrix.identity();
+		modelMatrix.translate(pos.x, pos.y - bbox.getHeight(), pos.z);
+		modelMatrix.rotate(rot);
+		modelMatrix.scale(scale);
+		
 		Vector3f[] targetLight = scene.getArchitecture().getLightsAt(pos);
 		for(int i = 0; i < 6; i++) {
 			lighting[i] = Vector3f.lerp(targetLight[i], lighting[i], 10f * Window.deltaTime);
@@ -108,7 +109,7 @@ public abstract class Entity {
 	}
 	
 	public Matrix4f getMatrix() {
-		return mat;
+		return modelMatrix;
 	}
 
 	public void cleanUp() {
