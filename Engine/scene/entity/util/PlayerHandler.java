@@ -14,7 +14,6 @@ import map.architecture.util.BspRaycast;
 import scene.PlayableScene;
 import scene.Scene;
 import scene.entity.object.HoldableEntity;
-import util.MathUtil;
 
 public class PlayerHandler {
 	private static PlayerEntity entity;
@@ -45,7 +44,7 @@ public class PlayerHandler {
 	
 	public static final float BBOX_HEIGHT = 7f, BBOX_CROUCH_DIFF = (CAMERA_STANDING_HEIGHT - CAMERA_CROUCHING_HEIGHT);
 	
-	public static PhysicsEntity getEntity() {
+	public static SkatePhysicsEntity getEntity() {
 		return entity;
 	}
 
@@ -111,75 +110,66 @@ public class PlayerHandler {
 			AudioHandler.play("click");
 		}
 
-		if (entity.isSubmerged()) {
-			waterPhysics(scene);
-		} else if (entity.isClimbing()) {
-			climbingPhysics(scene);
-		} else {
-			// Handle game logic per tick, such as movement etc
-			if (A && D) {
-			} else if (A) {
-				direction = yaw + 90;
-				speed = accel;
-			} else if (D) {
-				direction = yaw - 90;
-				speed = accel;
+		// Handle game logic per tick, such as movement etc
+		if (A && D) {
+		} else if (A) {
+			direction = yaw + 90;
+			speed = accel;
+		} else if (D) {
+			direction = yaw - 90;
+			speed = accel;
+		}
+
+		if (W && S) {
+		} else if (S && !getEntity().isSliding()) {
+			if (direction != yaw) {
+				direction += 45 * (direction > yaw ? -1f : 1f);
 			}
-	
-			if (W && S) {
-			} else if (S && !getEntity().isSliding()) {
-				if (direction != yaw) {
-					direction += 45 * (direction > yaw ? -1f : 1f);
-				}
-	
-				speed = accel;
-			} else if (W && !getEntity().isSliding()) {
-	
-				if (direction != yaw) {
-					direction -= 45 * (direction > yaw ? -1f : 1f);
-				} else {
-					direction = yaw + 180;
-				}
-	
-				if (RUN && !CTRL && entity.grounded && !entity.deactivated) {
-					camera.sway(.1f, 5f, 5f);
-				}
-				
-				speed = accel;
+
+			speed = accel;
+		} else if (W && !getEntity().isSliding()) {
+
+			if (direction != yaw) {
+				direction -= 45 * (direction > yaw ? -1f : 1f);
+			} else {
+				direction = yaw + 180;
 			}
-	
-			if ((getEntity().isGrounded() || getEntity().isSubmerged() && getEntity().vel.y < 0) && JUMP) {
-				getEntity().jump(jumpVel);
-				if (CTRL) {
-					getEntity().pos.y += Camera.offsetY - CAMERA_CROUCHING_HEIGHT;
-				}
+
+			if (RUN && !CTRL && entity.grounded && !entity.deactivated) {
+				camera.sway(.1f, 5f, 5f);
 			}
 			
-			Camera.animSpeed = 0f;
-			if (speed != 0 && !entity.deactivated) {
-				Camera.animSpeed = 4.5f;
-				if (crouching) {
-					speed /= 2;
-					Camera.animSpeed = 2.25f;
-				}
-				else if (RUN && entity.grounded) {
-					Camera.animSpeed = 15f;
-				}
-				
-				if (!entity.isGrounded()) {
-					Camera.animSpeed = 0f;
-				}
-	
-				if (entity.isSubmerged()) {
-					speed = waterAccel;
-				}
-				else if (!entity.isGrounded()) {
-					speed = airAccel;
-				}
-	
-				direction *= Math.PI / 180f;
-				getEntity().accelerate(new Vector3f(-(float) Math.sin(direction), 0, (float) Math.cos(direction)), speed);
+			speed = accel;
+		}
+
+		if ((getEntity().isGrounded() && getEntity().vel.y < 0) && JUMP) {
+			getEntity().jump(jumpVel);
+			if (CTRL) {
+				getEntity().pos.y += Camera.offsetY - CAMERA_CROUCHING_HEIGHT;
 			}
+		}
+		
+		Camera.animSpeed = 0f;
+		if (speed != 0 && !entity.deactivated) {
+			Camera.animSpeed = 4.5f;
+			if (crouching) {
+				speed /= 2;
+				Camera.animSpeed = 2.25f;
+			}
+			else if (RUN && entity.grounded) {
+				Camera.animSpeed = 15f;
+			}
+			
+			if (!entity.isGrounded()) {
+				Camera.animSpeed = 0f;
+			}
+
+			if (!entity.isGrounded()) {
+				speed = airAccel;
+			}
+
+			direction *= Math.PI / 180f;
+			getEntity().accelerate(new Vector3f(-(float) Math.sin(direction), 0, (float) Math.cos(direction)), speed);
 		}
 	
 		if (CTRL) {
@@ -259,83 +249,6 @@ public class PlayerHandler {
 		pos.add(Vector3f.mul(Vector3f.cross(lookVec, Vector3f.Y_AXIS), 1f));
 		light.getRotation().set(camera.getPitch(), camera.getYaw()-1, 0);
 		light.getPosition().set(pos);
-	}
-
-	private static void climbingPhysics(Scene scene) {
-		float pitch = scene.getCamera().getPitch();
-		
-		boolean A = Input.isDown("walk_left"),
-				D = Input.isDown("walk_right"),
-				W = Input.isDown("walk_forward"),
-				S = Input.isDown("walk_backward"),
-				JUMP = Input.isDown("jump");
-		
-		if ((W || A || D) && !S) {
-			entity.accelerate(Vector3f.Y_AXIS, accel * (pitch <= 0 ? 1 : -1));
-		} else if (S) {
-			entity.accelerate(Vector3f.Y_AXIS, accel * (pitch <= 0 ? -1 : 1));
-		}
-		
-		if (JUMP && !crouching) {
-			Vector3f dir = new Vector3f(scene.getCamera().getDirectionVector());
-			entity.vel.x = dir.x * entity.vel.y;
-			entity.vel.z = dir.z * entity.vel.y;
-			entity.jump(jumpVel);
-		}
-	}
-	
-	private static void waterPhysics(Scene scene) {
-		float forwardSpeed = 0, strafeSpeed = 0;
-		
-		boolean A = Input.isDown("walk_left"),
-				D = Input.isDown("walk_right"),
-				W = Input.isDown("walk_forward"),
-				S = Input.isDown("walk_backward"),
-				JUMP = Input.isDown("jump"),
-				CROUCH = Input.isDown("sneak");
-		
-		if (A && D) {
-			if (!entity.vel.isZero()) {
-				entity.vel.mul(.92f);
-			}
-		} else if (A && !D) {
-			strafeSpeed = 60;
-		} else if (!A && D) {
-			strafeSpeed = -60;
-		}
-		
-		if (W && S) {
-			if (!entity.vel.isZero()) {
-				entity.vel.mul(.92f);
-			}
-		} else if (W && !S) {
-			forwardSpeed = -60;
-			
-		} else if (!W && S) {
-			forwardSpeed = 60;
-		}
-		
-		if (Input.isPressed(Keyboard.KEY_R) && entity.isFullySubmerged()) {
-			forwardSpeed = -4000;
-		}
-		
-		if (JUMP && !CROUCH) {
-			entity.accelerate(Vector3f.Y_AXIS, 60);
-		} else if (!JUMP && CROUCH) {
-			entity.accelerate(Vector3f.Y_AXIS, -60);
-		}
-		
-		final Vector3f forward = MathUtil.getDirection(scene.getCamera().getViewMatrix());
-		final float yawRad = (float) Math.toRadians(scene.getCamera().getYaw());
-		final Vector3f strafe = new Vector3f(-(float) Math.sin(yawRad), 0, (float) Math.cos(yawRad)).perpindicular();
-		
-		if (!entity.isFullySubmerged()) {
-			forward.y = Math.max(forward.y, 0f);
-			strafe.y = Math.max(strafe.y, 0f);
-		}
-		
-		entity.accelerate(forward, forwardSpeed);
-		entity.accelerate(strafe, strafeSpeed);
 	}
 	
 	public static void disable() {

@@ -5,7 +5,6 @@ import org.joml.Vector3f;
 import audio.AudioHandler;
 import core.App;
 import dev.Debug;
-import geom.MTV;
 import geom.Plane;
 import gl.Camera;
 import gl.CameraFollowable;
@@ -17,7 +16,7 @@ import ui.UI;
  * @author Jason
  *
  */
-public class PlayerEntity extends PhysicsEntity implements CameraFollowable {
+public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable {
 	
 	private Camera camera;
 	
@@ -126,7 +125,7 @@ public class PlayerEntity extends PhysicsEntity implements CameraFollowable {
 	}
 	
 	@Override
-	protected void collideWithFloor(Plane plane, MTV mtv) {
+	protected void collideWithFloor(Plane plane) {
 		/*float fallHeight = -PlayerHandler.jumpVel * 3.4f;
 		if (vel.y < fallHeight) {
 			takeDamage((int) (-vel.y / 20f));
@@ -134,7 +133,7 @@ public class PlayerEntity extends PhysicsEntity implements CameraFollowable {
 			vel.y = -PlayerHandler.jumpVel;	// TODO: Bad
 		}*/
 		
-		super.collideWithFloor(plane, mtv);
+		super.collideWithFloor(plane);
 	}
 
 	public static int getHp() {
