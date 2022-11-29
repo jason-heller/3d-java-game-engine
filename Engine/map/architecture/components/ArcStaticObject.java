@@ -3,7 +3,7 @@ package map.architecture.components;
 import org.joml.Vector3f;
 
 import geom.AxisAlignedBBox;
-import gl.res.Model;
+import gl.res.Mesh;
 
 public class ArcStaticObject {
 
@@ -18,7 +18,7 @@ public class ArcStaticObject {
 	
 	private AxisAlignedBBox bbox;
 	
-	public void setBBox(Model model) {
+	public void setBBox(Mesh model) {
 		Vector3f center = new Vector3f(pos);
 		center.y += model.bounds.y;
 		bbox = new AxisAlignedBBox(center, model.bounds);

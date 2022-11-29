@@ -1,7 +1,6 @@
 package scene.entity.util;
 
 import org.joml.Vector3f;
-import org.lwjgl.input.Keyboard;
 
 import audio.AudioHandler;
 import core.App;
@@ -33,16 +32,16 @@ public class PlayerHandler {
 	private static float accel = accelSpeed;
 
 	private static boolean disabled = false;
-	private static boolean threatened = false;
 
 	public static HoldableEntity holding = null;
 	
 	private static DynamicLight light = null;
-	private static float flickerTimer = 0f;
 	
 	private static boolean crouching = false;
 	
-	public static final float BBOX_HEIGHT = 7f, BBOX_CROUCH_DIFF = (CAMERA_STANDING_HEIGHT - CAMERA_CROUCHING_HEIGHT);
+	public static final float BBOX_HEIGHT = 3f, BBOX_CROUCH_DIFF = (CAMERA_STANDING_HEIGHT - CAMERA_CROUCHING_HEIGHT);
+	
+	private static float direction;
 	
 	public static SkatePhysicsEntity getEntity() {
 		return entity;
@@ -60,8 +59,6 @@ public class PlayerHandler {
 		Camera.offsetY = CAMERA_STANDING_HEIGHT;
 		PlayerHandler.entity = entity;
 		light = null;
-		flickerTimer = 0f;
-		threatened = false;
 		enable();
 	}
 
@@ -77,22 +74,7 @@ public class PlayerHandler {
 		final Camera camera = scene.getCamera();
 		Architecture arc = ((PlayableScene)scene).getArchitecture();
 		
-		if (light != null) {
-			if (!Input.isDown(Keyboard.KEY_G)) {
-				setLightPos(light);
-			}
-			if (threatened) {
-				flickerTimer += Window.deltaTime;
-				if (flickerTimer > .75f) {
-					light.setStrength(light.getStrength() == 0.25f ? lightStrength : 0.25f);
-					flickerTimer = 0f;
-				}
-			}
-		}
-		
-		float speed = 0;
-		final float yaw = camera.getYaw();
-		float direction = yaw;
+		float speed = accel;
 
 		final boolean A = Input.isDown("walk_left"), D = Input.isDown("walk_right"), W = Input.isDown("walk_forward"),
 				S = Input.isDown("walk_backward"), JUMP = Input.isDown("jump");
@@ -109,45 +91,31 @@ public class PlayerHandler {
 			
 			AudioHandler.play("click");
 		}
+		
+		if (S)
+			speed = 0f;
 
 		// Handle game logic per tick, such as movement etc
 		if (A && D) {
 		} else if (A) {
-			direction = yaw + 90;
-			speed = accel;
+			if (entity.grounded) {
+				direction -= Window.deltaTime * 200f;
+			}
 		} else if (D) {
-			direction = yaw - 90;
-			speed = accel;
+			if (entity.grounded) {
+				direction += Window.deltaTime * 200f;
+			}
 		}
-
-		if (W && S) {
-		} else if (S && !getEntity().isSliding()) {
-			if (direction != yaw) {
-				direction += 45 * (direction > yaw ? -1f : 1f);
-			}
-
-			speed = accel;
-		} else if (W && !getEntity().isSliding()) {
-
-			if (direction != yaw) {
-				direction -= 45 * (direction > yaw ? -1f : 1f);
-			} else {
-				direction = yaw + 180;
-			}
-
-			if (RUN && !CTRL && entity.grounded && !entity.deactivated) {
-				camera.sway(.1f, 5f, 5f);
-			}
-			
-			speed = accel;
-		}
-
+		
 		if ((getEntity().isGrounded() && getEntity().vel.y < 0) && JUMP) {
 			getEntity().jump(jumpVel);
 			if (CTRL) {
 				getEntity().pos.y += Camera.offsetY - CAMERA_CROUCHING_HEIGHT;
 			}
 		}
+		
+
+		entity.getViewAngle().set(0f, -direction, 0f);
 		
 		Camera.animSpeed = 0f;
 		if (speed != 0 && !entity.deactivated) {
@@ -167,9 +135,10 @@ public class PlayerHandler {
 			if (!entity.isGrounded()) {
 				speed = airAccel;
 			}
-
-			direction *= Math.PI / 180f;
-			getEntity().accelerate(new Vector3f(-(float) Math.sin(direction), 0, (float) Math.cos(direction)), speed);
+			
+			entity.rot.y = -direction;
+			double dRad = direction * Math.PI / 180.0;
+			getEntity().accelerate(new Vector3f(-(float) Math.sin(dRad), 0, (float) Math.cos(dRad)), speed);
 		}
 	
 		if (CTRL) {
@@ -219,7 +188,7 @@ public class PlayerHandler {
 				camera.getPosition().set(getEntity().pos.x, getEntity().pos.y + Camera.offsetY,
 						getEntity().pos.z);
 			}
-		} else {
+		} else if (camera.getControlStyle() == Camera.SPECTATOR) {
 			Vector3f oldCamPos = camera.getPrevPosition();
 			//entity.vel.set(Vector3f.sub(camera.getPosition(), oldCamPos).div(Window.deltaTime));
 			entity.vel.zero();
@@ -259,11 +228,5 @@ public class PlayerHandler {
 	public static void enable() {
 		disabled = false;
 		//entity.deactivated = false;
-	}
-
-	public static void setThreatened(boolean isThreatened) {
-		threatened = isThreatened;
-		if (!isThreatened)
-			light.setStrength(lightStrength);
 	}
 }

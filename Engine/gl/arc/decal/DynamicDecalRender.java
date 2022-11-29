@@ -9,15 +9,15 @@ import core.Resources;
 import gl.Camera;
 import gl.Render;
 import gl.fbo.FBO;
-import gl.res.Model;
+import gl.res.Mesh;
 
 public class DynamicDecalRender {
 	private static DynamicDecalShader shader;
-	private static Model CUBE;
+	private static Mesh CUBE;
 	
 	public static void init() {
 		shader = new DynamicDecalShader();
-		CUBE = Resources.getModel("cube");
+		CUBE = Resources.getMesh("cube");
 	}
 	
 	public static void render(Camera camera, FBO fbo, List<DynamicDecal> dynamicDecals) {

@@ -6,8 +6,8 @@ import core.App;
 import dev.cmd.Console;
 import gl.Camera;
 import map.architecture.functions.ArcFunction;
-import scene.entity.util.PhysicsEntity;
 import scene.entity.util.PlayerHandler;
+import scene.entity.util.SkatePhysicsEntity;
 
 public class SpawnPoint extends ArcFunction {
 	private Vector3f rot;
@@ -19,7 +19,7 @@ public class SpawnPoint extends ArcFunction {
 
 	@Override
 	public void trigger(String[] args) {
-		PhysicsEntity entity = PlayerHandler.getEntity();
+		SkatePhysicsEntity entity = PlayerHandler.getEntity();
 		Camera camera = App.scene.getCamera();
 		entity.pos.set(pos);
 		Console.log(pos, rot);

@@ -20,7 +20,7 @@ import gl.Camera;
 import gl.Render;
 import gl.Window;
 import gl.line.LineRender;
-import gl.res.Model;
+import gl.res.Mesh;
 import gl.res.Texture;
 import gl.res.Vbo;
 import map.architecture.ActiveLeaves;
@@ -63,7 +63,7 @@ public class Debug {
 		vbo.unbind();
 	}
 
-	public static void checkVao(Model model) {
+	public static void checkVao(Mesh model) {
 		int id = model.id;
 		int numVbos = model.getNumVbos();
 

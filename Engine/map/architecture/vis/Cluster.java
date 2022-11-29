@@ -4,7 +4,7 @@ import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
 
-import gl.res.Model;
+import gl.res.Mesh;
 import map.architecture.components.ArcFace;
 import scene.entity.util.LightStyle;
 
@@ -15,9 +15,9 @@ public class Cluster {
 	private int specMapId = -1;
 	private FloatBuffer lmOffsets = null;
 	private LightStyle[] styles = null;
-	private Model model;
+	private Mesh model;
 
-	public Cluster(Model model, int diffuseId, ArcFace face) {
+	public Cluster(Mesh model, int diffuseId, ArcFace face) {
 		float[] uOffsets = face.lightmapOffsetX;
 		float[] vOffsets = face.lightmapOffsetY;
 		byte[] faceStyles = face.lmStyles;
@@ -45,7 +45,7 @@ public class Cluster {
 		//lmOffsets.flip();
 	}
 
-	public Model getModel() {
+	public Mesh getModel() {
 		return model;
 	}
 	

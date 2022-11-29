@@ -14,7 +14,7 @@ import org.lwjgl.opengl.GL13;
 
 import core.Resources;
 import gl.Window;
-import gl.res.Model;
+import gl.res.Mesh;
 import gl.ui.UIShader;
 import gl.ui.UIWorldSpaceShader;
 import scene.Scene;
@@ -23,7 +23,7 @@ import util.MathUtil;
 public class UI {
 	private static UIShader shader;
 	private static UIWorldSpaceShader worldSpaceShader;
-	public static final Model quad = Resources.QUAD2D;
+	public static final Mesh quad = Resources.QUAD2D;
 	public static final int DEPTH_SEQUENTIAL = 0;
 	private static List<Component> components = new ArrayList<>();
 	private static Map<Matrix4f, Component> worldSpaceComponents = new LinkedHashMap<>();

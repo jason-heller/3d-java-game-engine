@@ -15,7 +15,7 @@ import geom.Plane;
 import geom.Polygon;
 import gl.Window;
 import gl.line.LineRender;
-import gl.res.Model;
+import gl.res.Mesh;
 import map.architecture.Architecture;
 import map.architecture.ArchitectureHandler;
 import map.architecture.Material;
@@ -233,7 +233,7 @@ public abstract class PhysicsEntity extends Entity {
 				if (obj.solidity == 1) {
 					handleBBoxCollision(otherBox);
 				} else {
-					Model model = bsp.objects.getModel(obj.model);
+					Mesh model = bsp.objects.getModel(obj.model);
 					if (model.getNavMesh() == null)
 						continue;
 					

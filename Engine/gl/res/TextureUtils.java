@@ -12,6 +12,7 @@ import org.lwjgl.opengl.GL14;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GLContext;
 
+import core.Resources;
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
 import dev.cmd.Console;
@@ -163,7 +164,7 @@ public class TextureUtils {
 	public static Texture createTexture(String path) {
 		final TextureData textureData = readTextureData(path);
 		if (textureData == null) {
-			return null;
+			return Resources.DEFAULT;
 		}
 		textureData.type = GL11.GL_TEXTURE_2D;
 		final int textureId = loadTextureToOpenGL(textureData);

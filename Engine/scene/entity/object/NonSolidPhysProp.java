@@ -4,7 +4,7 @@ import org.joml.Matrix3f;
 import org.joml.Vector3f;
 
 import gl.Window;
-import gl.res.Model;
+import gl.res.Mesh;
 import scene.PlayableScene;
 import scene.entity.Spawnable;
 
@@ -28,10 +28,8 @@ public class NonSolidPhysProp extends HoldableEntity implements Spawnable {
 		super(name, new Vector3f());
 		this.pos.set(pos);
 		this.rot.set(rot);
-		this.setModel(name);
-		this.setTexture(name);
-		Model model = this.getModel();
-		bbox.getBounds().set(model.bounds);
+		setModel(new String[] {name}, new String[] {name});
+		bbox.getBounds().set(model.getMeshes()[0].bounds);
 		originalBounds.set(this.bbox.getBounds());
 		solid = false;
 		
@@ -99,18 +97,13 @@ public class NonSolidPhysProp extends HoldableEntity implements Spawnable {
 		
 		this.pos.set(pos);
 		this.name = args[1];
-		this.setModel(args[1]);
-		this.setTexture(args[1]);
+		setModel(new String[] {args[1]}, new String[] {args[1]});
 		
-		if (args.length > 2)
-			this.setTexture(args[2]);
 		
-		Model model = this.getModel();
+		//if (args.length > 2)
+		//	model.gettext(args[2]);
 		
-		if (model == null)
-			return false;
-		
-		bbox.getBounds().set(model.bounds);
+		bbox.getBounds().set(model.getMeshes()[0].bounds);
 		originalBounds.set(this.bbox.getBounds());
 		return true;
 	}

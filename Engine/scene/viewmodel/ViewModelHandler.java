@@ -7,10 +7,10 @@ import org.lwjgl.opengl.GL11;
 import core.App;
 import gl.Camera;
 import gl.Render;
-import gl.TexturedModel;
 import gl.Window;
-import gl.res.Model;
+import gl.res.Mesh;
 import gl.res.Texture;
+import gl.res.TexturedModel;
 import gl.res.mesh.MeshData;
 import scene.PlayableScene;
 import util.MathUtil;
@@ -106,7 +106,7 @@ public class ViewModelHandler {
 				continue;
 			drawnModels[i].update();
 			TexturedModel viewModel = drawnModels[i].getTexturedModel();
-			Model model = viewModel.getModel();
+			Mesh model = viewModel.getModel();
 			Texture texture = viewModel.getTexture();
 			Matrix4f matrix = viewModel.getMatrix();
 			

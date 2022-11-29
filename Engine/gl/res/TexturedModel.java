@@ -1,24 +1,22 @@
-package gl;
+package gl.res;
 
 import org.joml.Matrix4f;
 
 import core.Resources;
-import gl.res.Model;
-import gl.res.Texture;
 
 public class TexturedModel {
-	private Model model;
+	private Mesh model;
 	private Texture texture;
 	private Matrix4f matrix;
 	
-	public TexturedModel(Model model, Texture texture, Matrix4f matrix) {
+	public TexturedModel(Mesh model, Texture texture, Matrix4f matrix) {
 		this.model = model;
 		this.texture = texture;
 		this.matrix = matrix;
 	}
 	
 	public TexturedModel(String model, String texture, Matrix4f matrix) {
-		this.model =  Resources.getModel(model);
+		this.model =  Resources.getMesh(model);
 		this.matrix = matrix;
 		if (texture.equals("default")) {
 			this.texture = Resources.getTexture(this.model.getMeshData().getDefaultTexture());
@@ -28,14 +26,14 @@ public class TexturedModel {
 	}
 	
 	// Specific constructor for BSP rendering
-	public TexturedModel(Model model, String texture) {
+	public TexturedModel(Mesh model, String texture) {
 		this.model = model;
 		this.matrix = new Matrix4f();
 		
 		this.texture = Resources.getTexture(texture);
 	}
 
-	public Model getModel() {
+	public Mesh getModel() {
 		return model;
 	}
 	

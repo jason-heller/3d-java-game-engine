@@ -53,7 +53,7 @@ public class Texture {
 		Render.textureSwaps++;
 	}
 	
-	public void delete() {
+	public void cleanUp() {
 		GL11.glDeleteTextures(id);
 	}
 

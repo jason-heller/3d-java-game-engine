@@ -6,14 +6,14 @@ import org.lwjgl.opengl.GL11;
 import core.Resources;
 import gl.Camera;
 import gl.Render;
-import gl.res.Model;
+import gl.res.Mesh;
 import gl.res.Texture;
 import map.architecture.Architecture;
 
 public class Skybox2D implements Skybox {
 	
 	private SkyboxShader shader;
-	private Model box;
+	private Mesh box;
 
 	
 	public Skybox2D() {
@@ -22,7 +22,7 @@ public class Skybox2D implements Skybox {
 	}
 	
 	private void createSkyboxModel() {
-		box = Model.create();
+		box = Mesh.create();
 		box.bind();
 		box.createIndexBuffer(INDICES);
 		box.createAttribute(0, getVertexPositions(3000f), 3);

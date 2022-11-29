@@ -8,51 +8,59 @@ import java.util.List;
 
 import org.joml.Vector3f;
 
-import dev.cmd.Console;
 import io.FileUtils;
 
-public class ModelUtils {
-	public static Model buildModel(float[] vertices, float[] uvs, float[] normals, int[] indices) {
-		final Model model = Model.create();
-		model.bind();
-		model.createAttribute(0, vertices, 3);
-		model.createAttribute(1, uvs, 2);
-		model.createAttribute(2, normals, 3);
-		model.createIndexBuffer(indices);
-		model.unbind();
+public class MeshUtils {
+	public static Mesh buildMesh(float[] vertices, float[] uvs, float[] normals, int[] indices) {
+		final Mesh mesh = Mesh.create();
+		mesh.bind();
+		mesh.createAttribute(0, vertices, 3);
+		mesh.createAttribute(1, uvs, 2);
+		mesh.createAttribute(2, normals, 3);
+		mesh.createIndexBuffer(indices);
+		mesh.unbind();
 
-		return model;
+		return mesh;
 	}
 
-	public static Model buildVao(List<Float> meshVerts, List<Float> meshUvs, List<Float> meshNorms,
+	public static Mesh buildVao(List<Float> meshVerts, List<Float> meshUvs, List<Float> meshNorms,
 			List<Integer> meshIndices) {
 		final int len = meshVerts.size() / 3;
-		final float[] _v = new float[meshVerts.size()];
-		final float[] _u = new float[meshUvs.size()];
-		final float[] _n = new float[meshNorms.size()];
-		final int[] _i = new int[meshIndices.size()];
+		final float[] verts = new float[meshVerts.size()];
+		final float[] uvs = new float[meshUvs.size()];
+		final float[] norms = new float[meshNorms.size()];
+		final int[] inds = new int[meshIndices.size()];
 		for (int i = 0; i < len; i++) {
-			_v[i * 3 + 0] = meshVerts.get(i * 3 + 0);
-			_v[i * 3 + 1] = meshVerts.get(i * 3 + 1);
-			_v[i * 3 + 2] = meshVerts.get(i * 3 + 2);
+			verts[i * 3 + 0] = meshVerts.get(i * 3 + 0);
+			verts[i * 3 + 1] = meshVerts.get(i * 3 + 1);
+			verts[i * 3 + 2] = meshVerts.get(i * 3 + 2);
 
-			_u[i * 2 + 0] = meshUvs.get(i * 2 + 0);
-			_u[i * 2 + 1] = meshUvs.get(i * 2 + 1);
+			uvs[i * 2 + 0] = meshUvs.get(i * 2 + 0);
+			uvs[i * 2 + 1] = meshUvs.get(i * 2 + 1);
 
-			_n[i * 3 + 0] = meshNorms.get(i * 3 + 0);
-			_n[i * 3 + 1] = meshNorms.get(i * 3 + 1);
-			_n[i * 3 + 2] = meshNorms.get(i * 3 + 2);
+			norms[i * 3 + 0] = meshNorms.get(i * 3 + 0);
+			norms[i * 3 + 1] = meshNorms.get(i * 3 + 1);
+			norms[i * 3 + 2] = meshNorms.get(i * 3 + 2);
 		}
 
 		for (int i = 0; i < meshIndices.size(); i++) {
-			_i[i] = meshIndices.get(i);
+			inds[i] = meshIndices.get(i);
 		}
 
-		return buildModel(_v, _u, _n, _i);
+		return buildMesh(verts, uvs, norms, inds);
 	}
 
+	public static Mesh buildBillboardMesh() {
+		final Mesh mesh = Mesh.create();
+		mesh.bind();
+		mesh.createAttribute(0, new float[] { -0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f }, 2);
+		mesh.createAttribute(1, new float[] { 0, 1, 1, 1, 0, 0, 1, 0 }, 2);
+		mesh.unbind();
+		return mesh;
+	}
+	
 	@Deprecated
-	public static Model loadObj(String path) {
+	public static Mesh loadObj(String path) {
 
 		final List<float[]> vertices = new ArrayList<float[]>();
 		final List<float[]> uvs = new ArrayList<float[]>();
@@ -199,20 +207,20 @@ public class ModelUtils {
 				}
 			}
 
-			final Model model = Model.create();
-			model.bind();
-			model.createIndexBuffer(indexArray);
-			model.createAttribute(0, vertexArray, 3);
-			model.createAttribute(1, uvArray, 2);
-			model.createAttribute(2, normalArray, 3);
-			model.setBounds(max, min);
+			final Mesh mesh = Mesh.create();
+			mesh.bind();
+			mesh.createIndexBuffer(indexArray);
+			mesh.createAttribute(0, vertexArray, 3);
+			mesh.createAttribute(1, uvArray, 2);
+			mesh.createAttribute(2, normalArray, 3);
+			mesh.setBounds(max, min);
 
 			if (boneArray.length > 0) {
-				model.createAttribute(3, boneArray, 1);
+				mesh.createAttribute(3, boneArray, 1);
 			}
-			model.unbind();
+			mesh.unbind();
 
-			return model;
+			return mesh;
 		} catch (final FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (final IOException e) {
@@ -222,14 +230,5 @@ public class ModelUtils {
 		}
 
 		return null;
-	}
-
-	public static Model quad2DModel() {
-		final Model model = Model.create();
-		model.bind();
-		model.createAttribute(0, new float[] { -0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f }, 2);
-		model.createAttribute(1, new float[] { 0, 1, 1, 1, 0, 0, 1, 0 }, 2);
-		model.unbind();
-		return model;
 	}
 }

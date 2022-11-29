@@ -7,6 +7,7 @@ import core.Resources;
 import geom.AxisAlignedBBox;
 import gl.Window;
 import gl.anim.Animator;
+import gl.res.Mesh;
 import gl.res.Model;
 import gl.res.Texture;
 import map.architecture.vis.BspLeaf;
@@ -23,9 +24,7 @@ public abstract class Entity {
 	
 	public boolean visible = true;
 	
-	private Model model;
-	protected Texture texture;
-	private Animator animator;
+	protected Model model;
 	
 	protected String name;
 	
@@ -41,6 +40,8 @@ public abstract class Entity {
 	private Vector3f color = new Vector3f(1f, 1f, 1f);
 	private float colorBlendFactor = 0f;
 	
+	private Animator animator;
+	
 	public void setLeaf(BspLeaf leaf) {
 		this.leaf = leaf;
 	}
@@ -52,38 +53,36 @@ public abstract class Entity {
 		}
 	}
 	
+	public void setModel(String key) {
+		this.model = Resources.getModel(key);
+	}
+	
+	public void setModel(String[] meshRefs, String[] textureRefs) {
+		int numMeshes = meshRefs.length;
+		Mesh[] meshes = new Mesh[numMeshes];
+		Texture[] textures = new Texture[numMeshes];
+		
+		boolean loadFailed = false;
+		
+		for(int i = 0; i < numMeshes; i++) {
+			meshes[i] = Resources.getMesh(meshRefs[i]);
+			textures[i] = Resources.getTexture(textureRefs[i]);	
+			
+			if (meshes[i] == Resources.ERROR.getMeshes()[0]) {
+				loadFailed = true;
+				break;
+			}
+		}
+		
+		model = loadFailed ? Resources.ERROR : new Model(meshes, textures);
+	}
+	
+	public void setModel(Mesh mesh, Texture texture) {
+		model = new Model(new Mesh[] {mesh}, new Texture[] {texture});
+	}
+	
 	public String getName() {
 		return name;
-	}
-	
-	public void setModel(Model model) {
-		this.model = model;
-		if (this.model == Resources.ERROR) {
-			this.texture = Resources.getTexture("error");
-		}
-	}
-	
-	public void setModel(String model) {
-		this.model = Resources.getModel(model);
-		if (this.model == Resources.ERROR) {
-			this.texture = Resources.getTexture("error");
-		}
-	}
-
-	public void setTexture(Texture texture) {
-		if (this.model == Resources.ERROR)
-			return;
-		this.texture = texture;
-	}
-
-	public void setTexture(String texture) {
-		if (this.model == Resources.ERROR)
-			return;
-		this.texture = Resources.getTexture(texture);
-	}
-
-	public void setAnimator(Animator animator) {
-		this.animator = animator;
 	}
 
 	public void update(PlayableScene scene) {
@@ -99,26 +98,17 @@ public abstract class Entity {
 		if (animator != null) 
 			animator.update();
 		
-		if (this.model == Resources.ERROR) {
-			this.setColor(Colors.alertColor());
+		if (model == Resources.ERROR) {
+			setColor(Colors.alertColor());
 		}
-		
 	}
 	
 	public Model getModel() {
 		return model;
 	}
 	
-	public Texture getTexture() {
-		return texture;
-	}
-	
 	public Matrix4f getMatrix() {
 		return mat;
-	}
-	
-	public Animator getAnimator() {
-		return animator;
 	}
 
 	public void cleanUp() {
@@ -129,6 +119,10 @@ public abstract class Entity {
 
 	public BspLeaf getLeaf() {
 		return leaf;
+	}
+	
+	public Animator getAnimator() {
+		return animator;
 	}
 
 	public AxisAlignedBBox getBBox() {
@@ -150,5 +144,13 @@ public abstract class Entity {
 	public void setColor(Vector3f color, float colorBlendFactor) {
 		this.color = color;
 		this.colorBlendFactor = colorBlendFactor;
+	}
+	
+	public void setAnimator(Animator animator) {
+		this.animator = animator;
+	}
+
+	public void setModel(Model model) {
+		this.model = model;
 	}
 }

@@ -28,13 +28,16 @@ public class MapScene extends PlayableScene {
 		App.scene = this;		// Hack to make the variable update before constructors runs
 		
 		player = new PlayerEntity(camera);
+		camera.setControlStyle(Camera.THIRD_PERSON);
+		camera.setFocus(player);
+		
 		arcHandler.load(this, new Vector3f(), PlayableScene.currentMap);
 		EntityHandler.addEntity(player);
 		arcHandler.getArchitecture().callCommand("spawn_player");
 		arcHandler.getArchitecture().callCommand(player, "trigger_soundscape");
 		player.getPosition().y += 5;
 		
-		for(int i = 0; i < 6; i++) {
+		/*for(int i = 0; i < 6; i++) {
 			DummyEntity e = new DummyEntity();
 			e.update(this);
 			e.pos.y+=5;
@@ -44,7 +47,7 @@ public class MapScene extends PlayableScene {
 			Animator anim = new Animator(e.getModel().getSkeleton(), e);
 			anim.loop("wlk_s");
 			EntityHandler.addEntity(e);
-		}
+		}*/
 		
 		if (arcHandler.isSkyboxEnabled()) {
 			SkyboxCamera skyCam = arcHandler.getArchitecture().getSkyCamera();

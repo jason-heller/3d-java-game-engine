@@ -34,7 +34,6 @@ public abstract class PlayableScene implements Scene {
 	
 	public PlayableScene() {
 		camera = new Camera();
-		camera.setControlStyle(Camera.FIRST_PERSON);
 		camera.grabMouse();
 		
 		AssetPool.loadInGameAssets();

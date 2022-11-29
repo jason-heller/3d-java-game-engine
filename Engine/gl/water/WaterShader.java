@@ -4,7 +4,7 @@ import core.Resources;
 import gl.Camera;
 import gl.Render;
 import gl.fbo.FBO;
-import gl.res.Model;
+import gl.res.Mesh;
 import gl.res.Texture;
 import shader.ShaderProgram;
 import shader.UniformFloat;
@@ -16,7 +16,7 @@ import shader.UniformVec3;
 public class WaterShader extends ShaderProgram {
 	
 	private Texture dudvTexture;
-	private Model waterModel;
+	private Mesh waterModel;
 
 	private static final String VERTEX_SHADER = "gl/water/water.vert";
 	private static final String FRAGMENT_SHADER = "gl/water/water.frag";
@@ -58,7 +58,7 @@ public class WaterShader extends ShaderProgram {
 	@Override
 	public void cleanUp() {
 		super.cleanUp();
-		dudvTexture.delete();
+		dudvTexture.cleanUp();
 		waterModel.cleanUp();
 	}
 }

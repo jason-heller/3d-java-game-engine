@@ -14,6 +14,7 @@ import gl.Render;
 import gl.entity.EntityRender;
 import gl.light.DynamicLight;
 import gl.light.DynamicLightHandler;
+import gl.res.Mesh;
 import gl.res.Model;
 import map.architecture.components.ArcLightCube;
 import map.architecture.vis.BspLeaf;
@@ -84,12 +85,19 @@ public class ShadowRender {
 					//GL11.glCullFace(GL11.GL_FRONT);
 					for(Entity ent : entities) {
 						Model model = ent.getModel();
-						if (model == null || !ent.visible || model == EntityRender.billboard)
+						if (model == null)
 							continue;
-						model.bind(0);
-						shader.modelMatrix.loadMatrix(ent.getMatrix());
-						GL11.glDrawElements(GL11.GL_TRIANGLES, model.getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
-						Render.drawCalls++;
+						
+						for(Mesh mesh : model.getMeshes()) {
+							
+							if (mesh == null || !ent.visible || mesh == EntityRender.billboard)
+								continue;
+						
+							mesh.bind(0);
+							shader.modelMatrix.loadMatrix(ent.getMatrix());
+							GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
+							Render.drawCalls++;
+						}
 					
 					}
 					//GL11.glCullFace(GL11.GL_BACK);
@@ -99,7 +107,7 @@ public class ShadowRender {
 			shader.stop();
 			
 			//GL11.glCullFace(GL11.GL_BACK);
-			Render.renderModel(Resources.getModel("cube"), Resources.DEFAULT, new Matrix4f(), ArcLightCube.FULLBRIGHT);
+			Render.renderModel(Resources.getMesh("cube"), Resources.DEFAULT, new Matrix4f(), ArcLightCube.FULLBRIGHT);
 			light.getFbo().unbind();
 		}
 		

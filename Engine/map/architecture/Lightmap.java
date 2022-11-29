@@ -168,7 +168,7 @@ public class Lightmap {
 	}
 	
 	public void delete() {
-		texture.delete();
+		texture.cleanUp();
 		active = false;
 	}
 	

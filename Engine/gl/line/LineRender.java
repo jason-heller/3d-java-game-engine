@@ -16,14 +16,14 @@ import org.lwjgl.opengl.GL33;
 import geom.Polygon;
 import gl.Camera;
 import gl.Render;
-import gl.res.Model;
+import gl.res.Mesh;
 
 public class LineRender {
 	private static final Vector3f DEFAULT_LINE_COLOR = new Vector3f(1, 0, 1);
 	private static LineShader shader;
 	private static List<Vector3f> points;
 	private static List<Vector3f> colors;
-	private static Model line;
+	private static Mesh line;
 	private static int vbo;
 	
 	private static int pointer = 0;
@@ -84,7 +84,7 @@ public class LineRender {
 	}
 	
 	private static void makeLineVao() {
-		line = Model.create();
+		line = Mesh.create();
 		line.bind();
 		line.createAttribute(0, new float[] { 0, 0, 0, 0, 0, 0 }, 3); // -0.5f,-0.5f, 0.5f,-0.5f, -0.5f,0.5f, 0.5f,0.5f
 		line.unbind();

@@ -14,7 +14,7 @@ import gl.anim.component.Keyframe;
 import gl.anim.component.Skeleton;
 import gl.anim.render.AnimationHandler;
 import gl.line.LineRender;
-import gl.res.Model;
+import gl.res.Mesh;
 import scene.entity.Entity;
 import util.Colors;
 import util.MathUtil;
@@ -53,13 +53,13 @@ public class Animator {
 			numJoints = 0;
 			
 			Console.severe("Animation mismatch, no proper rigging for entity " + entity.getName());
-			entity.setModel("error");
+			entity.setModel(Resources.ERROR);
 			entity.setAnimator(null);
 		}
 		
 	}
 	
-	public Animator(Model model, Entity entity) {
+	public Animator(Mesh model, Entity entity) {
 		final Skeleton skeleton = model.getSkeleton();
 		this.entity = entity;
 		this.root = skeleton.getRootJoint();

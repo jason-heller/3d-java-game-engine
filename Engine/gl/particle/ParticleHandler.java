@@ -50,8 +50,8 @@ public class ParticleHandler {
 
 	public static void cleanUp() {
 		renderer.cleanup();
-		Resources.getTexture("particles").delete();
-		Resources.getTexture("small_particles").delete();
+		Resources.getTexture("particles").cleanUp();
+		Resources.getTexture("small_particles").cleanUp();
 	}
 
 	public static void init() {

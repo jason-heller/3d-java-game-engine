@@ -3,7 +3,7 @@ package gl.res.mesh;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import gl.res.Model;
+import gl.res.Mesh;
 import gl.res.Texture;
 import ui.Text;
 import ui.UI;
@@ -22,7 +22,7 @@ public class TextTag extends MeshTag {
 	}
 
 	@Override
-	public void update(Model model, Texture texture, Matrix4f matrix) {
+	public void update(Mesh model, Texture texture, Matrix4f matrix) {
 		Matrix4f m = new Matrix4f();
 		m.set(matrix);
 		m.translate(offset);

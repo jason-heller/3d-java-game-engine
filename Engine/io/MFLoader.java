@@ -13,37 +13,43 @@ import core.Resources;
 import dev.cmd.Console;
 import gl.anim.component.Joint;
 import gl.anim.component.Skeleton;
-import gl.res.AnimModel;
+import gl.res.Mesh;
 import gl.res.Model;
+import gl.res.Texture;
+import gl.res.TextureUtils;
 
 public class MFLoader {
 	public static final byte VERSION_MAJOR = 3;
 	public static final byte VERSION_MINOR = 0;
 	private static final int MAX_BONES_PER_VERTEX = 3;
 
-	private static AnimModel getMeshes(ByteBuffer is) throws IOException {
+	private static Model getMeshes(ByteBuffer is) throws IOException {
 		
 		int flags = is.get();
 		int numMeshes = is.get();
 		
 		boolean hasArmature = (flags & 1) == 1;
 		
-		AnimModel model = new AnimModel(numMeshes);
+		Model model = new Model(numMeshes);
 		Skeleton skeleton = null;
 		
-		for(int i = 0; i < numMeshes; i++)
-			model.addModel(i, getMesh(is));
+		for(int i = 0; i < numMeshes; i++) {
+			
+			model.setMesh(i, getMesh(is));
+			
+			Texture texture = TextureUtils.createTexture("res/models/" + model.getMeshes()[i].name.toLowerCase() + ".png");		// Hacky hacky hacky
+			model.setTexture(i, texture);
+		}
 		
 		if (hasArmature)
 			skeleton = getSkeleton(is);
 
-		for(int i = 0; i < numMeshes; i++)		// TODO: This could be optimized by having the skeleton data come first
-			model.getModel(i).setSkeleton(skeleton);
+		model.setSkeleton(skeleton);
 
 		return model;
 	}
 	
-	private static Model getMesh(ByteBuffer bb) throws IOException {
+	private static Mesh getMesh(ByteBuffer bb) throws IOException {
 		
 		String name = "";
 		byte c;
@@ -88,21 +94,20 @@ public class MFLoader {
 		for (i = 0; i < indexCount; i++)
 			indices[i] = bb.getShort();
 
-		Model model = Model.create();
-		model.name = name;
-		Resources.addTexture(name, "models/" + name.toLowerCase() + ".png");
-		model.defaultTexture = name;
+		Mesh mesh = Mesh.create();
+		mesh.name = name;
+		mesh.defaultTexture = name;
 		
-		model.bind();
-		model.createAttribute(0, vertices, 3);
-		model.createAttribute(1, uvs, 2);
-		model.createAttribute(2, normals, 3);
-		model.createAttribute(3, boneIds, MAX_BONES_PER_VERTEX);
-		model.createAttribute(4, weights, MAX_BONES_PER_VERTEX);
-		model.createIndexBuffer(indices);
-		model.unbind();
+		mesh.bind();
+		mesh.createAttribute(0, vertices, 3);
+		mesh.createAttribute(1, uvs, 2);
+		mesh.createAttribute(2, normals, 3);
+		mesh.createAttribute(3, boneIds, MAX_BONES_PER_VERTEX);
+		mesh.createAttribute(4, weights, MAX_BONES_PER_VERTEX);
+		mesh.createIndexBuffer(indices);
+		mesh.unbind();
 
-		return model;
+		return mesh;
 	}
 
 	private static Skeleton getSkeleton(ByteBuffer bb) throws IOException {
@@ -165,7 +170,7 @@ public class MFLoader {
 	 *                       model
 	 * @return
 	 */
-	public static AnimModel readMF(String key, String path) {
+	public static Model readMF(String key, String path) {
 		try {
 			String fullPath = "src/res/" + path;
 			
@@ -173,24 +178,24 @@ public class MFLoader {
 			
 			if (!file.exists()) {
 				Console.severe("Missing file " + path);
-				return Resources.ERROR_ANIM;
+				return Resources.ERROR;
 			}
 			
 			byte[] byteArray= Files.readAllBytes(file.toPath());
 			ByteBuffer bb = ByteBuffer.wrap(byteArray);
 			bb.order(ByteOrder.LITTLE_ENDIAN);
 			
-			AnimModel model = readMF(key, bb);
+			Model model = readMF(key, bb);
 
 			return model;
 		} catch (final IOException e) {
 			e.printStackTrace();
-			return Resources.ERROR_ANIM;
+			return Resources.ERROR;
 		}
 	}
 	
-	private static AnimModel readMF(String key, ByteBuffer bb) {
-		AnimModel model = null;
+	private static Model readMF(String key, ByteBuffer bb) {
+		Model model = null;
 
 		try {
 
@@ -200,13 +205,13 @@ public class MFLoader {
 				fileExtName += (char)bb.get();
 			
 			if (!fileExtName.equals("ANIMDL"))
-				return Resources.ERROR_ANIM;
+				return Resources.ERROR;
 
 			int major = bb.get();
 			int minor = bb.get();
 			
 			if (major != VERSION_MAJOR || minor != VERSION_MINOR)
-				return Resources.ERROR_ANIM;
+				return Resources.ERROR;
 
 			model = getMeshes(bb);
 

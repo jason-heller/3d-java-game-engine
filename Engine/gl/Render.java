@@ -17,8 +17,9 @@ import gl.generic.LightGenericShader;
 import gl.line.LineRender;
 import gl.particle.ParticleHandler;
 import gl.post.PostProcessing;
-import gl.res.Model;
+import gl.res.Mesh;
 import gl.res.Texture;
+import gl.res.TexturedModel;
 import gl.res.mesh.MeshData;
 import map.architecture.functions.commands.CamView;
 import scene.Scene;
@@ -158,7 +159,7 @@ public class Render {
 	 * @param matrix the model matrix for the mesh
 	 * @param lightDirection a vector representing the direction of ambient light in the scene
 	 */
-	public static void renderModel(Model model, Texture texture, Matrix4f matrix, Vector3f[] lights) {
+	public static void renderModel(Mesh model, Texture texture, Matrix4f matrix, Vector3f[] lights) {
 		Camera camera = App.scene.getCamera();
 		genericShader.start();
 		genericShader.projectionViewMatrix.loadMatrix(camera.getProjectionViewMatrix());
@@ -192,7 +193,7 @@ public class Render {
 	 * @param matrix the model matrix for the mesh
 	 * @param lightDirection a vector representing the direction of ambient light in the scene
 	 */
-	public static void renderViewModel(Model model, Texture texture, Matrix4f matrix, Vector3f[] lights) {
+	public static void renderViewModel(Mesh model, Texture texture, Matrix4f matrix, Vector3f[] lights) {
 		Camera camera = App.scene.getCamera();
 		genericShader.start();
 		genericShader.projectionViewMatrix.loadMatrix(camera.getProjectionViewMatrix());

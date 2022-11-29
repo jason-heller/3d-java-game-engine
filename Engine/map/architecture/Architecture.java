@@ -179,7 +179,7 @@ public class Architecture {
 				Matrix4f matrix = new Matrix4f();
 				matrix.translate(pos);
 				matrix.scale(2f);
-				Render.renderModel(Resources.getModel("cube"), Resources.NO_TEXTURE, matrix, lightCube.getLighting());
+				Render.renderModel(Resources.getMesh("cube"), Resources.NO_TEXTURE, matrix, lightCube.getLighting());
 			}
 		}
 	}
@@ -251,11 +251,11 @@ public class Architecture {
 		bsp.cleanUp();
 		final Texture[] textures = textureData.getTextures();
 		for(Texture texture : textures) 
-			texture.delete();
+			texture.cleanUp();
 		
 		if (environmentMaps != null) {
 			for(Texture texture : environmentMaps.values()) 
-				texture.delete();
+				texture.cleanUp();
 		}
 		
 		lightmap.delete();

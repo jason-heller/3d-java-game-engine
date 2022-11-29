@@ -56,7 +56,7 @@ public class PlayableSceneUI {
 	}
 	
 	public void cleanUp() {
-		Resources.getTexture("hp").delete();
+		Resources.getTexture("hp").cleanUp();
 	}
 	
 	public void update() {

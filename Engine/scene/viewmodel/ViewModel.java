@@ -2,7 +2,7 @@ package scene.viewmodel;
 
 import org.joml.Matrix4f;
 
-import gl.TexturedModel;
+import gl.res.TexturedModel;
 import gl.res.mesh.MeshTag;
 
 public class ViewModel {

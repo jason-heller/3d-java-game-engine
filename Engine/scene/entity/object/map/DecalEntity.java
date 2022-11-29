@@ -6,7 +6,7 @@ import core.App;
 import core.Resources;
 import dev.cmd.Console;
 import geom.Plane;
-import gl.res.Model;
+import gl.res.Mesh;
 import gl.res.Texture;
 import map.architecture.vis.Bsp;
 import map.architecture.vis.BspLeaf;
@@ -18,13 +18,12 @@ import util.MathUtil;
 public class DecalEntity extends Entity {
 	
 	public DecalEntity(Vector3f pos, String tex) {
-		this(pos, Resources.getModel("cube"), Resources.getTexture(tex));
+		this(pos, Resources.getMesh("cube"), Resources.getTexture(tex));
 	}
 	
-	public DecalEntity(Vector3f pos, Model model, Texture tex) {
+	public DecalEntity(Vector3f pos, Mesh model, Texture tex) {
 		super("decal");
-		this.setModel(model);
-		this.setTexture(tex);
+		setModel(model, tex);
 		this.pos = pos;
 	}
 	

@@ -6,7 +6,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import core.Resources;
-import gl.res.Model;
+import gl.res.Mesh;
 import gl.res.Texture;
 import io.FileUtils;
 import map.architecture.components.ArcTextureData;
@@ -54,14 +54,14 @@ public class ArcLoadOverlays {
 			ArcTextureMapping mapping = bsp.getTextureMappings()[textureId];
 			Texture texture = texData.getTextures()[mapping.textureId];
 			texture = Resources.NO_TEXTURE;
-			Model model = createOverlayModel(numFaces, texCoords, points, origin, normal);
+			Mesh model = createOverlayModel(numFaces, texCoords, points, origin, normal);
 			OverlayEntity overlay = new OverlayEntity(origin, model, texture, bsp.leaves[leafId]);
 			EntityHandler.addEntity(overlay);
 		}
 		
 	}
 
-	private static Model createOverlayModel(int numFaces, Vector2f[] texCoords, Vector3f[] points,
+	private static Mesh createOverlayModel(int numFaces, Vector2f[] texCoords, Vector3f[] points,
 			Vector3f origin, Vector3f normal) {
 		final int numVertices = 4 * numFaces;
 		float[] vertices = new float[numVertices * 3];
@@ -101,7 +101,7 @@ public class ArcLoadOverlays {
 			indices[i++] = z + 2;
 		}
 		
-		Model model = Model.create();
+		Mesh model = Mesh.create();
 		model.bind();
 		model.createAttribute(0, vertices, 3);
 		model.createAttribute(1, uvs, 2);

@@ -12,7 +12,7 @@ import dev.Debug;
 import gl.Camera;
 import gl.light.DynamicLight;
 import gl.light.DynamicLightHandler;
-import gl.res.Model;
+import gl.res.Mesh;
 import gl.res.Texture;
 import map.architecture.Architecture;
 import map.architecture.components.ArcHeightmap;
@@ -74,7 +74,7 @@ public class ArcHeightmapRender {
 		}
 		
 		for(ArcHeightmap heightmap : heightmaps) {
-			Model model = heightmap.getModel();
+			Mesh model = heightmap.getModel();
 			model.bind(0,1,2);
 
 			if (Debug.ambientOnly) {

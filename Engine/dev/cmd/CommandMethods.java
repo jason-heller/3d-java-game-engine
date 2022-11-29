@@ -68,7 +68,7 @@ public class CommandMethods {
 		if (App.scene.getCamera().getControlStyle() != Camera.SPECTATOR) {
 			App.scene.getCamera().setControlStyle(Camera.SPECTATOR);
 		} else {
-			App.scene.getCamera().setControlStyle(Camera.FIRST_PERSON);
+			App.scene.getCamera().setControlStyle(Camera.THIRD_PERSON);
 		}
 	}
 	

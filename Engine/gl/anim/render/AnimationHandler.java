@@ -2,13 +2,14 @@ package gl.anim.render;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
-import dev.cmd.Console;
 import gl.Camera;
 import gl.Render;
 import gl.anim.Animator;
+import gl.res.Mesh;
+import gl.res.Model;
+import gl.res.Texture;
 import scene.Scene;
 import scene.entity.Entity;
 
@@ -43,44 +44,29 @@ public class AnimationHandler {
 		for (final Entity entity : entityBatch) {
 			if (entity.deactivated) continue;
 			
+			Model model = entity.getModel();
 			final Animator animator = entity.getAnimator();
+			int numMeshes = model.getMeshes().length;
 			
-			// animator.update();
-			entity.getTexture().bind(0);
-			shader.specularity.loadFloat(0f);
+			for(int i = 0; i < numMeshes; i++) {
+				Mesh mesh = model.getMeshes()[i];
+				Texture texture = model.getTextures()[i];
+				
+				texture.bind(0);
+				shader.specularity.loadFloat(0f);
 
-			shader.diffuse.loadTexUnit(0);
-			shader.specular.loadTexUnit(1);
+				shader.diffuse.loadTexUnit(0);
+				shader.specular.loadTexUnit(1);
 
-			entity.getModel().bind(0, 1, 2, 3, 4);
-			shader.modelMatrix.loadMatrix(entity.getMatrix());
-			shader.jointTransforms.loadMatrixArray(animator.getJointTransforms());
-			
-			GL11.glDrawElements(GL11.GL_TRIANGLES, entity.getModel().getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
-			Render.drawCalls++;
-			entity.getModel().unbind(0, 1, 2, 3, 4);
+				mesh.bind(0, 1, 2, 3, 4);
+				shader.modelMatrix.loadMatrix(entity.getMatrix());
+				shader.jointTransforms.loadMatrixArray(animator.getJointTransforms());
+				
+				GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
+				Render.drawCalls++;
+				mesh.unbind(0, 1, 2, 3, 4);
+			}
 		}
-		shader.stop();
-	}
-
-	public static void renderViewmodel(Scene scene, Entity animatedModel) {
-		final Camera camera = scene.getCamera();
-		shader.start();
-		shader.projectionViewMatrix.loadMatrix(camera.getProjectionMatrix());
-		shader.cameraPos.loadVec3(camera.getPosition());
-
-		animatedModel.getTexture().bind(0);
-		animatedModel.getModel().bind(0, 1, 2, 3, 4);
-		animatedModel.getTexture().bind(0);
-		shader.specularity.loadFloat(0f);
-
-		shader.diffuse.loadTexUnit(0);
-		shader.specular.loadTexUnit(1);
-		shader.modelMatrix.loadMatrix(animatedModel.getMatrix());
-		shader.jointTransforms.loadMatrixArray(animatedModel.getAnimator().getJointTransforms());
-		GL11.glDrawElements(GL11.GL_TRIANGLES, animatedModel.getModel().getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
-		animatedModel.getModel().unbind(0, 1, 2, 3, 4);
-
 		shader.stop();
 	}
 

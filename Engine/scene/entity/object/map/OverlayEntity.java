@@ -2,17 +2,16 @@ package scene.entity.object.map;
 
 import org.joml.Vector3f;
 
-import gl.res.Model;
+import gl.res.Mesh;
 import gl.res.Texture;
 import map.architecture.vis.BspLeaf;
 import scene.entity.Entity;
 
 public class OverlayEntity extends Entity {
 	
-	public OverlayEntity(Vector3f pos, Model model, Texture tex, BspLeaf leaf) {
+	public OverlayEntity(Vector3f pos, Mesh model, Texture tex, BspLeaf leaf) {
 		super("overlay");
-		this.setModel(model);
-		this.setTexture(tex);
+		setModel(model, tex);
 		this.pos = pos;
 		this.leaf = leaf;
 	}

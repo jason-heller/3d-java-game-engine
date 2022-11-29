@@ -3,14 +3,14 @@ package gl.res.mesh;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import gl.res.Model;
+import gl.res.Mesh;
 import gl.res.Texture;
 
 public abstract class MeshTag {
 	protected Vector3f offset;
 	protected float scale;
 	
-	public abstract void update(Model model, Texture texture, Matrix4f matrix);
+	public abstract void update(Mesh model, Texture texture, Matrix4f matrix);
 	public abstract void cleanUp();
 	
 	public Vector3f getOffset() {

@@ -10,13 +10,13 @@ import gl.Camera;
 import gl.Render;
 import gl.arc.decal.DynamicDecalRender;
 import gl.fbo.FBO;
-import gl.res.Model;
+import gl.res.Mesh;
 
 public class PostProcessing {
 
 	static Map<PostShader, Boolean> shaders = new HashMap<PostShader, Boolean>();
 
-	public static Model quad;
+	public static Mesh quad;
 
 	private static int numActiveShaders = 0;
 
@@ -67,7 +67,7 @@ public class PostProcessing {
 	}
 
 	public static void init() {
-		quad = Model.create();
+		quad = Mesh.create();
 		quad.bind();
 		quad.createAttribute(0, new float[] { -0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f }, 2);
 		quad.createAttribute(1, new float[] { 0, 0, 1, 0, 0, 1, 1, 1 }, 2);

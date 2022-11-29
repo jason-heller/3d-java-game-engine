@@ -17,7 +17,7 @@ import org.lwjgl.opengl.GL33;
 
 import gl.Camera;
 import gl.Render;
-import gl.res.Model;
+import gl.res.Mesh;
 import gl.res.Texture;
 
 class ParticleRender {
@@ -30,11 +30,11 @@ class ParticleRender {
 	private int vbo;
 	
 	private ParticleShader shader;
-	private Model model;
+	private Mesh model;
 	private int pointer = 0;
 	
 	public ParticleRender() {
-		model = Model.create();
+		model = Mesh.create();
 		model.bind();
 		model.createAttribute(0, VERTICES, 2);
 		model.unbind();

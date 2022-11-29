@@ -18,7 +18,7 @@ import gl.Render;
 import gl.generic.LightGenericShader;
 import gl.light.DynamicLight;
 import gl.light.DynamicLightHandler;
-import gl.res.Model;
+import gl.res.Mesh;
 import gl.res.Texture;
 import map.architecture.ActiveLeaves;
 import map.architecture.Architecture;
@@ -108,7 +108,7 @@ public class ArcObjects {
 				continue;
 			for (ArcStaticObject object : batch) {
 				
-				Model model = getModel(object.model);
+				Mesh model = getModel(object.model);
 				if (model == null) 
 					continue;
 				
@@ -132,10 +132,10 @@ public class ArcObjects {
 		shader.stop();
 	}
 
-	public Model getModel(short modelId) {
+	public Mesh getModel(short modelId) {
 		if (modelId < 0)
 			return null;
-		return Resources.getModel(modelReferences[modelId]);
+		return Resources.getMesh(modelReferences[modelId]);
 	}
 
 	private Texture getTexture(short modelId) {

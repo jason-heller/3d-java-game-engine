@@ -9,7 +9,7 @@ import org.joml.Vector3f;
 
 import dev.cmd.Console;
 import geom.Plane;
-import gl.res.Model;
+import gl.res.Mesh;
 import map.architecture.components.ArcEdge;
 import map.architecture.components.ArcFace;
 import map.architecture.components.ArcTextureMapping;
@@ -155,7 +155,7 @@ public class BspLeaf {
 					mdlTxtrs[t++] = lt;
 				}
 
-				Model model = Model.create();
+				Mesh model = Mesh.create();
 				model.bind();
 				model.createAttribute(0, mdlVerts, 3);
 				model.createAttribute(1, mdlTxtrs, 4);

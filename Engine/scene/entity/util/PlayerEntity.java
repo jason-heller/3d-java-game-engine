@@ -2,13 +2,13 @@ package scene.entity.util;
 
 import org.joml.Vector3f;
 
-import audio.AudioHandler;
 import core.App;
 import dev.Debug;
 import geom.Plane;
 import gl.Camera;
 import gl.CameraFollowable;
 import gl.Window;
+import gl.anim.Animator;
 import scene.PlayableScene;
 import ui.UI;
 
@@ -35,7 +35,9 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 	public PlayerEntity(Camera camera) {
 		super("player", new Vector3f(1f, PlayerHandler.BBOX_HEIGHT, 1f));
 		this.camera = camera;
-		camera.setFocus(this);
+		this.setModel("untitled");
+		this.setAnimator(new Animator(getModel().getSkeleton(), this));
+		getAnimator().loop("wlk_s");
 		PlayerHandler.setEntity(this);
 		
 	}
@@ -47,11 +49,9 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 		
 		if (grounded && camera.getControlStyle() != Camera.SPECTATOR) {
 			
-			viewAngle.set(0f, this.getRotation().y, 0f);
-			
 			stepTimer += Window.deltaTime * new Vector3f(vel.x, 0f, vel.z).length();
 			
-			if (stepTimer > 12) {
+			/*if (stepTimer > 12) {
 				stepTimer = 0f;
 				
 				String sfx;
@@ -69,7 +69,7 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 					sfx = "walk_rock";
 				}
 				AudioHandler.play(sfx);
-			}
+			}*/
 		}
 		
 		invulnTimer = Math.max(invulnTimer - Window.deltaTime, 0f);

@@ -6,7 +6,7 @@ import java.util.List;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL15;
 
-import gl.res.Model;
+import gl.res.Mesh;
 import gl.res.Vbo;
 
 class Attribute {
@@ -115,7 +115,7 @@ public class ModelBuilder {
 		addColor(n.x, n.y, n.z, 1f);
 	}
 
-	public static Model buildQuad(float[] vertices) {
+	public static Mesh buildQuad(float[] vertices) {
 		final float[] normals = new float[vertices.length];
 		final Vector3f normal = getNormal(vertices, 0);
 		for (int i = 0; i < 4; i++) {
@@ -124,7 +124,7 @@ public class ModelBuilder {
 			normals[i * 3 + 2] = normal.x;
 		}
 
-		final Model model = Model.create();
+		final Mesh model = Mesh.create();
 		model.bind();
 		model.createAttribute(0, vertices, 3);
 		model.createAttribute(1, new float[] { 0, 0, 1, 0, 0, 1, 1, 1 }, 2);
@@ -135,8 +135,8 @@ public class ModelBuilder {
 		return model;
 	}
 
-	public Model createModel() {
-		final Model model = Model.create();
+	public Mesh createModel() {
+		final Mesh model = Mesh.create();
 		model.bind();
 		for (Attribute attrib : attribs) {
 			model.createAttribute(attrib.id, attrib.getData(), attrib.stride);
@@ -157,7 +157,7 @@ public class ModelBuilder {
 		return inds;
 	}
 
-	public Model finish() {
+	public Mesh finish() {
 		indexRel = 0;
 		return createModel();
 	}

@@ -13,9 +13,10 @@ import org.lwjgl.opengl.GL11;
 import audio.AudioHandler;
 import dev.cmd.Console;
 import gl.anim.Animation;
-import gl.res.AnimModel;
+import gl.res.Mesh;
+import gl.res.MeshUtils;
 import gl.res.Model;
-import gl.res.ModelUtils;
+import gl.res.ModelBuilder;
 import gl.res.Texture;
 import gl.res.TextureUtils;
 import gr.zdimensions.jsquish.Squish;
@@ -25,13 +26,14 @@ import map.ground.TerrainUtils;
 
 public class Resources {
 	private static Map<String, Texture> textureMap = new HashMap<String, Texture>();
-	private static Map<String, Model> modelMap = new HashMap<String, Model>();
+	private static Map<String, Mesh> meshMap = new HashMap<String, Mesh>();
 	private static Map<String, Animation> animationMap = new HashMap<String, Animation>();
 	private static Map<String, Integer> soundMap = new HashMap<String, Integer>();
 	
-	public static final Model QUAD2D = ModelUtils.quad2DModel();
-	public static final Model ERROR = Resources.addObjModel("error", "error.obj");
-	public static final AnimModel ERROR_ANIM = createErrAnim();
+	private static Map<String, Model> modelMap = new HashMap<String, Model>();
+	
+	public static final Mesh QUAD2D = MeshUtils.buildBillboardMesh();
+	public static Model ERROR;
 
 	public static Texture DEFAULT, NO_TEXTURE;
 
@@ -68,16 +70,25 @@ public class Resources {
 		return null;
 	}
 
-	private static AnimModel createErrAnim() {
+	private static Model createErrorModel() {
+		ModelBuilder builder = new ModelBuilder();
+		
+		builder.addObjMesh("error.obj");
+		builder.addTexture("error.png");
+		
+		return builder.toModel();
+	}
+
+	/*private static AnimModel createErrAnim() {
 		AnimModel errAnim = new AnimModel(1);
 		errAnim.addModel(0, ERROR);
 		
-		Resources.addTexture("error", "error.png");
+		Resources.addTexture("error", "");
 		ERROR.defaultTexture = "error";
 		// ERROR.setSkeleton(Skeleton.NO_SKELETON);
 		
 		return errAnim;
-	}
+	}*/
 
 	public static void addAnimation(String key, Animation animation) {
 		animationMap.put(key, animation);
@@ -96,12 +107,10 @@ public class Resources {
 	 * @param path           the path to the resource's file
 	 * @return the resource
 	 */
-	public static AnimModel addModel(String key, String path) {
-		final AnimModel animModel = MFLoader.readMF(key, path);
-		for(int i = 0; i < animModel.getModels().length; i++) {
-			modelMap.put(key + i, animModel.getModel(i));
-		}
-		return animModel;
+	public static Model addModel(String key, String path) {
+		final Model model = MFLoader.readMF(key, path);
+		modelMap.put(key,  model);
+		return model;
 	}
 
 	/**
@@ -115,9 +124,9 @@ public class Resources {
 	 * @return the resource
 	 */
 	@Deprecated
-	public static Model addObjModel(String key, String path) {
-		final Model mdl = ModelUtils.loadObj("res/" + path);
-		modelMap.put(key, mdl);
+	public static Mesh addObjModel(String key, String path) {
+		final Mesh mdl = MeshUtils.loadObj("res/" + path);
+		meshMap.put(key, mdl);
 		return mdl;
 	}
 
@@ -214,17 +223,34 @@ public class Resources {
 	}
 
 	public static void cleanUp() {
-		for (final Model model : modelMap.values()) {
+		for (final Mesh model : meshMap.values()) {
 			model.cleanUp();
 		}
 
 		for (final Texture texture : textureMap.values()) {
-			texture.delete();
+			texture.cleanUp();
 		}
 
 		for (final int buffer : soundMap.values()) {
 			AL10.alDeleteBuffers(buffer);
 		}
+		
+		for(final Model model : modelMap.values()) {
+			if (model == ERROR)
+				continue;
+			
+			int numMeshes = model.getMeshes().length;
+			
+			for(int i = 0; i < numMeshes; i++) {
+				model.getMeshes()[i].cleanUp();
+				Texture t = model.getTextures()[i];
+				if (t != null && t != DEFAULT)
+					t.cleanUp();
+			}
+		}
+		
+		ERROR.getMeshes()[0].cleanUp();
+		ERROR.getTextures()[0].cleanUp();
 
 	}
 
@@ -240,6 +266,11 @@ public class Resources {
 		return animationMap.get(modelKey + "_" + animationKey);
 	}
 
+	public static Mesh getMesh(String key) {
+		Mesh mesh = meshMap.get(key);
+		return mesh == null ? ERROR.getMeshes()[0] : mesh;
+	}
+	
 	public static Model getModel(String key) {
 		Model model = modelMap.get(key);
 		return model == null ? ERROR : model;
@@ -268,7 +299,7 @@ public class Resources {
 	public static void removeTexture(String key) {
 		if (key.equals("default"))
 			return;
-		textureMap.get(key).delete();
+		textureMap.get(key).cleanUp();
 		textureMap.remove(key);
 	}
 
@@ -301,12 +332,14 @@ public class Resources {
 	}
 
 	public static void removeModel(String key) {
-		modelMap.remove(key).cleanUp();
+		meshMap.remove(key).cleanUp();
 	}
 
 	public static void initBaseResources() {
 		DEFAULT = addTexture("default", "default.png");
 		NO_TEXTURE = addTexture("none", "flat.png");
+		
+		ERROR = createErrorModel();
 
 		addTexture("noise", "noise.png");
 		addObjModel("cube", "cube.obj");

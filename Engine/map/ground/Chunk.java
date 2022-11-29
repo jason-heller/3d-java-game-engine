@@ -5,12 +5,12 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
-import gl.res.Model;
+import gl.res.Mesh;
 import gl.res.Vbo;
 
 public class Chunk {
 	
-	private Model model;
+	private Mesh model;
 	private Vbo heightNormalVbo;
 	private boolean loaded;
 	public int x, z;
@@ -24,7 +24,7 @@ public class Chunk {
 	}
 
 	public void addHeights(Vector4f[][] heights) {
-		model = Model.create();
+		model = Mesh.create();
 		Vbo vertexVbo = ChunkMeshHandler.vertexVbos[tesselation];
 		Vbo texCoordVbo = ChunkMeshHandler.textureCoordVbo;
 		Vbo indexVbo = ChunkMeshHandler.indexVbo;
@@ -44,7 +44,7 @@ public class Chunk {
 		model.unbind();
 	}
 	
-	public Model getModel() {
+	public Mesh getModel() {
 		return model;
 	}
 	

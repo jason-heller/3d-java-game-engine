@@ -18,6 +18,7 @@ import gl.arc.ArcRenderMaster;
 import gl.generic.LightGenericShader;
 import gl.light.DynamicLight;
 import gl.light.DynamicLightHandler;
+import gl.res.Mesh;
 import gl.res.Model;
 import gl.res.Texture;
 import map.architecture.ActiveLeaves;
@@ -27,14 +28,14 @@ import scene.entity.Entity;
 
 public class EntityRender {
 
-	public static Model billboard;
+	public static Mesh billboard;
 	
 	public EntityRender() {
 		billboard = createBillBoardedModel();
 	}
 	
-	private Model createBillBoardedModel() {
-		Model model = Model.create();
+	private Mesh createBillBoardedModel() {
+		Mesh model = Mesh.create();
 		model.bind(0, 1, 2);
 		model.createAttribute(0, new float[] { -1f, -1f, 0f, 1f, -1f, 0f, 1f, 1f, 0f, -1f, 1f, 0f }, 3);
 		model.createAttribute(1, new float[] { 1, 1, 0, 1, 0, 0, 1, 0 }, 2);
@@ -106,34 +107,38 @@ public class EntityRender {
 		if (model == null || !entity.visible || entity.getAnimator() != null) 
 			return;
 		
-		Texture texture = entity.getTexture();
-		
-		model.getMeshData().update(model, texture, entity.getMatrix());
+		int numMeshes = model.getMeshes().length;
+		for(int i = 0; i < numMeshes; i++) {
+			Mesh mesh = model.getMeshes()[i];
+			Texture texture = model.getTextures()[i];
+			
+			mesh.getMeshData().update(mesh, texture, entity.getMatrix());
 
-		if (!Debug.ambientOnly) {
-			if (texture == null)
-				Resources.DEFAULT.bind(0);
-			else
-				texture.bind(0);
-		}
-		
-		shader.lights.loadVec3(arc.getLightsAt(entity.pos));
-		Vector3f color = entity.getColor();
-		shader.color.loadVec4(color.x, color.y, color.z, entity.getColorBlendFactor());
-		
-		if (model == billboard) {
-			Matrix4f matrix = new Matrix4f();
-			matrix.translate(entity.pos);
-			matrix.rotateY(-camera.getYaw());
-			matrix.scale(entity.scale);
-			matrix.scale(texture.width / 128f, texture.height / 128f, 1f);
-			shader.modelMatrix.loadMatrix(matrix);
-		} else {
-			shader.modelMatrix.loadMatrix(entity.getMatrix());
-		}
+			if (!Debug.ambientOnly) {
+				if (texture == null)
+					Resources.DEFAULT.bind(0);
+				else
+					texture.bind(0);
+			}
+			
+			shader.lights.loadVec3(arc.getLightsAt(entity.pos));
+			Vector3f color = entity.getColor();
+			shader.color.loadVec4(color.x, color.y, color.z, entity.getColorBlendFactor());
+			
+			if (mesh == billboard) {
+				Matrix4f matrix = new Matrix4f();
+				matrix.translate(entity.pos);
+				matrix.rotateY(-camera.getYaw());
+				matrix.scale(entity.scale);
+				matrix.scale(texture.width / 128f, texture.height / 128f, 1f);
+				shader.modelMatrix.loadMatrix(matrix);
+			} else {
+				shader.modelMatrix.loadMatrix(entity.getMatrix());
+			}
 
-		model.bind(0, 1, 2);
-		GL11.glDrawElements(GL11.GL_TRIANGLES, model.getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
+			mesh.bind(0, 1, 2);
+			GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
+		}
 	}
 
 	public void cleanUp() {

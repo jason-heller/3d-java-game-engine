@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.joml.Matrix4f;
 
-import gl.res.Model;
+import gl.res.Mesh;
 import gl.res.Texture;
 
 public class MeshData {
@@ -43,7 +43,7 @@ public class MeshData {
 		return noLighting;
 	}
 
-	public void update(Model model, Texture texture, Matrix4f matrix) {
+	public void update(Mesh model, Texture texture, Matrix4f matrix) {
 		for(MeshTag struct : structs) {
 			struct.update(model, texture, matrix);
 		}

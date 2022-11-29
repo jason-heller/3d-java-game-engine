@@ -7,7 +7,7 @@ import org.joml.Vector3f;
 import dev.cmd.Console;
 import geom.AxisAlignedBBox;
 import geom.Plane;
-import gl.res.Model;
+import gl.res.Mesh;
 import util.MathUtil;
 
 /**
@@ -27,7 +27,7 @@ public class ArcHeightmap {
 	
 	private short tex1, tex2;
 	
-	private Model model;
+	private Mesh model;
 	
 	public ArcHeightmap(Vector3f origin, AxisAlignedBBox bounds, int firstVertex, int numVertices, int subdivisions, int faceId, int hmapLightId, short tex1, short tex2) {
 		this.origin = origin;
@@ -151,7 +151,7 @@ public class ArcHeightmap {
 			}
 		}
 		
-		model = Model.create();
+		model = Mesh.create();
 		model.bind();
 		model.createAttribute(0, verts, 3);
 		model.createAttribute(1, uvs, 4);
@@ -268,7 +268,7 @@ public class ArcHeightmap {
 		return MathUtil.barycentric(px, pz, p1, p2, p3);
 	}
 
-	public Model getModel() {
+	public Mesh getModel() {
 		return model;
 	}
 	

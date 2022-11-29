@@ -109,7 +109,7 @@ public class MainMenuUI {
 	}
 	
 	public void cleanUp() {
-		mainMenuBg.delete();
+		mainMenuBg.cleanUp();
 	}
 	
 	public void update() {
