@@ -125,7 +125,7 @@ public class ShaderProgram {
 
 	protected void storeAllUniformLocations(Uniform... uniforms) {
 		for (final Uniform uniform : uniforms) {
-			uniform.storeUniformLocation(programID);
+			uniform.storeUniformLocation(name, programID);
 		}
 		GL20.glValidateProgram(programID);
 	}

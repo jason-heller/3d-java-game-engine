@@ -12,6 +12,7 @@ import dev.cmd.Console;
 import gl.res.Texture;
 import io.Input;
 import io.Settings;
+import map.architecture.ArchitectureHandler;
 import scene.MapPanel;
 import scene.PlayableScene;
 import scene.Scene;
@@ -159,6 +160,11 @@ public class MainMenuUI {
 	}
 	
 	public void changeMap(String map) {
+		if (!ArchitectureHandler.isValidMap(map)) {
+			Console.warning("No such map: " + map);
+			return;
+		}
+		
 		musicSource.removeEffect();
 		musicSource.removeFilter();
 		

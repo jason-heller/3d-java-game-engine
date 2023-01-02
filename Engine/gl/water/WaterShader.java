@@ -25,7 +25,7 @@ public class WaterShader extends ShaderProgram {
 	public UniformVec3 offset = new UniformVec3("offset");
 	public UniformVec2 scales = new UniformVec2("scales");
 	public UniformVec3 cameraPos = new UniformVec3("cameraPos");
-	public UniformSampler reflection = new UniformSampler("modelMartix");
+	public UniformSampler reflection = new UniformSampler("reflection");
 	public UniformSampler refraction = new UniformSampler("refraction");
 	public UniformSampler dudv = new UniformSampler("dudv");
 	public UniformSampler depth = new UniformSampler("depth");

@@ -20,10 +20,10 @@ enum CommandData {
 	// Methods
 	quit(false),
 	exit(false),
+	clear(false),
 	noclip(true),
 	spawn(true, "name", "\"args\""),
 	map(false, ArchitectureHandler.validMaps),
-	nextmap(false),
 	volume(false),
 	run(false),
 	bind(Controls.class, false, "key", "action"),

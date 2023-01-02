@@ -47,7 +47,7 @@ public class CommandMethods {
 	
 	public static void map(String map) {
 		if (!ArchitectureHandler.isValidMap(map)) {
-			Console.log("No such map: " + map);
+			Console.warning("No such map: " + map);
 			return;
 		}
 		
@@ -58,10 +58,6 @@ public class CommandMethods {
 		AudioHandler.stopAll();
 		PlayableScene.currentMap = map;
 		App.changeScene(MapScene.class);
-	}
-	
-	public static void nextmap() {
-		ArchitectureHandler.nextMap();
 	}
 	
 	public static void noclip() {
@@ -240,6 +236,10 @@ public class CommandMethods {
 	
 	public static void fps(int fps) {
 		Window.maxFramerate = fps;
+	}
+	
+	public static void clear() {
+		Console.clear();
 	}
 
 	public static void quit() {

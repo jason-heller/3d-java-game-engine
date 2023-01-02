@@ -44,6 +44,11 @@ public class Colors {
 	}
 
 	public static Vector3f getColor(char c, int pos) {
+		if (c >= 48 && c <= 57) {
+			float col = (c - 48) * .1f;
+			return new Vector3f(col, col, col);
+		}
+		
 		switch (c) {
 		case 'r':
 			return RED;
@@ -63,8 +68,6 @@ public class Colors {
 			return INDIGO;
 		case 'v':
 			return VIOLET;
-		case '0':
-			return BLACK;
 		case 'R':
 			return hsvToRgb(pos % 20 / 20.1f, .85f, 1f);
 		case '*':

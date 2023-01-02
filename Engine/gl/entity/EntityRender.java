@@ -12,6 +12,7 @@ import org.lwjgl.opengl.GL30;
 
 import core.Resources;
 import dev.Debug;
+import dev.cmd.Console;
 import gl.Camera;
 import gl.Render;
 import gl.arc.ArcRenderMaster;
@@ -103,15 +104,15 @@ public class EntityRender {
 	
 	private void render(Architecture arc, Camera camera, Entity entity, LightGenericShader shader) {
 		Model model = entity.getModel();
-
+		
 		if (model == null || !entity.visible || entity.getAnimator() != null) 
 			return;
-		
+
 		int numMeshes = model.getMeshes().length;
 		for(int i = 0; i < numMeshes; i++) {
 			Mesh mesh = model.getMeshes()[i];
 			Texture texture = model.getTextures()[i];
-			
+
 			mesh.getMeshData().update(mesh, texture, entity.getMatrix());
 
 			if (!Debug.ambientOnly) {

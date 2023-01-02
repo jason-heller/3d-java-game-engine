@@ -30,8 +30,6 @@ public class PlayableSceneUI {
 		mainMenu.setFocus(true);
 		mainMenu.setBordered(true);
 		options = new OptionsPanel(null);
-		
-		Resources.addTexture("hp", "gui/hp.png");
 
 		mainMenu.addListener(new MenuListener() {
 
@@ -56,14 +54,13 @@ public class PlayableSceneUI {
 	}
 	
 	public void cleanUp() {
-		Resources.getTexture("hp").cleanUp();
 	}
 	
 	public void update() {
 		if (scene.isLoading)
 			return;
 		
-		UI.drawString(App.VERSION, 5, 5, .25f, false);
+		UI.drawString(App.VERSION, 5, 5, .15f, false);
 
 		if (Input.isPressed(Controls.get("pause"))) {
 			if (!paused) {

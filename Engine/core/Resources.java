@@ -79,17 +79,6 @@ public class Resources {
 		return builder.toModel();
 	}
 
-	/*private static AnimModel createErrAnim() {
-		AnimModel errAnim = new AnimModel(1);
-		errAnim.addModel(0, ERROR);
-		
-		Resources.addTexture("error", "");
-		ERROR.defaultTexture = "error";
-		// ERROR.setSkeleton(Skeleton.NO_SKELETON);
-		
-		return errAnim;
-	}*/
-
 	public static void addAnimation(String key, Animation animation) {
 		animationMap.put(key, animation);
 	}

@@ -92,17 +92,17 @@ public class Debug {
 		String vz = String.format("%.1f", player.vel.z);
 		String spd = String.format("%.1f", new Vector3f(player.vel.x, player.vel.z, 0f).length());
 
-		UI.drawString(
-				"\n#rX: " + cx + " #gY: " + cy + " #bZ: " + cz
-				+ "\n#rVX: " + vx + " #gVY: " + vy + " #bVZ: " + vz
-				+ "\n" + "#wFPS: " + (int) Window.framerate + "/" + Window.maxFramerate
+		String debugData = "\n#wFPS: " + (int) Window.framerate + "/" + Window.maxFramerate
+				+ "\npos (#rX: " + cx + " #gY: " + cy + " #bZ: " + cz + "#w)"
+				+ "\nvel (#rX: " + vx + " #gY: " + vy + " #bZ: " + vz + "#w)"
+				+ "\n" + "spd: " + spd
 				+ "\n" + "draw calls: " + Render.drawCalls
-				+ "\n" + "tex swaps: " + Render.textureSwaps
-				+ "\n" + "speed: " + spd
-				+ "\n" + MemDebug.memoryInfo(),
-				5, 5, .25f, false);
+				+ "\n" + "tex swaps: " + Render.textureSwaps;
+		//		+ "\n" + MemDebug.memoryInfo();
 		
-		MemDebug.visualizeInfo();
+		UI.drawString(debugData, 5, 5, .15f, false);
+		
+		// MemDebug.visualizeInfo();
 		
 		//UI.drawImage("reflection", 0,0,512,512, Colors.WHITE);
 		

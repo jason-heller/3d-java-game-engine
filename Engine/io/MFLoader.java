@@ -23,7 +23,7 @@ public class MFLoader {
 	public static final byte VERSION_MINOR = 0;
 	private static final int MAX_BONES_PER_VERTEX = 3;
 
-	private static Model getMeshes(ByteBuffer is) throws IOException {
+	private static Model getMeshes(ByteBuffer is) throws IOException, NegativeArraySizeException {
 		
 		int flags = is.get();
 		int numMeshes = is.get();
@@ -49,7 +49,7 @@ public class MFLoader {
 		return model;
 	}
 	
-	private static Mesh getMesh(ByteBuffer bb) throws IOException {
+	private static Mesh getMesh(ByteBuffer bb) throws IOException, NegativeArraySizeException {
 		
 		String name = "";
 		byte c;
@@ -216,6 +216,10 @@ public class MFLoader {
 			model = getMeshes(bb);
 
 		} catch (final IOException e) {
+			System.err.println("MF file " + key + " failed to load. Read " + bb.position() + " bytes");
+			e.printStackTrace();
+		} catch (final NegativeArraySizeException e) {
+			System.err.println("MF file " + key + " failed to be read; loader expected different values. Read " + bb.position() + " bytes");
 			e.printStackTrace();
 		}
 		

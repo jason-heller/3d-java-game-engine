@@ -5,6 +5,7 @@ import org.joml.Vector4f;
 
 import audio.speech.SpeechHandler;
 import core.App;
+import core.Resources;
 import dev.cmd.Console;
 import gl.Camera;
 import gl.anim.Animator;
@@ -13,6 +14,7 @@ import gl.skybox.Skybox2D;
 import gl.skybox._3d.Skybox3D;
 import gl.skybox._3d.SkyboxCamera;
 import io.Input;
+import scene.MainMenu;
 import scene.PlayableScene;
 import scene.entity.DummyEntity;
 import scene.entity.EntityHandler;
@@ -31,23 +33,31 @@ public class MapScene extends PlayableScene {
 		camera.setControlStyle(Camera.THIRD_PERSON);
 		camera.setFocus(player);
 		
-		arcHandler.load(this, new Vector3f(), PlayableScene.currentMap);
+		boolean mapLoadSucceeded = arcHandler.load(this, new Vector3f(), PlayableScene.currentMap);
+		
+		if (!mapLoadSucceeded) {
+			App.changeScene(MainMenu.class);
+			return;
+		}
+		
 		EntityHandler.addEntity(player);
 		arcHandler.getArchitecture().callCommand("spawn_player");
-		arcHandler.getArchitecture().callCommand(player, "trigger_soundscape");
+		// arcHandler.getArchitecture().callCommand(player, "trigger_soundscape");
 		player.getPosition().y += 5;
 		
-		/*for(int i = 0; i < 6; i++) {
-			DummyEntity e = new DummyEntity();
-			e.update(this);
-			e.pos.y+=5;
-			e.scale = 2f;
-			e.setModel("untitled" + i);
-			e.setTexture(e.getModel().defaultTexture);
-			Animator anim = new Animator(e.getModel().getSkeleton(), e);
-			anim.loop("wlk_s");
-			EntityHandler.addEntity(e);
-		}*/
+		////// Test code ///////
+		DummyEntity e = new DummyEntity();
+		e.update(this);
+		e.pos.y += 10;
+		e.scale = 2f;
+		e.visible=true;
+		e.setAnimator(null);
+		/*e.setModel("untitled");
+		e.rot.z = 90f;
+		Animator anim = new Animator(e.getModel().getSkeleton(), e);
+		anim.loop("wlk_s");
+		anim.setSpeedMultiplier(-1f);*/
+		EntityHandler.addEntity(e);
 		
 		if (arcHandler.isSkyboxEnabled()) {
 			SkyboxCamera skyCam = arcHandler.getArchitecture().getSkyCamera();

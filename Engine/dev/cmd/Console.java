@@ -1,6 +1,5 @@
 package dev.cmd;
 
-import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -20,7 +19,7 @@ import util.Colors;
 import util.StrUtils;
 
 public class Console {
-	private static final int VISIBLE_LINES = 24, MAX_LINES = 200;
+	private static final int VISIBLE_LINES = 32, MAX_LINES = 200;
 	private static int lineCopyInd = -1;
 
 	private static int x = 20, y = 20;
@@ -42,7 +41,7 @@ public class Console {
 	private static int dragX = 0, lastX = 0;
 	private static int dragY = 0, lastY = 0;
 
-	private static final float FONT_SIZE = .2f;
+	private static final float FONT_SIZE = .14f;
 	private static final int FONT_HEIGHT = (int) (22 * (FONT_SIZE / .3f));
 
 	private static boolean playerWasAlreadyDisabled = false;
@@ -85,24 +84,30 @@ public class Console {
 
 		};
 
-		System.setOut(outStream);
+		// System.setOut(outStream);
 		// System.setErr(errStream);
 	}
 
 	public static boolean isVisible() {
 		return visible;
 	}
-	
+
 	public static void warning(Object... x) {
-		for(Object obj : x) {
-			log("#yWarning: "+obj);
+		for (Object obj : x) {
+			log("#yWarning: " + obj);
 		}
 	}
-	
+
 	public static void severe(Object... objects) {
 		for (Object obj : objects) {
 			log("#rSevere: " + obj);
 			System.err.println(objects);
+		}
+	}
+
+	public static void highlight(Object... x) {
+		for (Object obj : x) {
+			log("#b" + obj);
 		}
 	}
 
@@ -375,7 +380,7 @@ public class Console {
 			UI.drawImage(border);
 			UI.drawImage(backdrop);
 
-			UI.drawString(Font.consoleFont, "Console", x + 2, y, .25f, UI.width, false).setDepth(-Integer.MAX_VALUE);
+			UI.drawString(Font.consoleFont, "Console", x + 3, y + 3, .16f, UI.width, false).setDepth(-Integer.MAX_VALUE);
 
 			final int lineBottomViewInd = lineViewInd + VISIBLE_LINES - 1;
 			for (int i = lineViewInd; i < log.size() && i < lineBottomViewInd; i++) {
@@ -392,9 +397,9 @@ public class Console {
 			UI.drawRect(x, y + HEADER_HEIGHT + BORDER_WIDTH + (VISIBLE_LINES + 1) * FONT_HEIGHT, predWidth,
 					predictions.size() * FONT_HEIGHT + BORDER_WIDTH, BORDER_COLOR).setDepth(-9998);
 			for (int i = 0; i < predictions.size(); i++) {
-				final int lineY = (y + (VISIBLE_LINES + i + 2) * FONT_HEIGHT) + 5;
+				final int lineY = (y + (VISIBLE_LINES + i + 3) * FONT_HEIGHT) + 1;
 
-				final String color = lineCopyInd == i ? "#w" : "#s";
+				final String color = lineCopyInd == i ? "#w" : "#6";
 
 				UI.drawString(Font.consoleFont, color + predictions.get(i), x + BORDER_WIDTH * 2, lineY, FONT_SIZE,
 						UI.width, false).setDepth(-Integer.MAX_VALUE);

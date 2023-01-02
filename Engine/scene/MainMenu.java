@@ -2,6 +2,8 @@ package scene;
 
 import org.joml.Vector4f;
 
+import core.Resources;
+import dev.cmd.Console;
 import gl.Camera;
 import map.architecture.ArchitectureHandler;
 import scene.menu.MainMenuUI;

@@ -25,9 +25,9 @@ public class UniformVec3Array extends Uniform {
 	}
 
 	@Override
-	protected void storeUniformLocation(int programID) {
+	protected void storeUniformLocation(String name, int programID) {
 		for (final UniformVec3 matrixUniform : uniforms) {
-			matrixUniform.storeUniformLocation(programID);
+			matrixUniform.storeUniformLocation(name, programID);
 		}
 	}
 }

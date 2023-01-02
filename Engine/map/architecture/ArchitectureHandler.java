@@ -29,9 +29,7 @@ public class ArchitectureHandler {
 	
 	private Architecture architecture;
 	
-	private static boolean changeMap = false;
 	public static String[] validMaps = new String[0];
-	private static int currentMap = 0;
 
 	public static void pollValidMaps() {
 		File f = new File("maps/");
@@ -56,13 +54,19 @@ public class ArchitectureHandler {
 		ArcRenderMaster.init();
 	}
 
-	public void load(Scene scene, Vector3f vec, String path) {
+	public boolean load(Scene scene, Vector3f vec, String path) {
 
 		architecture = new Architecture(scene);
-		ArcLoader.load(scene, path, architecture);
+		boolean success = ArcLoader.load(scene, path, architecture);
+		
+		if (!success)
+			return false;
+		
 		Map<Integer, Texture> envMaps = EnvironmentMapFileLoader.readEMP(path);
 		if (envMaps != null)
 			architecture.setEnvironmentMaps(envMaps);
+		
+		return true;
 	}
 	
 	public void cleanUp() {
@@ -164,22 +168,10 @@ public class ArchitectureHandler {
 	}
 
 	public void update(Camera camera) {
-		if (changeMap) {
-			Console.send("map test");
-			changeMap = false;
-			return;
-		}
-		
 		architecture.determineVisibleLeafs(camera);
 	}
 	
 	public boolean isSkyboxEnabled() {
 		return architecture.hasSkybox;
-	}
-	
-	public static void nextMap() {
-		currentMap++;
-		changeMap = true;
-		
 	}
 }

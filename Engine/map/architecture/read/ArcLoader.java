@@ -13,6 +13,7 @@ import static map.architecture.read.ArcLoadTextures.readTextureInfo;
 import static map.architecture.read.ArcLoadTextures.readTextureList;
 import static map.architecture.read.ArcLoadVis.readVis;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -32,7 +33,6 @@ import map.architecture.components.ArcStaticObject;
 import map.architecture.components.ArcTextureData;
 import map.architecture.vis.Bsp;
 import map.architecture.vis.Pvs;
-import scene.MainMenu;
 import scene.Scene;
 import scene.entity.EntityHandler;
 import ui.UI;
@@ -44,10 +44,10 @@ public class ArcLoader {
 	private static final byte EXPECTED_GAME_ID = 1;
 	private static final byte EXPECTED_FILE_VERSION = 1;
 	
-	public static void load(Scene scene, String mapFileName, Architecture arc) {
+	public static boolean load(Scene scene, String mapFileName, Architecture arc) {
 		CounterInputStream in = null;
 		String fileName = "maps/" + mapFileName + ".arc";
-
+		
 		Bsp bsp = new Bsp();
 		Pvs pvs = new Pvs();
 		ArcNavigation nav = new ArcNavigation();
@@ -59,30 +59,26 @@ public class ArcLoader {
 
 		ArcTextureData texData = new ArcTextureData(arc);
 		
-		boolean successfulLoad = false;
-
-		System.err.println("loading " + fileName);
-		
 		try {
 			in = new CounterInputStream(new FileInputStream(fileName));
 
 			String identifier = new String(new byte[] { in.readByte(), in.readByte(), in.readByte() });
 			if (!identifier.equals("ARC")) {
-				Console.log("Error: Tried to load an " + identifier + " file as an ARC file");
-				return;
+				Console.severe("Tried to load an " + identifier + " file as an ARC file");
+				return false;
 			}
 
 			byte versionId = in.readByte();
 			byte gameId = in.readByte();
 			
 			if (versionId != EXPECTED_FILE_VERSION) {
-				Console.log("Error: ARC file is version " + versionId + ", expected version " + EXPECTED_FILE_VERSION);
-				return;
+				Console.severe("ARC file is version " + versionId + ", expected version " + EXPECTED_FILE_VERSION);
+				return false;
 			}
 
 			if (gameId != EXPECTED_GAME_ID) {
-				Console.log("Error: ARC file is not formatted for this game (game id is " + gameId + ")");
-				return;
+				Console.severe("ARC file is not formatted for this game (game id is " + gameId + ")");
+				return false;
 			}
 
 			byte mapVer = in.readByte();
@@ -99,7 +95,7 @@ public class ArcLoader {
 				
 				LumpIdentifier id = LumpIdentifier.values()[lumpId];
 				int lumpSize = in.readInt();
-				
+				System.err.println(id);
 				in.clearPosition();
 				
 				switch(id) {
@@ -168,10 +164,9 @@ public class ArcLoader {
 						e.printStackTrace();
 					}
 					
-					System.err.println("Map failed to load, lump size mismatch (" +  in.getPosition() + " of " + lumpSize + ")");
-					System.err.println("Offending lump: " + id.name());
-					App.changeScene(MainMenu.class);
-					return;
+					Console.severe("Map failed to load, lump size mismatch (" +  in.getPosition() + " of " + lumpSize + ")");
+					Console.severe("Offending lump: " + id.name());
+					return false;
 				}
 			}
 			
@@ -199,15 +194,14 @@ public class ArcLoader {
 				bsp.heightmaps[i].buildModel(bsp.heightmapVerts, bsp.faces, bsp.planes, bsp.edges, bsp.surfEdges, bsp.vertices, bsp.getTextureMappings(), textureNames);
 			}
 			
-			successfulLoad = true;
 			Console.log("Map loaded: " + mapName + " version=" + mapVer);
 
 		} catch (FileNotFoundException e) {
-			Console.log("Tried to load " + mapFileName + ", failed");
-			return;
+			Console.severe("Tried to load " + mapFileName + ", failed");
+			return false;
 		} catch (Exception e) {
 			e.printStackTrace();
-			return;
+			return false;
 		} finally {
 			if (in != null) {
 				try {
@@ -232,6 +226,8 @@ public class ArcLoader {
 				bsp.objects.createBoundingBoxes(objects);
 			}*/
 		}
+		
+		return true;
 	}
 
 	private static void loadInfo(String string, int total, int complete) {
@@ -243,7 +239,10 @@ public class ArcLoader {
 		float percent = (complete / (float)total);
 		int width = (int) (UI.width * percent);
 		UI.drawRect(cx - (width / 2), cy, width, 3, Colors.WHITE).setDepth(Integer.MIN_VALUE);
-		UI.drawString("#S" + string + " (" + complete + " / " + total +") " + (percent*100f) + "%", cx, cy + 128, .2f, true).setDepth(Integer.MIN_VALUE);
+		
+		String loadStatus = "#S" + string + " (" + complete + " / " + total +") " + (percent*100f) + "%";
+		System.err.println(loadStatus);
+		UI.drawString(loadStatus, cx, cy + 128, .2f, true).setDepth(Integer.MIN_VALUE);
 		
 		UI.render(App.scene);
 		UI.update();

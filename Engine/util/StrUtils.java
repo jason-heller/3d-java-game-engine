@@ -3,11 +3,8 @@ package util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.joml.Vector3f;
-
 import ui.Character;
 import ui.Font;
-import ui.Image;
 
 public class StrUtils {
 	public static float getWidth(String text, float textSize) {
@@ -70,10 +67,11 @@ public class StrUtils {
 		List<String> strs = new ArrayList<>();
 		char lastColor = ' ';
 		String currentLine = "";
-		for (int i = 0; i < text.length(); i++) {
+		int len = text.length();
+		for (int i = 0; i < len; i++) {
 			final char c = text.charAt(i);
 
-			if (c == '#') {
+			if (c == '#' && i != len - 1) {
 				i += 1;
 				lastColor = text.charAt(i);
 				currentLine += "#" + lastColor;

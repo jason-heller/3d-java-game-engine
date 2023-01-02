@@ -248,14 +248,21 @@ public class Architecture {
 	}
 	
 	public void cleanUp() {
+		if (bsp == null)
+			return;
+		
 		bsp.cleanUp();
 		final Texture[] textures = textureData.getTextures();
-		for(Texture texture : textures) 
-			texture.cleanUp();
+		for(Texture texture : textures)  {
+			if (texture != Resources.DEFAULT)
+				texture.cleanUp();
+		}
 		
 		if (environmentMaps != null) {
-			for(Texture texture : environmentMaps.values()) 
-				texture.cleanUp();
+			for(Texture texture : environmentMaps.values()) {
+				if (texture != Resources.DEFAULT)
+					texture.cleanUp();
+			}
 		}
 		
 		lightmap.delete();

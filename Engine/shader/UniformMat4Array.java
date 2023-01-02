@@ -25,9 +25,9 @@ public class UniformMat4Array extends Uniform {
 	}
 	
 	@Override
-	protected void storeUniformLocation(int programID) {
+	protected void storeUniformLocation(String name, int programID) {
 		for (final UniformMat4 matrixUniform : matrixUniforms) {
-			matrixUniform.storeUniformLocation(programID);
+			matrixUniform.storeUniformLocation(name, programID);
 		}
 	}
 

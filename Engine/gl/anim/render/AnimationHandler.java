@@ -42,10 +42,11 @@ public class AnimationHandler {
 		shader.cameraPos.loadVec3(camera.getPosition());
 
 		for (final Entity entity : entityBatch) {
-			if (entity.deactivated) continue;
+			if (entity.deactivated || !entity.visible) continue;
 			
 			Model model = entity.getModel();
 			final Animator animator = entity.getAnimator();
+			
 			int numMeshes = model.getMeshes().length;
 			
 			for(int i = 0; i < numMeshes; i++) {

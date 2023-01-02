@@ -38,6 +38,7 @@ public class Animator {
 	private int lastFrameID = -1;
 	
 	private Matrix4f[] pose;
+	private float speedMultiplier = 1f;
 
 	public Animator(Skeleton skeleton, Entity entity) {
 		this.entity = entity;
@@ -47,6 +48,10 @@ public class Animator {
 			numJoints = skeleton.getNumJoints();
 			AnimationHandler.add(entity);
 			entity.setAnimator(this);
+			
+			pose = new Matrix4f[numJoints];
+			for(int i = 0; i < pose.length; i++)		// HACK : Prevents a bad .DOOM load crash, find better solution
+				pose[i] = new Matrix4f();
 			
 		} else {
 			root = null;
@@ -98,6 +103,11 @@ public class Animator {
 			animationTime = 0;
 			animation = Resources.getAnimation(animName);
 			
+			if (animation == null) {
+				Console.warning("Animator attempted to load nonexistant animation: " + animName);
+				return;
+			}
+			
 			pose = new Matrix4f[animation.getNumJoints()];
 			for(int i = 0; i < pose.length; i++)
 				pose[i] = new Matrix4f();
@@ -126,7 +136,7 @@ public class Animator {
 		
 		if (animation != null) {
 			if (!isPaused && isPlaying) {
-				animationTime = animationTime + Window.deltaTime;
+				animationTime += Window.deltaTime * speedMultiplier;
 
 				if (animationTime >= animation.getDuration()) {
 					if (!isLooping) {
@@ -134,8 +144,17 @@ public class Animator {
 					} else {
 						animationTime -= animation.getDuration();
 						lastFrameID = 0;
+						priorFrame = animation.getKeyframes()[0];
+						nextFrame = animation.getKeyframes()[1];
+					}
+				} else if (animationTime < 0) {
+					if (!isLooping) {
+						stop();
+					} else {
+						animationTime += animation.getDuration();
+						lastFrameID = animation.getKeyframes().length - 1;
 						priorFrame = animation.getKeyframes()[lastFrameID];
-						nextFrame = animation.getKeyframes()[lastFrameID + 1];
+						nextFrame = animation.getKeyframes()[lastFrameID - 1];
 					}
 				}
 
@@ -155,9 +174,24 @@ public class Animator {
 		}
 	}
 	
-	public static final Quaternion CORRECTION = Quaternion.fromMatrix(new Matrix4f().rotateY(-90f));
+	//public static final Quaternion CORRECTION = Quaternion.fromMatrix(new Matrix4f().rotateY(-90f));
 	
+	public float getSpeedMultiplier() {
+		return speedMultiplier;
+	}
+
+	public void setSpeedMultiplier(float speedMultiplier) {
+		this.speedMultiplier = speedMultiplier;
+	}
+
 	private void updateAnimation(float time) {
+
+		if (time < priorFrame.getTime()) {
+			// Update frames
+			lastFrameID--;
+			priorFrame = animation.getKeyframes()[lastFrameID];
+			nextFrame = animation.getKeyframes()[lastFrameID + 1];
+		}
 		
 		if (time > nextFrame.getTime()) {
 			// Update frames
@@ -173,11 +207,12 @@ public class Animator {
 		jointMatrix.translate(rootTransform.getPosition());
 		jointMatrix.rotate(rootTransform.getRotation());
 		
-		Quaternion q = new Quaternion();
-		Quaternion.mul(rootTransform.getRotation(), CORRECTION, q);
+		//Quaternion q = new Quaternion();
+		//Quaternion.mul(rootTransform.getRotation(), CORRECTION, q);
 		
 		root.animPos.set(rootTransform.getPosition());
-		root.animRot.set(q);
+		//root.animRot.set(q);
+		
 
 		applyAnimation(0f, root);
 		// drawBones(root);
@@ -211,7 +246,7 @@ public class Animator {
 		pose[parent.index].mul(parent.getInverseBindMatrix());
 	}
 	
-	/*private void drawBones(Joint parent) {
+	private void drawBones(Joint parent) {
 		for(Joint child : parent.children) {
 			
 			drawBones(child);
@@ -222,7 +257,7 @@ public class Animator {
 			LineRender.drawLine(parent.animPos, child.animPos, Colors.WHITE);
 			//LineRender.drawLine(parent.position, child.position, Colors.WHITE);
 		}
-	}*/
+	}
 	
 	private JointTransform getJointTransform(byte index) {
 		JointTransform A = priorFrame.getTransforms().get(index);

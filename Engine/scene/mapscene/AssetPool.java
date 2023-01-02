@@ -12,14 +12,10 @@ public class AssetPool {
 	private static Queue<String> loadedModels = new LinkedList<>();
 
 	public static void loadInGameAssets() {
-		addTexture("dmg_screen_effect", "gui/jelly.png");
-		addTexture("dmg_slash", "gui/slash.png");
+		//addTexture("dmg_screen_effect", "gui/jelly.png");
+		//addTexture("dmg_slash", "gui/slash.png");
 		
 		Resources.addModel("untitled", "models/bob_lamp_update.MF");
-		
-		//addModel("weight_transfer_skater", "models/weight_transfer_skater.mod");
-		//AnimModel test = Resources.addAnimatedModel("weight_transfer_skater", "src/res/models/bob_lamp_update_export.mod");
-		//Resources.addAnimation("test_anim", "src/res/models/bob_lamp_update.md5anim");
 		DOOMLoader.load("src/res/models/bob_lamp_update.DOOM");
 	}
 

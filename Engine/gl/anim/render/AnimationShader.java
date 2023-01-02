@@ -9,7 +9,7 @@ import shader.UniformVec3;
 
 public class AnimationShader extends ShaderProgram {
 
-	private static final int MAX_JOINTS = 35;
+	private static final int MAX_JOINTS = 50;
 
 	protected static final String VERTEX_SHADER = "gl/anim/render/anim.vert";
 	protected static final String FRAGMENT_SHADER = "gl/anim/render/anim.frag";

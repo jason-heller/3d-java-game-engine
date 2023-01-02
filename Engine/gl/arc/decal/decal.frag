@@ -3,7 +3,7 @@
 in vec4 vertClipSpace;
 
 uniform sampler2D depthSamples;
-uniform sampler2D decal;
+uniform sampler2D albedo;
 
 uniform mat4 invModelView;
 uniform mat4 invProj;
@@ -30,5 +30,5 @@ void main() {
 	||  abs(objectPosition.z) > 0.5) discard;    
 	
 	vec2 decalCoords = objectPosition.xz + 0.5;
-	outColor = texture(decal, decalCoords);
+	outColor = texture(albedo, decalCoords);
 }
