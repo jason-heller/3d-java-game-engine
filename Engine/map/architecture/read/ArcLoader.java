@@ -95,7 +95,6 @@ public class ArcLoader {
 				
 				LumpIdentifier id = LumpIdentifier.values()[lumpId];
 				int lumpSize = in.readInt();
-				System.err.println(id);
 				in.clearPosition();
 				
 				switch(id) {

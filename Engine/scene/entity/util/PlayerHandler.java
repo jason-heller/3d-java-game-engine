@@ -2,6 +2,8 @@ package scene.entity.util;
 
 import org.joml.Vector3f;
 
+// TODO: Why is this separate from playerEntity anyway?
+
 import audio.AudioHandler;
 import core.App;
 import gl.Camera;
@@ -21,7 +23,7 @@ public class PlayerHandler {
 
 	public static float jumpVel = 40f;
 	public static float runSpeedMultiplier = 24f;
-	public static float maxSpeed = 85f, maxAirSpeed = 85f, maxWaterSpeed = 85f;
+	public static float maxSpeed = 55f, maxAirSpeed = 55f, maxWaterSpeed = 55f;
 	public static float accelSpeed = 400f, airAccel = 20f, waterAccel = 32f;
 	public static float maxSpeedCrouch = 72f;
 	
@@ -39,7 +41,8 @@ public class PlayerHandler {
 	
 	private static boolean crouching = false;
 	
-	public static final float BBOX_HEIGHT = 3f, BBOX_CROUCH_DIFF = (CAMERA_STANDING_HEIGHT - CAMERA_CROUCHING_HEIGHT);
+	public static final float BBOX_WIDTH = 2f, BBOX_HEIGHT = 6f;
+	public static final float BBOX_CROUCH_DIFF = (CAMERA_STANDING_HEIGHT - CAMERA_CROUCHING_HEIGHT);
 	
 	private static float direction;
 	
@@ -99,11 +102,11 @@ public class PlayerHandler {
 		if (A && D) {
 		} else if (A) {
 			if (entity.grounded) {
-				direction -= Window.deltaTime * 200f;
+				direction -= Window.deltaTime * 240f;
 			}
 		} else if (D) {
 			if (entity.grounded) {
-				direction += Window.deltaTime * 200f;
+				direction += Window.deltaTime * 240f;
 			}
 		}
 		

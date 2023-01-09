@@ -29,7 +29,7 @@ public abstract class Entity {
 	protected String name;
 	
 	public boolean deactivated;
-	public Vector3f[] lighting = new Vector3f[6];
+	private Vector3f[] lighting = new Vector3f[6];
 	
 	protected BspLeaf leaf;
 
@@ -153,5 +153,9 @@ public abstract class Entity {
 
 	public void setModel(Model model) {
 		this.model = model;
+	}
+
+	public Vector3f[] getLighting() {
+		return lighting;
 	}
 }

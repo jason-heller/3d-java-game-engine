@@ -17,7 +17,7 @@ public class MapPanel extends GuiPanel {
 		GuiRowLayout rowLayout = new GuiRowLayout(192, 24);
 		setLayout(rowLayout, x, y, UI.width, UI.height);
 	
-		menu = new GuiMenu(300, 300, "Tweed Tunnels", "Letchworth Village", "Test", "Back");
+		menu = new GuiMenu(300, 300, "Map 01", "Letchworth Village", "Test", "Back");
 		menu.setBordered(true);
 		add(menu);
 		
@@ -27,7 +27,7 @@ public class MapPanel extends GuiPanel {
 			public void onClick(String option, int index) {
 				switch (index) {
 				case 0:
-					ui.changeMap("tweed_02");
+					ui.changeMap("map01");
 					break;
 				case 1:
 					ui.changeMap("letchworth");

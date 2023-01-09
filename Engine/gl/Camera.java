@@ -10,16 +10,15 @@ import org.lwjgl.opengl.Display;
 import dev.cmd.Console;
 import geom.Frustum;
 import io.Input;
-import scene.entity.Entity;
-import scene.entity.util.PlayerEntity;
 import util.MathUtil;
+import util.ThirdPersonCameraController;
 
 public class Camera {
 	private static final float MAX_PITCH = 90;
 
 	private static float zoom, targetZoom, zoomSpeed;
 
-	public static float cameraSpeed = 20f, offsetY = 0, animSpeed = 0;
+	public static float cameraSpeed = 300f, offsetY = 0, animSpeed = 0;
 
 	public static int fov = 90;
 
@@ -32,22 +31,6 @@ public class Camera {
 	private static double movementCounter = 0f;
 	
 	public static float swayFactor = 1f;
-	
-	private static Matrix4f createProjectionMatrix(float width, float height) {
-		final Matrix4f projectionMatrix = new Matrix4f();
-		final float aspectRatio = width / height;
-		final float y_scale = (float) (1f / Math.tan(Math.toRadians((fov - zoom) / 2f)));
-		final float x_scale = y_scale / aspectRatio;
-		final float frustum_length = FAR_PLANE - NEAR_PLANE;
-
-		projectionMatrix.m00 = x_scale;
-		projectionMatrix.m11 = y_scale;
-		projectionMatrix.m22 = -((FAR_PLANE + NEAR_PLANE) / frustum_length);
-		projectionMatrix.m23 = -1;
-		projectionMatrix.m32 = -(2 * NEAR_PLANE * FAR_PLANE / frustum_length);
-		projectionMatrix.m33 = 0;
-		return projectionMatrix;
-	}
 
 	private Matrix4f projectionMatrix;
 	private final Matrix4f projectionViewMatrix = new Matrix4f();
@@ -74,6 +57,7 @@ public class Camera {
 	private Vector3f viewDirection = new Vector3f();
 
 	private CameraFollowable focus = null;
+	private ThirdPersonCameraController thirdPersonFollow = new ThirdPersonCameraController(focus);
 
 	private final boolean mouseIsGrabbed = false;
 
@@ -82,92 +66,21 @@ public class Camera {
 	public Camera() {
 		updateProjection();
 	}
-
-	public void addPitch(float f) {
-		rawPitch += f;
-	}
-
-	public void addYaw(float f) {
-		rawYaw += f;
-	}
-
-	private void clampPitch() {
-		if (rawPitch < -MAX_PITCH) {
-			rawPitch = -MAX_PITCH;
-		} else if (rawPitch > MAX_PITCH) {
-			rawPitch = MAX_PITCH;
-		}
-	}
-
-	public void setFocus(CameraFollowable focus) {
-		this.focus = focus;
-		if (focus == null) {
-			lookAt = null;
-		}
-	}
-
-	public byte getControlStyle() {
-		return controlStyle;
-	}
-
-	public Vector3f getDirectionVector() {
-		return viewDirection;
-	}
-
-	public Frustum getFrustum() {
-		return frustum;
-	}
 	
-	public Vector3f getPosition() {
-		return position;
-	}
+	private static Matrix4f createProjectionMatrix(float width, float height) {
+		final Matrix4f projectionMatrix = new Matrix4f();
+		final float aspectRatio = width / height;
+		final float y_scale = (float) (1f / Math.tan(Math.toRadians((fov - zoom) / 2f)));
+		final float x_scale = y_scale / aspectRatio;
+		final float frustum_length = FAR_PLANE - NEAR_PLANE;
 
-	public Matrix4f getProjectionMatrix() {
+		projectionMatrix.m00 = x_scale;
+		projectionMatrix.m11 = y_scale;
+		projectionMatrix.m22 = -((FAR_PLANE + NEAR_PLANE) / frustum_length);
+		projectionMatrix.m23 = -1;
+		projectionMatrix.m32 = -(2 * NEAR_PLANE * FAR_PLANE / frustum_length);
+		projectionMatrix.m33 = 0;
 		return projectionMatrix;
-	}
-
-	public Matrix4f getProjectionViewMatrix() {
-		return projectionViewMatrix;
-	}
-
-	public Vector2f getScreenShake() {
-		return screenShake;
-	}
-
-	public Matrix4f getViewMatrix() {
-		return viewMatrix;
-	}
-
-	public float getYaw() {
-		return rawYaw;
-	}
-	
-	public float getPitch() {
-		return rawPitch;
-	}
-	
-	public float getRoll() {
-		return rawRoll;
-	}
-	
-	public float getEffectedYaw() {
-		return effectedYaw;
-	}
-	
-	public float getEffectedPitch() {
-		return effectedPitch;
-	}
-	
-	public float getEffectedRoll() {
-		return effectedRoll;
-	}
-	
-	public Vector3f getPrevPosition() {
-		return prevPosition;
-	}
-
-	public void grabMouse() {
-		Input.requestMouseGrab();
 	}
 
 	private void handleControl() {
@@ -211,18 +124,6 @@ public class Camera {
 
 			position.add(forward).add(strafe);
 		}
-	}
-
-	public boolean isMouseGrabbed() {
-		return mouseIsGrabbed;
-	}
-
-	public boolean isShaking() {
-		return shakeTime == 0f;
-	}
-	
-	public boolean isSwaying() {
-		return swayTime == 0f;
 	}
 
 	public void move() {
@@ -299,12 +200,13 @@ public class Camera {
 		swayDir.z += (swayTarget.z - swayDir.z)*Window.deltaTime*swaySpeed;
 
 		if (controlStyle == THIRD_PERSON && focus != null) {
-			position.set(focus.getPosition());
-			float dirRad = (float) Math.toRadians(focus.getViewAngle().y);
-			position.add((float)-Math.sin(dirRad) * 20f, 10f, (float)-Math.cos(dirRad) * 20f);
+			position.set(thirdPersonFollow.getPosition());
+			lookAt = thirdPersonFollow.getViewAngle();
+			rawPitch = (float) Math.toDegrees(Math.asin(lookAt.y));
+			rawYaw = -(float) Math.toDegrees(Math.atan2(lookAt.x, lookAt.z));
 		}
 
-		if ((controlStyle == NO_CONTROL || controlStyle == THIRD_PERSON) && focus != null) {
+		if (controlStyle == NO_CONTROL && focus != null) {
 			final Vector3f lookPos = new Vector3f(focus.getPosition());
 			lookAt = Vector3f.sub(position, lookPos).normalize();
 			rawPitch = MathUtil.lerp(rawPitch, (float) Math.toDegrees(Math.asin(lookAt.y)), 1f);
@@ -442,6 +344,86 @@ public class Camera {
 		float altFlinch = Vector2f.dot(v, new Vector2f(look.x, look.z));
 		flinchDir.set(new Vector3f(sideFlinch, forwardFlinch, altFlinch));
 	}
+
+	private void clampPitch() {
+		if (rawPitch < -MAX_PITCH) {
+			rawPitch = -MAX_PITCH;
+		} else if (rawPitch > MAX_PITCH) {
+			rawPitch = MAX_PITCH;
+		}
+	}
+
+	public void setFocus(CameraFollowable focus) {
+		this.focus = focus;
+		this.thirdPersonFollow.setFollowing(focus);
+		if (focus == null) {
+			lookAt = null;
+		}
+	}
+
+	public byte getControlStyle() {
+		return controlStyle;
+	}
+
+	public Vector3f getDirectionVector() {
+		return viewDirection;
+	}
+
+	public Frustum getFrustum() {
+		return frustum;
+	}
+	
+	public Vector3f getPosition() {
+		return position;
+	}
+
+	public Matrix4f getProjectionMatrix() {
+		return projectionMatrix;
+	}
+
+	public Matrix4f getProjectionViewMatrix() {
+		return projectionViewMatrix;
+	}
+
+	public Vector2f getScreenShake() {
+		return screenShake;
+	}
+
+	public Matrix4f getViewMatrix() {
+		return viewMatrix;
+	}
+
+	public float getYaw() {
+		return rawYaw;
+	}
+	
+	public float getPitch() {
+		return rawPitch;
+	}
+	
+	public float getRoll() {
+		return rawRoll;
+	}
+	
+	public float getEffectedYaw() {
+		return effectedYaw;
+	}
+	
+	public float getEffectedPitch() {
+		return effectedPitch;
+	}
+	
+	public float getEffectedRoll() {
+		return effectedRoll;
+	}
+	
+	public Vector3f getPrevPosition() {
+		return prevPosition;
+	}
+
+	public void grabMouse() {
+		Input.requestMouseGrab();
+	}
 	
 	public Matrix4f getViewModelMatrix() {
 		return viewModelMatrix;
@@ -449,5 +431,26 @@ public class Camera {
 
 	public CameraFollowable getFocus() {
 		return focus;
+	}
+	
+	public void addPitch(float f) {
+		rawPitch += f;
+	}
+
+	public void addYaw(float f) {
+		rawYaw += f;
+	
+	}
+	
+	public boolean isMouseGrabbed() {
+		return mouseIsGrabbed;
+	}
+
+	public boolean isShaking() {
+		return shakeTime == 0f;
+	}
+	
+	public boolean isSwaying() {
+		return swayTime == 0f;
 	}
 }

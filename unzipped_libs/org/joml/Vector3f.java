@@ -126,7 +126,7 @@ public class Vector3f implements Serializable, Externalizable {
 	}
 
 	public static Vector3f lerp(Vector3f A, Vector3f B, float t) {
-		return Vector3f.add(Vector3f.mul(A, t), Vector3f.mul(B, 1.f - t));
+		return Vector3f.add(Vector3f.mul(A, t), Vector3f.mul(B, 1f - t));
 	}
 
 	public static Vector3f mul(Vector3f v, float scalar) {

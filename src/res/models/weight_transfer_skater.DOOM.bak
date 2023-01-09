@@ -2,7 +2,7 @@ DOOM 1
 associatedModel ""
 numJoints 50
 
-animation "ArmatureAction" {
+animation "wlk_s" {
 
 	numFrames 2
 	frameRate 24

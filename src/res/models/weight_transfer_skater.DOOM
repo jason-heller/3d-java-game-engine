@@ -2,7 +2,7 @@ DOOM 1
 associatedModel ""
 numJoints 50
 
-animation "wlk_s" {
+animation "idle" {
 
 	numFrames 2
 	frameRate 24

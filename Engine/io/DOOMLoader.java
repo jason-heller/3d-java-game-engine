@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.joml.Matrix4f;
 import org.joml.Quaternion;
 import org.joml.Vector3f;
 
@@ -77,6 +78,7 @@ private static final String VERSION = "1";
 		Resources.addAnimation(animName, animation);
 	}
 
+	//public static final Quaternion CORRECTION = Quaternion.fromMatrix(new Matrix4f().rotateY(90f));
 	private static Keyframe loadFrame(NestedString frameString, int numJoints, float framerate) {
 		String data = frameString.data;
 		String value = "";
@@ -125,6 +127,10 @@ private static final String VERSION = "1";
 				throw new FileParseException("could not parse keyframe[" + time + "]");
 			}
 		}
+		
+		//JointTransform rootTransform = transforms.get((byte)0);
+		//Quaternion q = rootTransform.getRotation();
+		//Quaternion.mul(q, CORRECTION, q);
 		
 		return new Keyframe(time, transforms);
 	}

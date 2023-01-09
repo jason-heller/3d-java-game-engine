@@ -4,6 +4,7 @@ const vec2 lightBias = vec2(0.7, 0.6);//just indicates the balance between diffu
 
 in vec2 pass_textureCoords;
 in vec3 pass_normal;
+in vec3 lightColor;
 
 layout (location = 0) out vec4 out_color;
 layout (location = 1) out vec4 out_brightness;
@@ -14,6 +15,9 @@ uniform float specularity;
 
 in vec3 toCamera;
 uniform vec3 lightDirection;
+
+const float ambientFactor = 1.0;
+const float baseAmbient = 1.0 - ambientFactor;
 
 void main(void){
 	
@@ -42,5 +46,6 @@ void main(void){
 	}
 	
 	out_color = specularVec + (diffuseTexture * diffuseLight);
+	out_color *= vec4((lightColor.xyz * ambientFactor) + vec3(baseAmbient), 1.0);
 
 }

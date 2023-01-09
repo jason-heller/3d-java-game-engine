@@ -15,8 +15,8 @@ public class AssetPool {
 		//addTexture("dmg_screen_effect", "gui/jelly.png");
 		//addTexture("dmg_slash", "gui/slash.png");
 		
-		Resources.addModel("untitled", "models/bob_lamp_update.MF");
-		DOOMLoader.load("src/res/models/bob_lamp_update.DOOM");
+		Resources.addModel("untitled", "models/SKATER.MF");
+		DOOMLoader.load("src/res/models/SKATER.DOOM");
 	}
 
 	private static void addModel(String key, String val) {

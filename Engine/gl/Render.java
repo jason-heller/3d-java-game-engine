@@ -69,7 +69,7 @@ public class Render {
 		final int heightQtr = height / 4;
 		screen 		= new FBO(width, height);
 		screenPong 	= new FBO(width, height);
-		reflection 	= new FBO(widthQtr * waterQuality, heightQtr * waterQuality, true, false);
+		reflection 	= new FBO(widthQtr * waterQuality, heightQtr * waterQuality, true, true);
 		refraction 	= new FBO(widthQtr * waterQuality, heightQtr * waterQuality, true, true);
 		
 		
@@ -236,7 +236,7 @@ public class Render {
 		camera.getPosition().y -= offset;
 		camera.updateViewMatrixRaw();
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-		// scene.render(new Vector4f(0, 1, 0, -clipDist));
+
 		scene.fastRender(new Vector4f(0, 1, 0, -clipDist));
 		
 		reflection.unbind();
@@ -284,7 +284,7 @@ public class Render {
 		camera.setRoll(rot.z);
 		camera.getPosition().set(pos);
 		camera.updateViewMatrix();
-		GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+
 		scene.render(new Vector4f(0, 1, 0, Float.POSITIVE_INFINITY));
 		
 		refraction.unbind();

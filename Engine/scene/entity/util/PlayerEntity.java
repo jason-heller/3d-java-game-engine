@@ -1,6 +1,7 @@
 package scene.entity.util;
 
 import org.joml.Vector3f;
+import org.lwjgl.input.Keyboard;
 
 import core.App;
 import dev.Debug;
@@ -9,6 +10,7 @@ import gl.Camera;
 import gl.CameraFollowable;
 import gl.Window;
 import gl.anim.Animator;
+import io.Input;
 import scene.PlayableScene;
 import ui.UI;
 
@@ -33,11 +35,11 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 	private Vector3f viewAngle = new Vector3f();
 	
 	public PlayerEntity(Camera camera) {
-		super("player", new Vector3f(1f, PlayerHandler.BBOX_HEIGHT, 1f));
+		super("player", new Vector3f(PlayerHandler.BBOX_WIDTH, PlayerHandler.BBOX_HEIGHT, PlayerHandler.BBOX_WIDTH));
 		this.camera = camera;
 		this.setModel("untitled");
 		this.setAnimator(new Animator(getModel().getSkeleton(), this));
-		getAnimator().loop("wlk_s");
+		getAnimator().loop("idle");
 		PlayerHandler.setEntity(this);
 		
 	}
@@ -47,6 +49,24 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 		super.update(scene);
 		PlayerHandler.update(App.scene);
 		
+		if (grounded) {
+			if (Input.isPressed("walk_left") && !Input.isPressed("walk_right")) {
+				getAnimator().start("turn_l");
+			} else if (!Input.isPressed("walk_left") && Input.isPressed("walk_right")) {
+				getAnimator().start("turn_r");
+			} else if (Input.isReleased("walk_left") || Input.isReleased("walk_right")) {
+				getAnimator().loop("idle");
+			}
+		}
+		
+		if (Input.isPressed("jump") && previouslyGrounded) {
+			getAnimator().start("ollie");
+		}
+		
+		if (!previouslyGrounded && grounded) {
+			getAnimator().loop("idle");
+		}
+		rot.y += Window.deltaTime;
 		if (grounded && camera.getControlStyle() != Camera.SPECTATOR) {
 			
 			stepTimer += Window.deltaTime * new Vector3f(vel.x, 0f, vel.z).length();
@@ -158,7 +178,6 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 		return pos;
 	}
 
-	@Override
 	public Vector3f getRotation() {
 		return rot;
 	}

@@ -102,6 +102,7 @@ public abstract class PlayableScene implements Scene {
 		Architecture arc = arcHandler.getArchitecture();
 		arcHandler.render(camera, clipPlane, false);
 		entityHandler.render(camera, arc, clipPlane);
+		AnimationHandler.render(camera, this);
 	}
 	
 	@Override

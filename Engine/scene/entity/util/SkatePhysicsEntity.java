@@ -364,9 +364,9 @@ public abstract class SkatePhysicsEntity extends Entity {
 			return;
 		} else {
 			// If a wall, & 
-			pos.y += 2f;
+			pos.y += 4f;
 			MTV wallHopMtv = CollideUtils.bspFaceBoxCollide(bsp.vertices, bsp.edges, bsp.surfEdges, face, plane.normal, bbox);
-			pos.y -= 2f;
+			pos.y -= 4f;
 			
 			if (wallHopMtv == null) {
 				return;
@@ -374,7 +374,7 @@ public abstract class SkatePhysicsEntity extends Entity {
 		}
 		
 		pos.add(mtv.getMTV());
-		vel.add(Vector3f.div(mtv.getMTV(), Window.deltaTime));
+		// vel.add(Vector3f.div(mtv.getMTV(), Window.deltaTime));
 	}
 
 	protected void collideWithFloor(Plane plane) {
@@ -405,7 +405,7 @@ public abstract class SkatePhysicsEntity extends Entity {
 		
 		pos.y += bbox.getHeight() - depth;
 		//vel.set(Vector3f.sub(pos, lastPos).div(Window.deltaTime));
-		vel.y = (pos.y - lastPos.y) / Window.deltaTime;
+		// vel.y = (pos.y - lastPos.y) / Window.deltaTime;
 		//if (vel.y > 0)
 		//float newHeight = pos.y;
 		//pos.set(lastPos);

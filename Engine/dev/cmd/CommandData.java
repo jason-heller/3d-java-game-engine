@@ -9,6 +9,7 @@ import dev.EnvMapBuilder;
 import dev.MemDebug;
 import gl.Camera;
 import gl.Window;
+import gl.anim.Animator;
 import gl.arc.ArcFaceRender;
 import io.Controls;
 import map.architecture.ArchitectureHandler;
@@ -66,15 +67,17 @@ enum CommandData {
 	nav_path("viewNavPath", Debug.class, SETTER, true),
 	nav_node("viewNavNode", Debug.class, SETTER, true),
 	nav_points("viewNavPois", Debug.class, SETTER, true),
-	show_hitboxes("showHitboxes", Debug.class, SETTER, true),
 	light_ambient_only("ambientOnly", Debug.class, SETTER, true),
-	light_tex_view("viewLightmapTexture", Debug.class, SETTER, true),
+	view_lightmap("viewLightmapTexture", Debug.class, SETTER, true),
+	view_reflect("viewReflectionTexture", Debug.class, SETTER, true),
 	shadow_0_tex_view("viewShadowTexture0", Debug.class, SETTER, true),
 	face_info("faceInfo", Debug.class, SETTER, true),
+	show_hitboxes("showHitboxes", Debug.class, SETTER, true),
 	show_collisions("viewCollide", Debug.class, SETTER, true),
 	show_bsp_leafs("showLeafs", Debug.class, SETTER, true),
 	show_clips("showClips", Debug.class, SETTER, true),
 	show_ambient("showAmbient", Debug.class, SETTER, true),
+	show_bones("drawBones", Animator.class, SETTER, true),
 	room_name("showCurrentRoom", Debug.class, SETTER, true),
 	wireframe("wireframeMode", Debug.class, SETTER, true),
 	fullbright("fullbright", Debug.class, SETTER, true),

@@ -28,9 +28,9 @@ public class Text implements Component {
 	private int depth = UI.DEPTH_SEQUENTIAL;
 
 	private int alignment = ALIGN_LEFT;
-	private float lineWidth = 1f;
+	private int lineWidth = UI.width;
 
-	public Text(Font font, String text, float x, float y, float textSize, boolean centered) {
+	public Text(Font font, String text, int x, int y, float textSize, boolean centered) {
 		this.font = font;
 		this.x = x;
 		this.y = y;
@@ -39,7 +39,7 @@ public class Text implements Component {
 		setText(text);
 	}
 
-	public Text(Font font, String text, float x, float y, float textSize, float lineWidth, boolean centered, int... offsets) {
+	public Text(Font font, String text, int x, int y, float textSize, int lineWidth, boolean centered, int... offsets) {
 		this.font = font;
 		this.x = x;
 		this.y = y;
@@ -189,7 +189,7 @@ public class Text implements Component {
 				offset++;
 			} else if (c == '\n') {
 				dx = x;
-				dy += font.getCharacter('|').getyOffset() * this.textSize + font.getPaddingHeight();
+				dy += font.getCharacter('|').getyOffset() + font.getPaddingHeight();
 			} else if (c >= 32 && c <= 126) {
 				final Character character = font.getCharacter(c);
 

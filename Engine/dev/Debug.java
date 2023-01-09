@@ -50,7 +50,7 @@ public class Debug {
 	public static boolean showAmbient;
 	public static boolean showCurrentRoom;
 	public static boolean allowConsole;
-	public static boolean ambientOnly, viewLightmapTexture, viewShadowTexture0;
+	public static boolean ambientOnly, viewLightmapTexture, viewReflectionTexture, viewShadowTexture0;
 	public static boolean faceInfo;
 	public static boolean god;
 	public static boolean velocityVectors;
@@ -115,6 +115,9 @@ public class Debug {
 
 		if (viewLightmapTexture) {
 			UI.drawImage("lightmap", UI.width - 512, 720 - 512, 512, 512, Colors.WHITE);
+		}
+		if (viewReflectionTexture) {
+			UI.drawImage("reflection", UI.width - 512, 720 - 512, 512, 512, Colors.WHITE);
 		}
 		if (viewShadowTexture0) {
 			UI.drawImage("shadow0", UI.width - 512, 720, 512, -512, Colors.WHITE);

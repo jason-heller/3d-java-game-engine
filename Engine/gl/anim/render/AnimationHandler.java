@@ -2,6 +2,8 @@ package gl.anim.render;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.joml.Matrix3f;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
 import gl.Camera;
@@ -10,6 +12,7 @@ import gl.anim.Animator;
 import gl.res.Mesh;
 import gl.res.Model;
 import gl.res.Texture;
+import map.architecture.Architecture;
 import scene.Scene;
 import scene.entity.Entity;
 
@@ -49,6 +52,12 @@ public class AnimationHandler {
 			
 			int numMeshes = model.getMeshes().length;
 			
+			Matrix3f invTransRotMatrix = new Matrix3f();
+			invTransRotMatrix.rotateX(entity.rot.x);
+			invTransRotMatrix.rotateY(entity.rot.y);
+			invTransRotMatrix.rotateZ(entity.rot.z);
+			
+			
 			for(int i = 0; i < numMeshes; i++) {
 				Mesh mesh = model.getMeshes()[i];
 				Texture texture = model.getTextures()[i];
@@ -58,9 +67,11 @@ public class AnimationHandler {
 
 				shader.diffuse.loadTexUnit(0);
 				shader.specular.loadTexUnit(1);
+				shader.lights.loadVec3(entity.getLighting());
 
 				mesh.bind(0, 1, 2, 3, 4);
 				shader.modelMatrix.loadMatrix(entity.getMatrix());
+				shader.invTransRotMatrix.loadMatrix(invTransRotMatrix);
 				shader.jointTransforms.loadMatrixArray(animator.getJointTransforms());
 				
 				GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getIndexCount(), GL11.GL_UNSIGNED_INT, 0);

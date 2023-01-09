@@ -61,14 +61,14 @@ public class ItemHandler {
 		if (Console.isVisible())
 			return;
 		
-		for (int i = 0; i < 5; i++) {
+		/*for (int i = 0; i < 5; i++) {
 			if (Input.isPressed(Keyboard.KEY_1 + i)) {
 				if (getCurrentItem() != getItem(i)) {
 					unequipItem();
 					equipItem(i);
 				}
 			}
-		}
+		}*/
 		
 		if (Input.getMouseDWheel() != 0) {
 			int nextItem = Math.floorMod((itemIndex + (int)Math.signum(Input.getMouseDWheel())), items.size());

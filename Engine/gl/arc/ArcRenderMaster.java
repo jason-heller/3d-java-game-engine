@@ -93,14 +93,15 @@ public class ArcRenderMaster {
 	public static void fastRender(MapScene scene, Vector4f clipPlane, Architecture arc, boolean hasLightmap, DynamicLight[] lights, ActiveLeaves activeLeaves) {
 		Camera camera = scene.getCamera();
 		Bsp bsp = arc.bsp;
-		
+
 		Matrix4f lightProjMatrix = shadowRender.getLightProjectionMatrix();
 		
 		bsp.objects.render(camera, arc, clipPlane, lightProjMatrix);
 		
-		//ArcHeightmapRender.renderHeightmaps(camera, arc, arc.getRenderedHeightmaps(), clipPlane, hasLightmap,lightProjMatrix, lights);
+		// ArcHeightmapRender.renderHeightmaps(camera, arc, arc.getRenderedHeightmaps(), clipPlane, hasLightmap,lightProjMatrix, lights);
 
 		ArcFaceRender.startFastRender(scene, arc, clipPlane);
+		
 		for(BspLeaf leaf : activeLeaves.getFar()) {
 			if (leaf.isUnderwater && clipPlane.w == Float.POSITIVE_INFINITY) {
 				continue;

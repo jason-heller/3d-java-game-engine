@@ -9,13 +9,20 @@ in vec3 in_normal;
 in ivec3 in_jointIndices;
 in vec3 in_weights;
 
+
 out vec2 pass_textureCoords;
 out vec3 pass_normal;
 out vec3 toCamera;
+out vec3 lightColor;
 
 uniform mat4 modelMatrix;
+uniform mat3 invTransRotMatrix;
 uniform mat4 jointTransforms[MAX_JOINTS];
 uniform mat4 projectionViewMatrix;
+uniform vec3 lights[6];
+
+
+const vec3 lightNormals[6] = vec3[6](vec3(1.0,0.0,0.0), vec3(-1.0,0.0,0.0), vec3(0.0,1.0,0.0), vec3(0.0,-1.0,0.0), vec3(0.0,0.0,1.0), vec3(0.0,0.0,-1.0));
 
 uniform vec3 cameraPos;
 
@@ -36,7 +43,20 @@ void main(void){
 	vec4 posTransformed = modelMatrix * totalLocalPos;
 	
 	gl_Position = projectionViewMatrix * posTransformed;
-	pass_normal = totalNormal.xyz;
+	pass_normal = invTransRotMatrix * totalNormal.xyz;
 	pass_textureCoords = in_textureCoords;
 	toCamera = normalize(cameraPos.xyz - posTransformed.xyz);
+	
+	lightColor = vec3(0.0);
+	vec3 modelSpaceNormals = pass_normal;
+	
+	float totalWeight = 0.0;
+	for(int i = 0; i < 6; ++i) {
+		float weight = dot(modelSpaceNormals, lightNormals[i]);
+		if (weight <= 0.0)
+			continue;
+		lightColor += lights[i] * weight;
+		totalWeight += weight;
+	}
+	lightColor /= totalWeight;
 }
