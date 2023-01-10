@@ -4,11 +4,11 @@ import org.joml.Matrix3f;
 import org.joml.Vector3f;
 
 import gl.Window;
-import gl.res.Mesh;
 import scene.PlayableScene;
 import scene.entity.Spawnable;
+import scene.entity.util.PhysicsEntity;
 
-public class NonSolidPhysProp extends HoldableEntity implements Spawnable {
+public class NonSolidPhysProp extends PhysicsEntity implements Spawnable {
 
 	private float emfLevel = 0f;
 	
@@ -82,12 +82,6 @@ public class NonSolidPhysProp extends HoldableEntity implements Spawnable {
 	
 	private void forceToTorque(Vector3f force) {
 		torque.set(force.x * 4f, force.y * 4f, force.z * 4f);
-	}
-
-	@Override
-	public void release() {
-		super.release();
-		forceToTorque(vel);
 	}
 	
 	@Override

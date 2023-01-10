@@ -8,13 +8,14 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import dev.Debug;
-import dev.cmd.Console;
 import geom.Plane;
 import gl.Camera;
 import gl.arc.ArcRenderMaster;
 import gl.line.LineRender;
 import gl.res.Texture;
 import io.EnvironmentMapFileLoader;
+import io.RailFileLoader;
+import map.RailList;
 import map.architecture.components.ArcNavNode;
 import map.architecture.components.ArcNavigation;
 import map.architecture.components.ArcRoom;
@@ -65,6 +66,9 @@ public class ArchitectureHandler {
 		Map<Integer, Texture> envMaps = EnvironmentMapFileLoader.readEMP(path);
 		if (envMaps != null)
 			architecture.setEnvironmentMaps(envMaps);
+		
+		RailList[] railList = RailFileLoader.readRailFile(path);
+		architecture.setRailList(railList);
 		
 		return true;
 	}
@@ -173,5 +177,10 @@ public class ArchitectureHandler {
 	
 	public boolean isSkyboxEnabled() {
 		return architecture.hasSkybox;
+	}
+
+	public void loadRails() {
+		// TODO Auto-generated method stub
+		
 	}
 }

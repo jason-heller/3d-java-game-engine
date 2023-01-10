@@ -16,6 +16,7 @@ import org.lwjgl.opengl.GL14;
 
 import core.Resources;
 import dev.Debug;
+import dev.RailBuilder;
 import dev.cmd.Console;
 import geom.AxisAlignedBBox;
 import geom.CollideUtils;
@@ -27,9 +28,12 @@ import gl.arc.ArcFaceRender;
 import gl.arc.ArcRenderMaster;
 import gl.light.DynamicLight;
 import gl.light.DynamicLightHandler;
+import gl.line.LineRender;
 import gl.particle.ParticleEmitter;
 import gl.res.Texture;
 import gl.skybox._3d.SkyboxCamera;
+import map.Rail;
+import map.RailList;
 import map.architecture.components.ArcClip;
 import map.architecture.components.ArcFace;
 import map.architecture.components.ArcHeightmap;
@@ -48,6 +52,7 @@ import scene.Scene;
 import scene.entity.Entity;
 import scene.entity.util.PhysicsEntity;
 import scene.mapscene.MapScene;
+import util.GeomUtil;
 
 public class Architecture {
 
@@ -83,8 +88,8 @@ public class Architecture {
 	
 	private List<ArcHeightmap> renderedHeightmaps = new ArrayList<>();
 	private Map<Integer, Texture> environmentMaps;
-	
-	
+	private RailList[] railList;
+
 	public Architecture(Scene scene) {
 		this.scene = scene;	
 		funcHandler = new ArcFuncHandler();
@@ -169,6 +174,10 @@ public class Architecture {
 		
 		for (ParticleEmitter pe : emitters) {
 			pe.generateParticles(camera);
+		}
+		
+		if (Debug.railMode) {
+			RailBuilder.update(camera, this);
 		}
 		
 		if (Debug.showAmbient) {
@@ -460,5 +469,35 @@ public class Architecture {
 		
 		clipId.set(clipIndex);
 		return environmentMaps.get(clipIndex);
+	}
+	
+	public RailList[] getRailList() {
+		return railList;
+	}
+
+	public void setRailList(RailList[] railList) {
+		this.railList = railList;
+	}
+
+	public Rail getNearestRail(Vector3f pos, Vector3f dir, float gravitation) {
+		int dx = (int)pos.x / RailList.BLOCK_SIZE;
+		int dz = (int)pos.z / RailList.BLOCK_SIZE;
+		
+		int blockId = dx + (dz * RailList.numBlocksZ);
+		
+		List<Rail> rails = railList[blockId].getRails();
+		
+		if (rails == null)
+			return null;
+		
+		for(Rail rail : rails) {
+			float dist = GeomUtil.pointDistanceToEdge(pos, rail.start, rail.end);
+			
+			if (dist < gravitation) {
+				return rail;
+			}
+		}
+		
+		return null;
 	}
 }

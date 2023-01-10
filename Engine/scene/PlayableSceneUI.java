@@ -1,14 +1,11 @@
 package scene;
 
-import org.joml.Vector3f;
-
 import audio.AudioHandler;
 import core.App;
-import core.Resources;
 import io.Controls;
 import io.Input;
 import io.Settings;
-import scene.entity.util.PlayerHandler;
+import scene.entity.util.PlayerEntity;
 import scene.menu.pause.OptionsPanel;
 import ui.UI;
 import ui.menu.GuiMenu;
@@ -83,7 +80,7 @@ public class PlayableSceneUI {
 	}
 
 	public void pause() {
-		PlayerHandler.disable();
+		PlayerEntity.isEnabled = false;
 		Input.requestMouseRelease();
 		paused = true;
 		AudioHandler.pause();
@@ -97,7 +94,7 @@ public class PlayableSceneUI {
 		} else {
 			paused = false;
 			AudioHandler.unpause();
-			PlayerHandler.enable();
+			PlayerEntity.isEnabled = true;
 			//if (!Console.isVisible()) {
 				Input.requestMouseGrab();
 			//}

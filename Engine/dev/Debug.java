@@ -55,6 +55,8 @@ public class Debug {
 	public static boolean god;
 	public static boolean velocityVectors;
 	
+	public static boolean railMode;
+	
 	public static void checkVbo(Vbo vbo) {
 		vbo.bind();
 		int id = vbo.getId();

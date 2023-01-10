@@ -29,6 +29,8 @@ public class ArcLoadGeometry {
 			verts[i].add(offset);
 		}
 		bsp.vertices = verts;
+		bsp.min = FileUtils.readVec3(in);
+		bsp.max = FileUtils.readVec3(in);
 
 		// Edges
 		ArcEdge[] edges = new ArcEdge[in.readInt()];

@@ -7,6 +7,9 @@ import dev.Debug;
 import gl.Camera;
 import gl.Window;
 import gl.anim.render.AnimationHandler;
+import gl.line.LineRender;
+import map.Rail;
+import map.RailList;
 import map.architecture.Architecture;
 import map.architecture.ArchitectureHandler;
 import scene.entity.EntityHandler;
@@ -50,6 +53,7 @@ public abstract class PlayableScene implements Scene {
 		Window.update();
 		
 		viewModelHandler = new ViewModelHandler();
+		PlayerEntity.isEnabled = true;
 	}
 
 	@Override

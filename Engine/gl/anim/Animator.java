@@ -103,7 +103,7 @@ public class Animator {
 		Animation newAnim = Resources.getAnimation(animName);
 		
 		if (newAnim == null) {
-			Console.severe("Animator attempted to load nonexistant animation: " + animName);
+			Console.severe("Animator attempted to load nonexistent animation: " + animName);
 			return;
 		}
 		
@@ -123,6 +123,7 @@ public class Animator {
 }
 
 	// Resets the keyframes for looping/init
+	// TODO: This shouldn't be called when an animation repeats, as the frame data could just be the last frame
 	private void resetKeyframes() {
 		
 		if (priorFrame != null && (animation.getKeyframes().length == 1 || animation.getKeyframes()[0].getTime() > 0f)) {
@@ -161,7 +162,11 @@ public class Animator {
 		
 		// Handle animation end
 		if (animationTime >= animation.getDuration()) {
-			if (!isLooping) {
+			String nextAnim = animation.getNextAnim();
+			
+			if (!nextAnim.isEmpty()) {
+				start(nextAnim);
+			} else if (!animation.isLooping()) {
 				stop();
 				animationTime -= Window.deltaTime * speedMultiplier;
 			} else {

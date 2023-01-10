@@ -3,16 +3,17 @@ package scene.entity.util;
 import org.joml.Vector3f;
 import org.lwjgl.input.Keyboard;
 
-import core.App;
-import dev.Debug;
+import dev.cmd.Console;
 import geom.Plane;
 import gl.Camera;
 import gl.CameraFollowable;
 import gl.Window;
 import gl.anim.Animator;
+import gl.line.LineRender;
 import io.Input;
 import scene.PlayableScene;
-import ui.UI;
+import util.Colors;
+import util.GeomUtil;
 
 /**
  * @author Jason
@@ -20,128 +21,139 @@ import ui.UI;
  */
 public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable {
 	
+	////////////////////////////////
+	
+	public static final float CAMERA_STANDING_HEIGHT = 5f;
+
+	public static final float BBOX_WIDTH = 2f, BBOX_HEIGHT = 6f;
+
+	private static final float RAIL_GRAVITATION = 3f;
+	
+	////////////////////////////////
+	
 	private Camera camera;
 	
 	private static int hp = 15;
 	private static int maxHp = 15;
 	
-	private float invulnTimer = 0f;
-	private float stepTimer = 0f;;
+	private static float direction;
 	
-	private static final float INVULN_TIME = 2f;
-	
-	private float bloodDmgIndicator = 0f;
+	public static boolean isEnabled = false;
 	
 	private Vector3f viewAngle = new Vector3f();
 	
 	public PlayerEntity(Camera camera) {
-		super("player", new Vector3f(PlayerHandler.BBOX_WIDTH, PlayerHandler.BBOX_HEIGHT, PlayerHandler.BBOX_WIDTH));
+		super("player", new Vector3f(BBOX_WIDTH, BBOX_HEIGHT, BBOX_WIDTH));
 		this.camera = camera;
 		this.setModel("untitled");
 		this.setAnimator(new Animator(getModel().getSkeleton(), this));
 		getAnimator().loop("idle");
-		PlayerHandler.setEntity(this);
 		
 	}
 	
 	@Override
 	public void update(PlayableScene scene) {
-		super.update(scene);
-		PlayerHandler.update(App.scene);
+		if (!isEnabled)
+			return;
 		
-		if (grounded) {
-			if (Input.isPressed("walk_left") && !Input.isPressed("walk_right")) {
-				getAnimator().start("turn_l");
-			} else if (!Input.isPressed("walk_left") && Input.isPressed("walk_right")) {
-				getAnimator().start("turn_r");
-			} else if (Input.isReleased("walk_left") || Input.isReleased("walk_right")) {
-				getAnimator().loop("idle");
+		if (camera.getControlStyle() == Camera.SPECTATOR) {
+			return;
+		}
+		
+		super.update(scene);
+
+		Vector3f boardPos = Vector3f.add(pos, new Vector3f(0, -BBOX_HEIGHT, 0));
+
+		final boolean A = Input.isDown("walk_left"),
+				GRIND = Input.isPressed(Keyboard.KEY_Z),
+				D = Input.isDown("walk_right"),
+				S = Input.isDown("walk_backward"), 
+				JUMP = Input.isPressed("jump");
+		
+		// Architecture arc = ((PlayableScene)scene).getArchitecture();
+		
+		float speed = accelSpeed;
+		
+		if (GRIND && grindRail == null) {
+			grindRail = scene.getArchitecture().getNearestRail(boardPos, vel, RAIL_GRAVITATION);
+
+			if (grindRail != null) {
+				Vector3f edge =  Vector3f.sub(grindRail.end, grindRail.start);
+				railLengthSqr = edge.lengthSquared();
+				Vector3f edgeNormal = edge.normalize();
+				Vector3f newPoint = GeomUtil.projectPointOntoLine(boardPos, grindRail.start, edgeNormal);
+				
+				
+				grindOrigin = grindRail.start;
+				grindSpeed = vel.length();
+				
+				if (vel.dot(edgeNormal) < 0) {
+					edgeNormal.negate();
+					grindOrigin = grindRail.end;
+				}
+				
+				grindNormal = edgeNormal;
+				pos.set(newPoint.x, newPoint.y + BBOX_HEIGHT, newPoint.z);
 			}
 		}
 		
-		if (Input.isPressed("jump") && previouslyGrounded) {
-			getAnimator().start("ollie");
+		if (grindOrigin != null) {
+			LineRender.drawBox(grindOrigin, new Vector3f(1,1,1), Colors.WHITE);
+			LineRender.drawLine(grindOrigin, Vector3f.add(grindOrigin, Vector3f.mul(grindNormal, (float)Math.sqrt(railLengthSqr))));
+		}
+		
+		LineRender.drawBox(boardPos, new Vector3f(RAIL_GRAVITATION,RAIL_GRAVITATION,RAIL_GRAVITATION), Colors.RED);
+		
+		if (S)
+			speed = 0f;
+
+		// Handle game logic per tick, such as movement etc
+		if (grounded) {
+			if (A && D) {
+			} else if (A) {
+				direction -= Window.deltaTime * 240f;
+				getAnimator().start("turn_l");
+			} else if (D) {
+				direction += Window.deltaTime * 240f;
+				getAnimator().start("turn_r");
+			}
+			
+			if ((vel.y < 0 || grindRail != null) && JUMP) {
+				jump(jumpVel);
+				getAnimator().start("ollie");
+				grindRail = null;
+			}
 		}
 		
 		if (!previouslyGrounded && grounded) {
-			getAnimator().loop("idle");
-		}
-		rot.y += Window.deltaTime;
-		if (grounded && camera.getControlStyle() != Camera.SPECTATOR) {
-			
-			stepTimer += Window.deltaTime * new Vector3f(vel.x, 0f, vel.z).length();
-			
-			/*if (stepTimer > 12) {
-				stepTimer = 0f;
-				
-				String sfx;
-				switch(materialStandingOn) {
-				case GRASS:
-					sfx = "walk_grass";
-					break;
-				case DIRT:
-					sfx = "walk_dirt";
-					break;
-				case MUD:
-					sfx = "walk_mud";
-					break;
-				default:
-					sfx = "walk_rock";
-				}
-				AudioHandler.play(sfx);
-			}*/
+			getAnimator().start("land");
 		}
 		
-		invulnTimer = Math.max(invulnTimer - Window.deltaTime, 0f);
+		viewAngle.set(0f, -direction, 0f);
 		
-		if (hp < 5 || bloodDmgIndicator > 0f) {
-			float baseDmgOpaciy = Math.max(Math.min(bloodDmgIndicator, 1f), (5f - hp) / 5f);
-			UI.drawImage("dmg_screen_effect", 0, 0, UI.width, UI.height).setOpacity(baseDmgOpaciy);
-			bloodDmgIndicator -= Window.deltaTime;
-		}
+		Camera.animSpeed = 0f;
 		
-		if (hp <= 0) {
-			
-			PlayerHandler.disable();
-			if (camera.getControlStyle() == Camera.FIRST_PERSON) {
+		if (camera.getControlStyle() == Camera.FIRST_PERSON) {
+			if (camera.getFocus() == this) {
 				camera.getPosition().set(pos.x, pos.y + Camera.offsetY, pos.z);
 			}
-			
-			if (Camera.offsetY > -3f) {
-				Camera.offsetY -= 3f*Window.deltaTime;
+		}
+		
+		if (speed != 0 && !deactivated) {
+			Camera.animSpeed = 4.5f;
+			if (!grounded) {
+				Camera.animSpeed = 0f;
+				speed = airAccel;
 			}
 			
-			
-			
-			camera.sway(1f, 4f, .45f);
+			rot.y = -direction;
+			double dRad = direction * Math.PI / 180.0;
+			accelerate(new Vector3f(-(float) Math.sin(dRad), 0, (float) Math.cos(dRad)), speed);
 		}
-	}
-	
-	/** Hurts the player
-	 * @param damage - how much damage the player will take (if negative, it will choose from 0 to |damage|)
-	 * @param part - the part (0 = head, 1 = arm, 2 = hip, 3 = leg)
-	 */
-	public void takeDamage(int damage) {
-		if (Debug.god) return;
-		if ((invulnTimer != 0f && invulnTimer != INVULN_TIME) || hp <= 0)
-			return;
-
-		if (damage < 0)
-			damage = (int)(Math.random() * (-damage));
-		
-		camera.flinch(camera.getDirectionVector().negate(), damage * 10);
-		
-		hp = Math.max(hp - damage, 0);
-		bloodDmgIndicator = 1f;
-		invulnTimer = INVULN_TIME;
 	}
 
 	public void heal(int health) {
 		hp += health;
-		
-		if (hp > 0) {
-			PlayerHandler.enable();
-		}
 	}
 	
 	@Override

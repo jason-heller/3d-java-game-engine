@@ -32,7 +32,6 @@ private static final String VERSION = "1";
 	
 	private static void load(BufferedReader reader) throws IOException {
 		NestedString parent = getReaderAsString(reader);
-		Console.toggleRelay();
 		int numJoints = loadFileHeader(parent);
 		
 		for(NestedString child : parent.children) {
@@ -51,6 +50,8 @@ private static final String VERSION = "1";
 		
 		int numFrames;
 		float framerate;
+		boolean isLooping = false;
+		String nextAnim = "";
 		
 		try {
 			animName = getLabel(match, "animation");
@@ -61,6 +62,17 @@ private static final String VERSION = "1";
 			
 			value = getLabel(match, "frameRate");
 			framerate = Float.parseFloat(value);
+			
+			value = getLabel(match, "onEnd");
+			
+			if (value.startsWith("\"start")) {
+				match.find();
+				nextAnim = match.group();
+				nextAnim = nextAnim.substring(0, nextAnim.length() - 1);
+			}
+			
+			if (value.startsWith("\"loop"))
+				isLooping = true;
 			
 		} catch (NumberFormatException e) {
 			throw new NumberFormatException("could not parse value: " + value);
@@ -74,7 +86,7 @@ private static final String VERSION = "1";
 		}
 		
 		
-		Animation animation = new Animation(frames[numFrames-1].getTime(), frames, numJoints); // TODO: last frame not guarenteed to be at the end
+		Animation animation = new Animation(frames[numFrames-1].getTime(), frames, numJoints, isLooping, nextAnim); // TODO: last frame not guarenteed to be at the end
 		Resources.addAnimation(animName, animation);
 	}
 

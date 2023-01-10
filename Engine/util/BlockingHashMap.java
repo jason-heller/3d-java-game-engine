@@ -8,7 +8,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-public class BlockingMap<K, V> {
+public class BlockingHashMap<K, V> {
     private Map<K, ArrayBlockingQueue<V>> map = new ConcurrentHashMap<>();
 
     private BlockingQueue<V> getQueue(K key, boolean replace) {

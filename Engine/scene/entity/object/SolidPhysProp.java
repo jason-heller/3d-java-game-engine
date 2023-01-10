@@ -2,11 +2,10 @@ package scene.entity.object;
 
 import org.joml.Vector3f;
 
-import dev.cmd.Console;
-import gl.res.Mesh;
 import scene.entity.Spawnable;
+import scene.entity.util.PhysicsEntity;
 
-public class SolidPhysProp extends HoldableEntity implements Spawnable {
+public class SolidPhysProp extends PhysicsEntity implements Spawnable {
 	
 	public SolidPhysProp() {
 		super("", new Vector3f());

@@ -8,6 +8,7 @@ import java.util.List;
 import audio.AudioHandler;
 import audio.speech.SpeechHandler;
 import core.App;
+import dev.RailBuilder;
 import gl.Camera;
 import gl.Render;
 import gl.Window;
@@ -89,34 +90,6 @@ public class CommandMethods {
 		SpawnHandler.spawn(PlayableScene.getArchitecture(), PlayableScene.getCamera(), args);
 	}
 	
-	public static void kill() {
-		PlayableScene PlayableScene;
-		if (!(App.scene instanceof PlayableScene)) {
-			Console.log("Cannot use this command outside gameplay");
-			return;
-		} else {
-			PlayableScene = (PlayableScene)App.scene;
-		}
-		
-		PlayableScene.getPlayer().takeDamage(PlayerEntity.getHp());
-	}
-	
-	public static void hurt(int damage) {
-		PlayableScene PlayableScene;
-		if (!(App.scene instanceof PlayableScene)) {
-			Console.log("Cannot use this command outside gameplay");
-			return;
-		} else {
-			PlayableScene = (PlayableScene)App.scene;
-		}
-		
-		if (damage < 0) {
-			heal(-damage);
-		} else {
-			PlayableScene.getPlayer().takeDamage(damage);
-		}
-	}
-	
 	public static void look(float yaw, float pitch, float roll) {
 		Camera camera = App.scene.getCamera();
 		camera.setYaw(yaw);
@@ -127,22 +100,6 @@ public class CommandMethods {
 	public static void shake(float time, float intensity) {
 		Camera camera = App.scene.getCamera();
 		camera.shake(time, intensity);
-	}
-	
-	public static void heal(int hp) {
-		PlayableScene PlayableScene;
-		if (!(App.scene instanceof PlayableScene)) {
-			Console.log("Cannot use this command outside gameplay");
-			return;
-		} else {
-			PlayableScene = (PlayableScene)App.scene;
-		}
-		
-		if (hp < 0) {
-			hurt(-hp);
-		} else {
-			PlayableScene.getPlayer().heal(hp);
-		}
 	}
 	
 	public static void tp(String a, String b, String c, String d) {
@@ -254,6 +211,10 @@ public class CommandMethods {
 		SpeechHandler.speak(say);
 	}
 	
+	public static void raillist_build() {
+		RailBuilder.buildRailList();
+	}
+
 	private static void incorrectParams(String cmd, String ... strings) {
 		String s = "Usage: "+cmd+" ";
 		for(int i = 0; i < strings.length; i++) {

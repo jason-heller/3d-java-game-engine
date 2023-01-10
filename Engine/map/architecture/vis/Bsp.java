@@ -43,6 +43,8 @@ public class Bsp {
 	public BspLeaf[] clusters;
 
 	private ArcTextureMapping[] textureMappings;
+
+	public Vector3f min, max;
 	
 	public void cleanUp() {
 		for(BspLeaf leaf : leaves) {

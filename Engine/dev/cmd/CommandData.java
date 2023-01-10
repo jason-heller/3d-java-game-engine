@@ -7,6 +7,7 @@ import core.App;
 import dev.Debug;
 import dev.EnvMapBuilder;
 import dev.MemDebug;
+import dev.RailBuilder;
 import gl.Camera;
 import gl.Window;
 import gl.anim.Animator;
@@ -14,7 +15,7 @@ import gl.arc.ArcFaceRender;
 import io.Controls;
 import map.architecture.ArchitectureHandler;
 import scene.entity.util.PhysicsEntity;
-import scene.entity.util.PlayerHandler;
+import scene.entity.util.SkatePhysicsEntity;
 import ui.UI;
 
 enum CommandData {
@@ -35,9 +36,6 @@ enum CommandData {
 	tp_rel(true, "+-X, +-Y, +-Z"),
 	fps(false),
 	hp(true),
-	kill(false),
-	hurt(false, "damage", "part"),
-	heal(false, "hp", "part"),
 	has_walker(false),
 	shadow_quality(false, "0-3"),
 	mipmap_bias(false),
@@ -51,6 +49,7 @@ enum CommandData {
 	viewmodel_edit(true),
 	speak(false),
 	build_environment_maps(EnvMapBuilder.class, false),
+	raillist_build(true),
 	
 	// Getters
 	version("VERSION", App.class, GETTER, false),
@@ -62,6 +61,7 @@ enum CommandData {
 	enable_console("allowConsole", Debug.class, SETTER, false),
 	timescale("timeScale", Window.class, SETTER, false),
 	hideui("hideUI", UI.class, SETTER, false),
+	rail_mode("railMode", Debug.class, SETTER, true),
 	debug("debugMode", Debug.class, SETTER, false),
 	nav_view("viewNavMesh", Debug.class, SETTER, true),
 	nav_path("viewNavPath", Debug.class, SETTER, true),
@@ -83,14 +83,11 @@ enum CommandData {
 	fullbright("fullbright", Debug.class, SETTER, true),
 	cam_speed("cameraSpeed", Camera.class, SETTER, true),
 	cam_sway("swayFactor", Camera.class, SETTER, false),
-	phys_player_jump("jumpVel", PlayerHandler.class, SETTER, true),
-	phys_player_run("runSpeedMultiplier", PlayerHandler.class, SETTER, true),
-	phys_player_speed_max("maxSpeed", PlayerHandler.class, SETTER, true),
-	phys_player_speed_air_max("maxAirSpeed", PlayerHandler.class, SETTER, true),
-	phys_player_speed_water_max("maxWaterSpeed", PlayerHandler.class, SETTER, true),
-	phys_player_accel("accelSpeed", PlayerHandler.class, SETTER, true),
-	phys_player_accel_air("airAccel", PlayerHandler.class, SETTER, true),
-	phys_player_accel_water("waterAccel", PlayerHandler.class, SETTER, true),
+	phys_player_jump("jumpVel", SkatePhysicsEntity.class, SETTER, true),
+	phys_player_speed_max("maxSpeed", SkatePhysicsEntity.class, SETTER, true),
+	phys_player_speed_air_max("maxAirSpeed", SkatePhysicsEntity.class, SETTER, true),
+	phys_player_accel("accelSpeed", SkatePhysicsEntity.class, SETTER, true),
+	phys_player_accel_air("airAccel", SkatePhysicsEntity.class, SETTER, true),
 	phys_gravity("gravity", PhysicsEntity.class, SETTER, true),
 	phys_gravity_max("maxGravity", PhysicsEntity.class, SETTER, true),
 	phys_friction("friction", PhysicsEntity.class, SETTER, true),

@@ -17,6 +17,7 @@ import geom.Polygon;
 import gl.Window;
 import gl.line.LineRender;
 import gl.res.Mesh;
+import map.Rail;
 import map.architecture.Architecture;
 import map.architecture.ArchitectureHandler;
 import map.architecture.Material;
@@ -32,6 +33,7 @@ import scene.PlayableScene;
 import scene.entity.Entity;
 import scene.entity.EntityHandler;
 import util.Colors;
+import util.GeomUtil;
 import util.MathUtil;
 
 public abstract class SkatePhysicsEntity extends Entity {
@@ -43,13 +45,20 @@ public abstract class SkatePhysicsEntity extends Entity {
 	public static float gravity = 100f;
 	public static float maxGravity = -600f;
 	public static float friction = 6f;
-	public static float airFriction = .1f;
+	public static float airFriction = 0f;
+	
+	protected Rail grindRail = null;
+	protected Vector3f grindNormal = null;
+	protected Vector3f grindOrigin = null;
+	protected float grindSpeed, railLengthSqr;
 	
 	protected boolean applyGravity = true;
 	
 	protected Material materialStandingOn = Material.ROCK;
-	
-	public float maxSpeed = 25f, maxAirSpeed = 5f, maxWaterSpeed = 1f;
+
+	public static float jumpVel = 40f;
+	public static float accelSpeed = 1200f, airAccel = 0f;
+	public static float maxSpeed = 50f, maxAirSpeed = 1000f;
 
 	protected static final float SLIDE_ANGLE = .9f;
 	protected static final float EPSILON = 0.01f;
@@ -82,21 +91,40 @@ public abstract class SkatePhysicsEntity extends Entity {
 		
 		lastPos.set(pos);
 		
-		// Add vertical speed
-		if (applyGravity) {
-			vel.y = Math.max(vel.y - gravity * Window.deltaTime, maxGravity);
+		if (grindRail != null) {
+			Vector3f railInc = Vector3f.mul(grindNormal, grindSpeed * Window.deltaTime);
+			pos.add(railInc);
+			grounded = true;
+			
+			float distSqr = Vector3f.distanceSquared(grindOrigin, pos);
+			
+			if (distSqr >= railLengthSqr) {
+				grindRail = null;
+			}
+			
+		} else {
+			// Add vertical speed
+			if (applyGravity) {
+				vel.y = Math.max(vel.y - gravity * Window.deltaTime, maxGravity);
+			}
+
+			// Add speed
+			pos.x += vel.x * Window.deltaTime;
+			pos.y += vel.y * Window.deltaTime;
+			pos.z += vel.z * Window.deltaTime;
+
+			applyFriction();
+
+			previouslyGrounded = grounded;
+			grounded = false;
+			
+			handleCollisions();
 		}
-
-		// Add speed
-		pos.x += vel.x * Window.deltaTime;
-		pos.y += vel.y * Window.deltaTime;
-		pos.z += vel.z * Window.deltaTime;
-
-		applyFriction();
-
-		previouslyGrounded = grounded;
-		grounded = false;
 		
+		super.update(scene);
+	}
+
+	private void handleCollisions() {
 		Architecture architecture = arcHandler.getArchitecture();
 		Bsp bsp = architecture.bsp;
 		
@@ -115,8 +143,6 @@ public abstract class SkatePhysicsEntity extends Entity {
 		handleHeightmapCollisions(architecture, leaves, faces);
 		handleFaceCollisions(bsp, faces, 0);
 		handleClipCollisions(architecture, leaves);
-		
-		super.update(scene);
 	}
 
 	private void handleHeightmapCollisions(Architecture arc, List<BspLeaf> leaves, List<ArcFace> faces) {
