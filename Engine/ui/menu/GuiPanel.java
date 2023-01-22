@@ -13,8 +13,8 @@ public class GuiPanel extends GuiElement {
 	private GuiPanel parent = null;
 	private GuiLayout layout = null;
 
-	private int yScroll = Integer.MAX_VALUE, maxScroll = 0;
-	private int scrollbarHeight = 48, scrollbarWidth = 12, scrollbarY = 0;
+	private float yScroll = Integer.MAX_VALUE, maxScroll = 0;
+	private float scrollbarHeight = 48, scrollbarWidth = 12, scrollbarY = 0;
 	
 	private boolean grabbed = false;
 
@@ -22,7 +22,7 @@ public class GuiPanel extends GuiElement {
 		this(null, 0, 0, 0, 0);
 	}
 
-	public GuiPanel(GuiPanel parent, int x, int y, int width, int height) {
+	public GuiPanel(GuiPanel parent, float x, float y, float width, float height) {
 		this.parent = parent;
 		this.setFocus(false);
 		this.x = x;
@@ -81,7 +81,7 @@ public class GuiPanel extends GuiElement {
 	@Override
 	public void draw() {
 		if (maxScroll != 0) {
-			int scrollbarX = x + width;
+			float scrollbarX = x + width;
 			
 			int mx = Input.getMouseX(), my = Input.getMouseY();
 			if (Input.isPressed("use_left") && mx >= scrollbarX - scrollbarWidth && mx < scrollbarX && my > y - 4
@@ -116,7 +116,7 @@ public class GuiPanel extends GuiElement {
 				}
 			} else {
 				if (yScroll != Integer.MAX_VALUE) {
-					int relPosY = element.y + yScroll;
+					float relPosY = element.y + yScroll;
 					if (relPosY >= y && relPosY + element.height < y + height) {
 						element.draw(0, yScroll);
 					}
@@ -155,13 +155,13 @@ public class GuiPanel extends GuiElement {
 		}
 	}
 
-	public void setLayout(GuiLayout layout, int x, int y, int w, int h) {
+	public void setLayout(GuiLayout layout, float x, float y, float w, float h) {
 		this.layout = layout;
 		layout.init(x, y, w, h);
 	}
 
 	@Override
-	public void setPosition(int x, int y) {
+	public void setPosition(float x, float y) {
 		this.x = x;
 		this.y = y;
 	}

@@ -42,7 +42,7 @@ public class GuiTextbox extends GuiElement {
 	}
 
 	@Override
-	public void setPosition(int x, int y) {
+	public void setPosition(float x, float y) {
 		this.x = x;
 		this.y = y;
 	}

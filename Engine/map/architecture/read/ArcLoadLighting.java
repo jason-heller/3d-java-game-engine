@@ -31,9 +31,9 @@ public class ArcLoadLighting {
 				int[] colors = new int[6];
 				for(int k = 0; k < 6; k++) {
 					//lightInfoCompressed[k] = in.readInt() & 0xFFFFFFFF;	// r,g,b,exp
-					int ch1 = in.read();
-			        int ch2 = in.read();
-			        int ch3 = in.read();
+					int ch1 = in.read() / 2;
+			        int ch2 = in.read() / 2;
+			        int ch3 = in.read() / 2; 
 			        int ch4 = in.readByte();
 					colors[order[k]] = ((ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1 << 0));
 				}

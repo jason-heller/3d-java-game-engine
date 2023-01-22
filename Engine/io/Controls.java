@@ -43,17 +43,19 @@ public class Controls {
 		controls.put("pause", Keyboard.KEY_ESCAPE);
 		controls.put("use_left", Input.KEY_LMB);
 		controls.put("use_right", Input.KEY_RMB);
-		controls.put("interact", Keyboard.KEY_E);
-		controls.put("flashlight", Keyboard.KEY_F);
 		
-		controls.put("walk_forward", Keyboard.KEY_W);
-		controls.put("walk_left", Keyboard.KEY_A);
-		controls.put("walk_backward", Keyboard.KEY_S);
-		controls.put("walk_right", Keyboard.KEY_D);
-		controls.put("sneak", Keyboard.KEY_LSHIFT);
-		controls.put("run", Keyboard.KEY_LCONTROL);
+		controls.put("up", Keyboard.KEY_UP);
+		controls.put("left", Keyboard.KEY_LEFT);
+		controls.put("down", Keyboard.KEY_DOWN);
+		controls.put("right", Keyboard.KEY_RIGHT);
 	
-		controls.put("jump", Keyboard.KEY_SPACE);
+		controls.put("tr_ollie", Keyboard.KEY_SPACE);
+		controls.put("tr_flip", Keyboard.KEY_Z);
+		controls.put("tr_grind", Keyboard.KEY_X);
+		controls.put("tr_air", Keyboard.KEY_C);
+		
+		controls.put("tr_modifier_l", Keyboard.KEY_LCONTROL);
+		controls.put("tr_modifier_r", Keyboard.KEY_RCONTROL);
 	}
 
 	public static int get(String id) {

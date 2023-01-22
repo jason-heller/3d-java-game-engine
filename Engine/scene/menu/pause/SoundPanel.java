@@ -10,7 +10,7 @@ import ui.menu.listener.SliderListener;
 public class SoundPanel extends GuiPanel {
 	private final GuiSlider masterVolume, musicVolume, sfxVolume;
 
-	public SoundPanel(GuiPanel parent, int x, int y, int width, int height) {
+	public SoundPanel(GuiPanel parent, float x, float y, float width, float height) {
 		super(parent, x, y, width, height);
 		setLayout(new GuiFlowLayout(GuiFlowLayout.VERTICAL), x, y, 582, 392);
 

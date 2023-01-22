@@ -10,7 +10,7 @@ import map.architecture.vis.BspLeaf;
 
 public class ActiveLeaves {
 
-	public static int cutoffDist = 200;
+	public static int cutoffDist = 400;
 	
 	private int interationIndex = 0;
 	

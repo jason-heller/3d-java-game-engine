@@ -1,13 +1,19 @@
 package dev;
 
+import static map.RailList.BLOCK_SIZE;
+
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import core.App;
@@ -24,9 +30,6 @@ import scene.mapscene.MapScene;
 import ui.UI;
 import util.Colors;
 import util.GeomUtil;
-import util.MathUtil;
-
-import static map.RailList.BLOCK_SIZE;
 
 public class RailBuilder {
 	
@@ -119,7 +122,21 @@ public class RailBuilder {
 			for(Vector3f start : railMap.keySet()) {
 				Vector3f end = railMap.get(start);
 				
-				List<org.joml.Vector2f> points = MathUtil.bresenham((int)start.x/BLOCK_SIZE, (int)start.z/BLOCK_SIZE, (int)end.x/BLOCK_SIZE, (int)end.z/BLOCK_SIZE);
+				List<Integer> boxes = new ArrayList<>();
+				
+				for(int i = 0; i < numBlocksX; i++) {
+					for(int j = 0; j < numBlocksZ; j++) {
+						float cx = (arc.bsp.min.x + (i * BLOCK_SIZE));
+						float cz = (arc.bsp.min.z + (j * BLOCK_SIZE));
+								
+						Line2D railLine = new Line2D.Float(start.x, start.z, end.x, end.z);
+						Rectangle2D box = new Rectangle2D.Float(cx, cz, BLOCK_SIZE, BLOCK_SIZE);
+						
+						if (railLine.intersects(box)) {
+							boxes.add(1 + i + (j * numBlocksX));
+						}
+					}
+				}
 				
 				outputStream.writeFloat(start.x);
 				outputStream.writeFloat(start.y);
@@ -129,11 +146,10 @@ public class RailBuilder {
 				outputStream.writeFloat(end.z);
 				outputStream.writeByte(0);		// This will be the rail type (metal, wooden, stone) and other flags
 				
-				for(int i = 0; i < points.size(); i++) {
-					org.joml.Vector2f blockPos = points.get(i);
-					int blockId = 1 + (int)blockPos.x + ((int)blockPos.y * numBlocksX);
+				for(int i = 0; i < boxes.size(); i++) {
+					int blockId = boxes.get(i);
 					
-					if (i == points.size() - 1)
+					if (i == boxes.size() - 1)
 						blockId = -blockId;
 					
 					outputStream.writeShort(blockId);

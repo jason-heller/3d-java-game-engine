@@ -17,7 +17,7 @@ public class MapPanel extends GuiPanel {
 		GuiRowLayout rowLayout = new GuiRowLayout(192, 24);
 		setLayout(rowLayout, x, y, UI.width, UI.height);
 	
-		menu = new GuiMenu(300, 300, "Map 01", "Letchworth Village", "Test", "Back");
+		menu = new GuiMenu(300, 300, "Map 01", "Map 02", "light_test", "Back");
 		menu.setBordered(true);
 		add(menu);
 		
@@ -30,7 +30,7 @@ public class MapPanel extends GuiPanel {
 					ui.changeMap("map01");
 					break;
 				case 1:
-					ui.changeMap("letchworth");
+					ui.changeMap("map02");
 					break;
 				case 2:
 					ui.changeMap("test");

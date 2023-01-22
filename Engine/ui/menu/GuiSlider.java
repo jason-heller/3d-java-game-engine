@@ -21,7 +21,7 @@ public class GuiSlider extends GuiElement {
 	private final Text text;
 	private String prefix = "";
 
-	public GuiSlider(int x, int y, String label, float minValue, float maxValue, float value, float increment) {
+	public GuiSlider(float x, float y, String label, float minValue, float maxValue, float value, float increment) {
 		this.x = x;
 		this.y = y;
 		this.text = new Text(Font.defaultFont, label, 0, -6, Font.defaultSize, false);
@@ -48,7 +48,7 @@ public class GuiSlider extends GuiElement {
 	}
 
 	@Override
-	public void setPosition(int x, int y) {
+	public void setPosition(float x, float y) {
 		this.x = x;
 		this.y = y;
 	}

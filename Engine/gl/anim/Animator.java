@@ -34,7 +34,6 @@ public class Animator {
 	private boolean isPlaying = false;
 
 	private final Entity entity;
-	private boolean isLooping = false;
 	
 	private Keyframe priorFrame, nextFrame;
 	private int lastFrameID = -1;
@@ -82,11 +81,6 @@ public class Animator {
 		AnimationHandler.remove(entity);
 	}
 
-	public void loop(String animation) {
-		isLooping = true;
-		start(animation);
-	}
-
 	public void pause() {
 		isPaused = true;
 	}
@@ -94,12 +88,8 @@ public class Animator {
 	public void unpause() {
 		isPaused = false;
 	}
-
+	
 	public void start(String animName) {
-		if (isPlaying) {
-			stop();
-		}
-		
 		Animation newAnim = Resources.getAnimation(animName);
 		
 		if (newAnim == null) {
@@ -107,6 +97,14 @@ public class Animator {
 			return;
 		}
 		
+		start(newAnim);
+	}
+	
+	public void start(Animation newAnim) {
+		if (isPlaying) {
+			stop();
+		}
+	
 		pose = new Matrix4f[newAnim.getNumJoints()];
 		for(int i = 0; i < pose.length; i++)
 			pose[i] = new Matrix4f();
@@ -114,13 +112,13 @@ public class Animator {
 		isPlaying = true;
 		isPaused = false;
 		
-		currentAnim = animName;
+		currentAnim = newAnim.getName();
 		animation = newAnim;
 		
 		resetKeyframes();
 		animationTime = 0;
 		update();
-}
+	}
 
 	// Resets the keyframes for looping/init
 	// TODO: This shouldn't be called when an animation repeats, as the frame data could just be the last frame
@@ -141,7 +139,6 @@ public class Animator {
 	public void stop() {
 
 		isPlaying = false;
-		isLooping = false;
 		isPaused = true;
 	}
 	
@@ -171,7 +168,12 @@ public class Animator {
 				animationTime -= Window.deltaTime * speedMultiplier;
 			} else {
 				resetKeyframes();
-				animationTime -= animation.getDuration();
+				float duration = animation.getDuration();
+				
+				if (animation.hasNoTransition())
+					duration -= animation.getKeyframes()[0].getTime();
+				
+				animationTime -= duration;
 			}
 		}
 
@@ -239,6 +241,11 @@ public class Animator {
 		for (int i = 0; i < numJoints; i++) {
 			byte index = (byte)i;
 			transforms.put(index, this.getJointTransform(index));
+			/*Matrix4f m = this.getJointTransforms()[i];
+			Quaternion q = Quaternion.fromMatrix(m);
+			Vector3f p = m.getTranslation();
+			
+			transforms.put(index, new JointTransform(p, q));*/
 		}
 		
 		return new Keyframe(0f, transforms);
@@ -286,7 +293,7 @@ public class Animator {
 		}
 	}
 	
-	private JointTransform getJointTransform(byte index) {
+	public JointTransform getJointTransform(byte index) {
 		JointTransform A = priorFrame.getTransforms().get(index);
 		JointTransform B = nextFrame.getTransforms().get(index);
 		

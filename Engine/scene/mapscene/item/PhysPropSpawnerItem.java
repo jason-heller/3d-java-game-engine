@@ -2,13 +2,9 @@ package scene.mapscene.item;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.lwjgl.input.Keyboard;
 
 import core.App;
 import gl.Camera;
-import gl.anim.Animator;
-import io.Input;
-import scene.entity.DummyEntity;
 import scene.entity.EntityHandler;
 import scene.entity.object.SolidPhysProp;
 import scene.mapscene.MapScene;
@@ -24,7 +20,7 @@ public class PhysPropSpawnerItem extends Item {
 	public void interact() {
 		Camera c = App.scene.getCamera();
 		Vector3f spawnpos = Vector3f.add(c.getPosition(), Vector3f.mul(c.getDirectionVector(), 7f));
-		EntityHandler.addEntity(new SolidPhysProp(spawnpos, c.getDirectionVector(), "test"));
+		EntityHandler.addEntity(new SolidPhysProp(spawnpos, c.getDirectionVector(), "default"));
 	}
 	
 	@Override

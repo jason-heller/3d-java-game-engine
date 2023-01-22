@@ -378,8 +378,8 @@ public class Quaternion implements Serializable, Externalizable {
 		final float sin = (float) Math.sin(Math.toRadians(axisAngle.angle) / 2.0);
 		final float cos = (float) Math.cos(Math.toRadians(axisAngle.angle) / 2.0);
 		x = axisAngle.x * sin;
-		x = axisAngle.y * sin;
-		x = axisAngle.z * sin;
+		y = axisAngle.y * sin;
+		z = axisAngle.z * sin;
 		w = cos;
 	}
 
@@ -875,16 +875,6 @@ public class Quaternion implements Serializable, Externalizable {
 		out.writeFloat(z);
 		out.writeFloat(w);
 	}
-	
-	/*template<typename T, qualifier Q>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<3, T, Q> operator*(qua<T, Q> const& q, vec<3, T, Q> const& v)
-	{
-	    vec<3, T, Q> const QuatVector(q.x, q.y, q.z);
-	    vec<3, T, Q> const uv(glm::cross(QuatVector, v));
-	    vec<3, T, Q> const uuv(glm::cross(QuatVector, uv));
-
-	    return v + ((uv * q.w) + uuv) * static_cast<T>(2);
-	}*/
 
 	public Vector3f rotate(Vector3f v) {
 		Vector3f quatVector = new Vector3f(x, y, z);

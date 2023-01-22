@@ -222,4 +222,11 @@ public class CommandMethods {
 		}
 		Console.log(s);
 	}
+	
+	public static void switch_stance() {
+		if (App.scene instanceof PlayableScene) {
+			PlayableScene s = (PlayableScene)App.scene;
+			s.getPlayer().setSwitch(!s.getPlayer().isSwitch());
+		}
+	}
 }

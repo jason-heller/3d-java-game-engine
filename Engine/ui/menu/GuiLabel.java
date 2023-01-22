@@ -8,7 +8,7 @@ public class GuiLabel extends GuiElement {
 
 	private final Text text;
 
-	public GuiLabel(int x, int y, String option) {
+	public GuiLabel(float x, float y, String option) {
 		this.x = x;
 		this.y = y;
 		this.text = new Text(Font.defaultFont, option, 0, 0, Font.defaultSize, false);
@@ -23,7 +23,7 @@ public class GuiLabel extends GuiElement {
 	}
 
 	@Override
-	public void setPosition(int x, int y) {
+	public void setPosition(float x, float y) {
 		this.x = x;
 		this.y = y;
 	}

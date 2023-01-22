@@ -5,8 +5,8 @@ import ui.menu.GuiElement;
 public class GuiFlowLayout implements GuiLayout {
 
 	public static final int VERTICAL = 0, HORIZONTAL = 1;
-	private int x, y, w, h, xo, yo;
-	private int dx, dy;
+	private float x, y, w, h, xo, yo;
+	private float dx, dy;
 
 	private final int dir;
 	private int padding = 10;
@@ -33,27 +33,27 @@ public class GuiFlowLayout implements GuiLayout {
 	}
 
 	@Override
-	public int getHeight() {
+	public float getHeight() {
 		return h;
 	}
 
 	@Override
-	public int getWidth() {
+	public float getWidth() {
 		return w;
 	}
 
 	@Override
-	public int getX() {
+	public float getX() {
 		return x;
 	}
 
 	@Override
-	public int getY() {
+	public float getY() {
 		return y;
 	}
 
 	@Override
-	public void init(int x, int y, int w, int h) {
+	public void init(float x, float y, float w, float h) {
 		this.x = x;
 		this.y = y;
 		this.w = w;

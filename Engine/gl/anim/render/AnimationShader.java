@@ -19,6 +19,7 @@ public class AnimationShader extends ShaderProgram {
 	protected UniformMat4 projectionViewMatrix = new UniformMat4("projectionViewMatrix");
 	protected UniformMat4 modelMatrix = new UniformMat4("modelMatrix");
 	protected UniformMat3 invTransRotMatrix = new UniformMat3("invTransRotMatrix");
+	protected UniformMat3 normalMatrix = new UniformMat3("normalMatrix");
 	protected UniformVec3 lightDirection = new UniformVec3("lightDirection");
 	protected UniformVec3 cameraPos = new UniformVec3("cameraPos");
 
@@ -34,7 +35,7 @@ public class AnimationShader extends ShaderProgram {
 		super(VERTEX_SHADER, FRAGMENT_SHADER, "in_position", "in_textureCoords", "in_normal", "in_jointIndices",
 				"in_weights");
 		super.storeAllUniformLocations(projectionViewMatrix, modelMatrix, invTransRotMatrix, diffuse, specular, lightDirection,
-				jointTransforms, specularity, cameraPos, lights);
+				jointTransforms, specularity, cameraPos, lights, normalMatrix);
 		super.bindFragOutput(0, "out_color");
 		super.bindFragOutput(1, "out_brightness");
 	}

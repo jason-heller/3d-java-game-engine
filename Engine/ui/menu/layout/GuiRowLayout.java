@@ -4,9 +4,9 @@ import ui.menu.GuiElement;
 
 public class GuiRowLayout implements GuiLayout {
 
-	private int x, y, w, h, xo, yo;
-	private int dx, dy;
-	private int rowWidth, rowHeight;
+	private float x, y, w, h, xo, yo;
+	private float dx, dy;
+	private float rowWidth, rowHeight;
 
 	private int padding = 10;
 
@@ -22,27 +22,27 @@ public class GuiRowLayout implements GuiLayout {
 	}
 
 	@Override
-	public int getHeight() {
+	public float getHeight() {
 		return h;
 	}
 
 	@Override
-	public int getWidth() {
+	public float getWidth() {
 		return w;
 	}
 
 	@Override
-	public int getX() {
+	public float getX() {
 		return x;
 	}
 
 	@Override
-	public int getY() {
+	public float getY() {
 		return y;
 	}
 
 	@Override
-	public void init(int x, int y, int w, int h) {
+	public void init(float x, float y, float w, float h) {
 		this.x = x;
 		this.y = y;
 		this.w = w;

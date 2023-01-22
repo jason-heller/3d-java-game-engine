@@ -18,7 +18,7 @@ public class ControlsPanel extends GuiPanel {
 
 	private final GuiButton reset;
 
-	public ControlsPanel(GuiPanel parent, int x, int y, int width, int height) {
+	public ControlsPanel(GuiPanel parent, float x, float y, float width, float height) {
 		super(parent, x, y, width, height);
 
 		setScrollable(true);
@@ -29,13 +29,13 @@ public class ControlsPanel extends GuiPanel {
 		int i = 0;
 		Iterator<String> iter = Controls.controls.keySet().iterator();
 
-		for (i = 0; i < 5; i++) {
+		for (i = 0; i < 4; i++) {
 			addBind(iter.next());
 		}
 		
 		addSeparator();
 		add(new GuiLabel(x, y ,"#SMovement"));
-		for (i = 0; i < 6; i++) {
+		for (i = 0; i < 5; i++) {
 			addBind(iter.next());
 		}
 

@@ -13,7 +13,7 @@ public class GuiButton extends GuiElement {
 
 	private final Text option;
 
-	public GuiButton(int x, int y, String option) {
+	public GuiButton(float x, float y, String option) {
 		this.x = x;
 		this.y = y;
 		this.option = new Text(Font.defaultFont, option, 0, 0, Font.defaultSize, false);
@@ -36,7 +36,7 @@ public class GuiButton extends GuiElement {
 	}
 
 	@Override
-	public void setPosition(int x, int y) {
+	public void setPosition(float x, float y) {
 		this.x = x;
 		this.y = y;
 	}

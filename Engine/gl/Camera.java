@@ -7,9 +7,11 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
+import core.App;
 import dev.cmd.Console;
 import geom.Frustum;
 import io.Input;
+import scene.PlayableScene;
 import util.MathUtil;
 import util.ThirdPersonCameraController;
 
@@ -57,7 +59,6 @@ public class Camera {
 	private Vector3f viewDirection = new Vector3f();
 
 	private CameraFollowable focus = null;
-	private ThirdPersonCameraController thirdPersonFollow = new ThirdPersonCameraController(focus);
 
 	private final boolean mouseIsGrabbed = false;
 
@@ -106,17 +107,17 @@ public class Camera {
 			float speed = Input.isDown(Keyboard.KEY_LCONTROL) ? cameraSpeed / 4f : cameraSpeed;
 			speed *= Window.deltaTime;
 
-			if (Input.isDown("walk_forward")) {
+			if (Input.isDown(Keyboard.KEY_W)) {
 				forward.mul(-speed);
-			} else if (Input.isDown("walk_backward")) {
+			} else if (Input.isDown(Keyboard.KEY_S)) {
 				forward.mul(speed);
 			} else {
 				forward.zero();
 			}
 
-			if (Input.isDown("walk_right")) {
+			if (Input.isDown(Keyboard.KEY_D)) {
 				strafe.mul(-speed);
-			} else if (Input.isDown("walk_left")) {
+			} else if (Input.isDown(Keyboard.KEY_A)) {
 				strafe.mul(speed);
 			} else {
 				strafe.zero();
@@ -195,13 +196,13 @@ public class Camera {
 				swayTarget.set(w1 * swayIntensity, w2 * swayIntensity, w3 * swayIntensity);
 			}
 		}
-		swayDir.x += (swayTarget.x - swayDir.x)*Window.deltaTime*swaySpeed;
-		swayDir.y += (swayTarget.y - swayDir.y)*Window.deltaTime*swaySpeed;
-		swayDir.z += (swayTarget.z - swayDir.z)*Window.deltaTime*swaySpeed;
+		swayDir.x += (swayTarget.x - swayDir.x) * Window.deltaTime * swaySpeed;
+		swayDir.y += (swayTarget.y - swayDir.y) * Window.deltaTime * swaySpeed;
+		swayDir.z += (swayTarget.z - swayDir.z) * Window.deltaTime * swaySpeed;
 
 		if (controlStyle == THIRD_PERSON && focus != null) {
-			position.set(thirdPersonFollow.getPosition());
-			lookAt = thirdPersonFollow.getViewAngle();
+			position.set(focus.getPosition());
+			lookAt = focus.getViewAngle();
 			rawPitch = (float) Math.toDegrees(Math.asin(lookAt.y));
 			rawYaw = -(float) Math.toDegrees(Math.atan2(lookAt.x, lookAt.z));
 		}
@@ -225,6 +226,11 @@ public class Camera {
 
 	public void setControlStyle(byte style) {
 		this.controlStyle = style;
+	}
+	
+	public void setControlStyle(byte style, CameraFollowable focus) {
+		this.controlStyle = style;
+		this.focus = (style == THIRD_PERSON) ? new ThirdPersonCameraController(focus) : focus;
 	}
 
 	public void setPitch(float pitch) {
@@ -355,7 +361,6 @@ public class Camera {
 
 	public void setFocus(CameraFollowable focus) {
 		this.focus = focus;
-		this.thirdPersonFollow.setFollowing(focus);
 		if (focus == null) {
 			lookAt = null;
 		}

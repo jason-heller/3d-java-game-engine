@@ -11,7 +11,7 @@ public class GameplayPanel extends GuiPanel {
 	
 	private final GuiSlider sensitivity, cameraSway;
 	
-	public GameplayPanel(GuiPanel parent, int x, int y, int width, int height) {
+	public GameplayPanel(GuiPanel parent, float x, float y, float width, float height) {
 		super(parent, x, y, width, height);
 		setLayout(new GuiFlowLayout(GuiFlowLayout.VERTICAL), x, y, 582, 392);
 

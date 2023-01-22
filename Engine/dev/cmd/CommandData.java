@@ -7,7 +7,6 @@ import core.App;
 import dev.Debug;
 import dev.EnvMapBuilder;
 import dev.MemDebug;
-import dev.RailBuilder;
 import gl.Camera;
 import gl.Window;
 import gl.anim.Animator;
@@ -15,7 +14,9 @@ import gl.arc.ArcFaceRender;
 import io.Controls;
 import map.architecture.ArchitectureHandler;
 import scene.entity.util.PhysicsEntity;
+import scene.entity.util.PlayerEntity;
 import scene.entity.util.SkatePhysicsEntity;
+import scene.mapscene.trick.TrickManager;
 import ui.UI;
 
 enum CommandData {
@@ -49,6 +50,7 @@ enum CommandData {
 	viewmodel_edit(true),
 	speak(false),
 	build_environment_maps(EnvMapBuilder.class, false),
+	switch_stance(false),
 	raillist_build(true),
 	
 	// Getters
@@ -70,6 +72,7 @@ enum CommandData {
 	light_ambient_only("ambientOnly", Debug.class, SETTER, true),
 	view_lightmap("viewLightmapTexture", Debug.class, SETTER, true),
 	view_reflect("viewReflectionTexture", Debug.class, SETTER, true),
+	view_grindstate_properties("viewGrindState", PlayerEntity.class, SETTER, true),
 	shadow_0_tex_view("viewShadowTexture0", Debug.class, SETTER, true),
 	face_info("faceInfo", Debug.class, SETTER, true),
 	show_hitboxes("showHitboxes", Debug.class, SETTER, true),
@@ -94,7 +97,9 @@ enum CommandData {
 	phys_friction_air("airFriction", PhysicsEntity.class, SETTER, true),
 	god("god", Debug.class, SETTER, true),
 	fullrender("fullRender", ArcFaceRender.class, SETTER, false),
-	velocity_vectors("velocityVectors", Debug.class, SETTER, true);
+	velocity_vectors("velocityVectors", Debug.class, SETTER, true),
+	c_infinite_jump("hasInfiniteJumps", TrickManager.class, SETTER, true),
+	c_perfect_grind_balance("perfectGrind", SkatePhysicsEntity.class, SETTER, true);
 
 	Command command;
 	

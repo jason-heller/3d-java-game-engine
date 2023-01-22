@@ -12,7 +12,7 @@ public class AdvancedPanel extends GuiPanel {
 	
 	private final GuiSpinner disableIntro, allowConsole;
 	
-	public AdvancedPanel(GuiPanel parent, int x, int y, int width, int height) {
+	public AdvancedPanel(GuiPanel parent, float x, float y, float width, float height) {
 		super(parent, x, y, width, height);
 		setLayout(new GuiFlowLayout(GuiFlowLayout.VERTICAL), x, y, 582, 392);
 

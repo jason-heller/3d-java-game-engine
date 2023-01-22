@@ -18,7 +18,7 @@ public class GuiDropdown extends GuiElement {
 
 	private final String[] options;
 
-	public GuiDropdown(int x, int y, String label, String... options) {
+	public GuiDropdown(float x, float y, String label, String... options) {
 		this.options = options;
 		this.label = label;
 
@@ -51,7 +51,7 @@ public class GuiDropdown extends GuiElement {
 	}
 
 	@Override
-	public void setPosition(int x, int y) {
+	public void setPosition(float x, float y) {
 		this.x = x;
 		this.y = y;
 		backdrop.x = x;

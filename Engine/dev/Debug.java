@@ -92,15 +92,18 @@ public class Debug {
 		String vx = String.format("%.1f", player.vel.x);
 		String vy = String.format("%.1f", player.vel.y);
 		String vz = String.format("%.1f", player.vel.z);
+		String rotY = String.format("%.1f", player.rot.y);
 		String spd = String.format("%.1f", new Vector3f(player.vel.x, player.vel.z, 0f).length());
 
 		String debugData = "\n#wFPS: " + (int) Window.framerate + "/" + Window.maxFramerate
 				+ "\npos (#rX: " + cx + " #gY: " + cy + " #bZ: " + cz + "#w)"
 				+ "\nvel (#rX: " + vx + " #gY: " + vy + " #bZ: " + vz + "#w)"
+				+ "\n" + "roty: " + rotY
 				+ "\n" + "spd: " + spd
 				+ "\n" + "draw calls: " + Render.drawCalls
-				+ "\n" + "tex swaps: " + Render.textureSwaps;
-		//		+ "\n" + MemDebug.memoryInfo();
+				+ "\n" + "tex swaps: " + Render.textureSwaps
+				+ "\n" + "anim: " + player.getAnimator().getCurrentAnimation()
+				+ "\n" + "grind: " + ((player.getGrindLen())/11f);
 		
 		UI.drawString(debugData, 5, 5, .15f, false);
 		

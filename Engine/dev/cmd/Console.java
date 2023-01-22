@@ -56,8 +56,6 @@ public class Console {
 	
 	private static DecimalFormat df = new DecimalFormat("0.0000");
 
-	private static boolean relay = false;
-
 	public static void clear() {
 		log.clear();
 	}
@@ -136,9 +134,6 @@ public class Console {
 		
 		for (final String line : lines) {
 			log.add(line);
-			if (relay) {
-				System.err.println(line);
-			}
 			
 			if (log.size() > MAX_LINES) {
 				log.remove(0);
@@ -150,10 +145,6 @@ public class Console {
 		}
 	}
 	
-	public static void toggleRelay() {
-		relay = !relay;
-	}
-
 	private static boolean mouseOver(int mx, int my) {
 		return mx > x && my > y && mx < x + WIDTH && my < y + BORDER_WIDTH + (VISIBLE_LINES + 1) * FONT_HEIGHT;
 	}
@@ -427,7 +418,7 @@ public class Console {
 			}
 
 			final int wheel = -Input.getMouseDWheel();
-			final int speed = Input.isDown("sneak") ? 8 : 1;
+			final int speed = 8;
 
 			if (wheel < 0) {
 				lineViewInd = Math.max(lineViewInd - speed, 0);

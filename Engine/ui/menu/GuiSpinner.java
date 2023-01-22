@@ -17,7 +17,7 @@ public class GuiSpinner extends GuiElement {
 
 	private final Image lArrow, rArrow;
 
-	public GuiSpinner(int x, int y, String label, int index, String... options) {
+	public GuiSpinner(float x, float y, String label, int index, String... options) {
 		this.x = x;
 		this.y = y;
 		this.text = new Text(Font.defaultFont, label, 0, 0, Font.defaultSize, false);
@@ -49,7 +49,7 @@ public class GuiSpinner extends GuiElement {
 	}
 
 	@Override
-	public void setPosition(int x, int y) {
+	public void setPosition(float x, float y) {
 		this.x = x;
 		this.y = y;
 		lArrow.x = x + 16 + textWidth;

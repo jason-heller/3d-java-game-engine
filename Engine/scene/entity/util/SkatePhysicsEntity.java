@@ -6,9 +6,10 @@ import java.util.List;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
+import audio.AudioHandler;
+import audio.Source;
 import core.App;
 import dev.Debug;
-import dev.cmd.Console;
 import geom.AxisAlignedBBox;
 import geom.CollideUtils;
 import geom.MTV;
@@ -17,9 +18,9 @@ import geom.Polygon;
 import gl.Window;
 import gl.line.LineRender;
 import gl.res.Mesh;
+import io.Input;
 import map.Rail;
 import map.architecture.Architecture;
-import map.architecture.ArchitectureHandler;
 import map.architecture.Material;
 import map.architecture.components.ArcClip;
 import map.architecture.components.ArcEdge;
@@ -34,53 +35,72 @@ import scene.entity.Entity;
 import scene.entity.EntityHandler;
 import util.Colors;
 import util.GeomUtil;
-import util.MathUtil;
 
 public abstract class SkatePhysicsEntity extends Entity {
 	
+	// Physics flags
 	protected boolean grounded = false;
 	public boolean previouslyGrounded = false;
 	protected boolean sliding = false;
+	protected boolean applyGravity = true;
+	public boolean solid = true;
 	
+	// General physics variables
 	public static float gravity = 100f;
 	public static float maxGravity = -600f;
 	public static float friction = 6f;
 	public static float airFriction = 0f;
 	
-	protected Rail grindRail = null;
-	protected Vector3f grindNormal = null;
-	protected Vector3f grindOrigin = null;
-	protected float grindSpeed, railLengthSqr;
-	
-	protected boolean applyGravity = true;
-	
-	protected Material materialStandingOn = Material.ROCK;
-
-	public static float jumpVel = 40f;
+	public static float jumpVel = 35f;
 	public static float accelSpeed = 1200f, airAccel = 0f;
-	public static float maxSpeed = 50f, maxAirSpeed = 1000f;
-
+	public static float maxSpeed = 40f, maxAirSpeed = 1000f;
+	protected static float direction = 0f;
+	public Vector3f vel = new Vector3f();
+	
+	// Variables for grinding (move these into separate class?)
+	protected Rail grindRail = null;			// Doubles as the flag for grinding
+	protected Vector3f grindNormal = null;		// Grind direction
+	private Vector3f grindOrigin = null;		// starting point of currently grinded rail
+	private float grindSpeed, railLengthSqr;	// Speed of grind, length of rail currently being ridden
+	
+	protected float grindBalance = 0f;
+	private float grindSlip = 0f;
+	private float grindBalSpeed = 0f;
+	
+	protected float grindLen = 0f;
+	private Vector3f grindStart = new Vector3f();
+	
+	// Positional helper vars
+	private Vector3f lastPos = new Vector3f();
+	private Vector3f boardPos = new Vector3f();
+	
+	// Refernce to map
+	protected Architecture arc;
+	
+	// Sound variables
+	protected Source trickSfxSource = AudioHandler.checkoutSource();
+	protected Source rideSfxSource = AudioHandler.checkoutSource();
+	protected Material materialStandingOn = Material.ROCK;
+	
+	// Physics constants
 	protected static final float SLIDE_ANGLE = .9f;
 	protected static final float EPSILON = 0.01f;
-	private static final float STEP_HEIGHT = 3f;
-
-	public Vector3f vel = new Vector3f();
-	private Vector3f lastPos = new Vector3f();
+	protected static final float RAIL_GRAVITATION = 3f;
+	private static final float STEP_HEIGHT = 2f;
+	private static final float RAIL_LINK_ANGLE_THRESHOLD = 0.5f;
+	protected static final float MAX_GRIND_BALANCE = 40;
+	private static final float INIT_GRIND_BAL_SPEED = 2;
+	private static final float INIT_GRIND_SLIP = .01f;
 	
-	protected ArchitectureHandler arcHandler;
-	
-	public boolean solid = true;
+	// Cheats
+	public static boolean perfectGrind = false;
 	
 	public SkatePhysicsEntity(String name, Vector3f bounds) {
 		super(name);
 		bbox = new AxisAlignedBBox(pos, bounds);
-		arcHandler = ((PlayableScene)App.scene).getArcHandler();
-	}
-
-	public void jump(float height) {
-		vel.y = height;
-		grounded = false;
-		sliding = false;
+		arc = ((PlayableScene)App.scene).getArchitecture();
+		
+		rideSfxSource.setLooping(true);
 	}
 
 	@Override
@@ -89,17 +109,43 @@ public abstract class SkatePhysicsEntity extends Entity {
 			LineRender.drawBox(bbox.getCenter(), bbox.getBounds(), Colors.YELLOW);
 		}
 		
+		arc = ((PlayableScene)App.scene).getArchitecture();	// TODO: This is temp, make sure this entity spawns AFTER the architecutre
+		boardPos.set(Vector3f.sub(pos, new Vector3f(0, bbox.getHeight(), 0)));
+	
+		if (Debug.viewCollide) {
+			arc.drawRails(pos, RAIL_GRAVITATION);
+		}
+		
 		lastPos.set(pos);
 		
 		if (grindRail != null) {
 			Vector3f railInc = Vector3f.mul(grindNormal, grindSpeed * Window.deltaTime);
 			pos.add(railInc);
-			grounded = true;
+			
+			handleGrindState();
 			
 			float distSqr = Vector3f.distanceSquared(grindOrigin, pos);
+			grounded = true;
 			
 			if (distSqr >= railLengthSqr) {
-				grindRail = null;
+				Vector3f linkPos = (grindOrigin == grindRail.start) ? grindRail.end : grindRail.start;
+				Rail newRail = arc.findLinkingRail(grindRail, linkPos, boardPos, RAIL_GRAVITATION);
+				
+				if (newRail != null) {
+					Vector3f rail1 = Vector3f.sub(grindRail.end, grindRail.start).normalize();
+					Vector3f rail2 = Vector3f.sub(newRail.end, newRail.start).normalize();
+					
+					if (Math.abs(rail1.dot(rail2)) < RAIL_LINK_ANGLE_THRESHOLD) {
+						endGrind();
+						return;
+					}
+
+					setGrindRail(newRail);
+					grindLen += Vector3f.distance(grindStart, pos);
+					grindStart.set(pos);
+				} else {
+					endGrind();
+				}
 			}
 			
 		} else {
@@ -114,22 +160,137 @@ public abstract class SkatePhysicsEntity extends Entity {
 			pos.z += vel.z * Window.deltaTime;
 
 			applyFriction();
+		
+			float len = (float)Math.sqrt(vel.x*vel.x + vel.z*vel.z);
+			float sfxFactor = Math.min(len / maxSpeed, 1f);
+			rideSfxSource.setGain(sfxFactor);
+			rideSfxSource.setPitch(sfxFactor);
 
 			previouslyGrounded = grounded;
 			grounded = false;
-			
-			handleCollisions();
+		}
+		
+		handleCollisions();
+		
+		if (!grounded && previouslyGrounded) {
+			rideSfxSource.stop();
 		}
 		
 		super.update(scene);
 	}
 
+	protected void handleGrindState() {
+		// Balance
+		if (!perfectGrind) {
+			grindBalance += grindSlip;
+			grindSlip += Window.deltaTime * 0.5f * Math.signum(grindSlip);
+		}
+		
+		//rot.x = 0f;
+		rot.z = grindBalance;
+		
+		if (Input.isDown("left")) {
+			grindSlip -= grindBalSpeed * Window.deltaTime;
+			grindBalSpeed += Window.deltaTime;
+		}
+		
+		if (Input.isDown("right")) {
+			grindSlip += grindBalSpeed * Window.deltaTime;
+			grindBalSpeed += Window.deltaTime;
+		}
+		
+		if (Math.abs(grindBalance) > MAX_GRIND_BALANCE) {
+			endGrind();
+		}
+	}
+
+	/**
+	 * Called to make the entity begin grinding a rail; Attempts to find a rail to
+	 * grind and sets this entity to grinding if one is found. If no rail is found,
+	 * and the entity is already grinding, it will terminate the grind state
+	 */
+	protected void grind() {
+		Rail newRail = arc.getNearestRail(boardPos, vel, grindRail, RAIL_GRAVITATION);
+
+		if (newRail != null) {
+			rideSfxSource.play("grind");
+			
+			grindSlip = INIT_GRIND_SLIP * ((Math.random() > 0.5) ? 1f : -1f);
+			grindStart.set(pos);
+			
+			setGrindRail(newRail);
+		} else {
+			endGrind();
+		}
+	}
+
+	/** Ends the grinding state, assumes the entity is already grinding
+	 */
+	protected void endGrind() {
+		if (grindRail != null) {
+			if (!grounded && previouslyGrounded) {
+				rideSfxSource.stop();
+			} else {
+				rideSfxSource.play("ride");
+			}
+			
+			grindLen += Vector3f.distance(grindStart, pos);
+			grindStart.set(pos);
+		}
+		
+		grindRail = null;
+		rot.z = 0f;
+		grindSlip = 0f;
+		grindBalance = 0f;
+		grindBalSpeed = INIT_GRIND_BAL_SPEED;
+		
+		if (grounded) {
+			getAnimator().start("idle");
+		}
+	}
+
+	/**
+	 * Begins the grind state using the given rail. This differs from the grind()
+	 * function in that this is not meant to begin the grind state, but rather
+	 * simply connect the entity to a new rail.
+	 * 
+	 * @param newRail The rail the entity is grinding
+	 */
+	private void setGrindRail(Rail newRail) {
+		
+		grindRail = newRail;
+		
+		Vector3f edge = Vector3f.sub(grindRail.end, grindRail.start);
+		railLengthSqr = edge.lengthSquared();
+		Vector3f edgeNormal = edge.normalize();
+		Vector3f newPoint = GeomUtil.projectPointOntoLine(boardPos, grindRail.start, edgeNormal);
+		
+		grindOrigin = grindRail.start;
+		grindSpeed = vel.length();
+		
+		if (vel.dot(edgeNormal) < 0) {
+			edgeNormal.negate();
+			grindOrigin = grindRail.end;
+		}
+		
+		grindNormal = edgeNormal;
+		vel.set(Vector3f.mul(grindNormal, grindSpeed));
+		pos.set(newPoint.x, newPoint.y + bbox.getHeight(), newPoint.z);
+	}
+
+	public void jump(float height) {
+		vel.y = height;
+		grounded = false;
+		sliding = false;
+	}
+	
+	/** Runs the collision checking and response code for the entity
+	 */
 	private void handleCollisions() {
-		Architecture architecture = arcHandler.getArchitecture();
-		Bsp bsp = architecture.bsp;
+		Bsp bsp = arc.bsp;
 		
 		Vector3f max = Vector3f.add(bbox.getCenter(), bbox.getBounds());
-		Vector3f min = Vector3f.sub(bbox.getCenter(), bbox.getBounds());
+		Vector3f min = Vector3f.sub(bbox.getCenter(), bbox.getBounds());		// Cache these maybe
 		
 		List<BspLeaf> leaves = bsp.walk(max, min);
 		List<ArcFace> faces = bsp.getFaces(leaves);
@@ -137,15 +298,21 @@ public abstract class SkatePhysicsEntity extends Entity {
 		leaf = bsp.walk(pos);
 		
 		// Main collision handling
-
 		handleEntityCollisions(leaves);
-		handleObjectCollisions(leaf, bsp);
-		handleHeightmapCollisions(architecture, leaves, faces);
+		handleObjectCollisions(bsp);
+		handleHeightmapCollisions(leaves, faces);
 		handleFaceCollisions(bsp, faces, 0);
-		handleClipCollisions(architecture, leaves);
+
+		handleClipCollisions(leaves);
 	}
 
-	private void handleHeightmapCollisions(Architecture arc, List<BspLeaf> leaves, List<ArcFace> faces) {
+	/**
+	 * Handles collisions between this entity and heighmaps
+	 * 
+	 * @param leaves The list of leaves this entity currently resides in
+	 * @param faces  The list of faces from the leaf
+	 */
+	private void handleHeightmapCollisions(List<BspLeaf> leaves, List<ArcFace> faces) {
 		Bsp bsp = arc.bsp;
 		for(BspLeaf leaf : leaves) {
 			for(short hmapid : leaf.heightmaps) {
@@ -177,7 +344,9 @@ public abstract class SkatePhysicsEntity extends Entity {
 		}
 	}
 
-	/** Handles collisions between this entity and other entities
+	/**
+	 * Handles collisions between this entity and other entities
+	 * 
 	 * @param leaves The list of leaves this entity currently resides in
 	 */
 	protected void handleEntityCollisions(List<BspLeaf> leaves) {
@@ -197,27 +366,37 @@ public abstract class SkatePhysicsEntity extends Entity {
 					if (!physEnt.solid)
 						continue;
 
-					handleBBoxCollision(physEnt.bbox);
+					handleAabbCollision(physEnt.bbox);
 				}
 			}
 		}
 	}
 	
-	private void handleBBoxCollision(AxisAlignedBBox other) {
-		MTV mtv = bbox.collide(other);
+	/**
+	 * Handles collisions between this entity and axis-aligned bounding boxes
+	 * 
+	 * @param otherBox the AABB to collide with
+	 */
+	private void handleAabbCollision(AxisAlignedBBox otherBox) {
+		MTV mtv = bbox.collide(otherBox);
 
 		if (mtv != null) {
 			if (mtv.getAxis().y > .5f) {
 				vel.y = 0f;
 				grounded = true;
-				pos.y = other.getCenter().y + bbox.getBounds().y + other.getBounds().y;
+				pos.y = otherBox.getCenter().y + bbox.getBounds().y + otherBox.getBounds().y;
 			} else {
 				vel.add(mtv.getMTV());
 			}
 		}
 	}
 
-	protected void handleObjectCollisions(BspLeaf leaf, Bsp bsp) {
+	/**
+	 * Handles collisions between this entity and any static object in the map
+	 * 
+	 * @param bsp The BSP of the map
+	 */
+	protected void handleObjectCollisions(Bsp bsp) {
 		if (!solid) return;
 		
 		List<ArcStaticObject> objects = bsp.objects.getObjects(leaf);
@@ -232,7 +411,7 @@ public abstract class SkatePhysicsEntity extends Entity {
 			AxisAlignedBBox otherBox = obj.getBBox();
 			if (bbox.intersects(otherBox)) {
 				if (obj.solidity == 1) {
-					handleBBoxCollision(otherBox);
+					handleAabbCollision(otherBox);
 				} else {
 					Mesh model = bsp.objects.getModel(obj.model);
 					if (model.getNavMesh() == null)
@@ -263,11 +442,11 @@ public abstract class SkatePhysicsEntity extends Entity {
 	private void handleFaceCollisions(Bsp bsp, List<ArcFace> faces, int iterations) {
 		MTV nearest = null;
 		ArcFace nearestFace = null;
+		float smallestDepth = 2f;
 
 		for(ArcFace face : faces) {
 			
-			//Architecture arc = arcHandler.getArchitecture();
-			if (face.texMapping == -1) 
+			if (face.texMapping == -1)		// Don't collide against invisible geometry
 				continue;
 			
 			Plane plane = bsp.planes[face.planeId];
@@ -275,9 +454,10 @@ public abstract class SkatePhysicsEntity extends Entity {
 			
 			MTV mtv = CollideUtils.bspFaceBoxCollide(bsp.vertices, bsp.edges, bsp.surfEdges, face, normal, bbox);
 			
-			if (mtv != null && (nearest == null || nearest.compareTo(mtv) >= 0)) {
+			if (mtv != null && smallestDepth >= mtv.getDepth()) {
 				nearest = mtv;
 				nearestFace = face;
+				smallestDepth = mtv.getDepth();
 			}
 		}
 		
@@ -289,16 +469,17 @@ public abstract class SkatePhysicsEntity extends Entity {
 			return;
 		}
 		
-		if (iterations != 7) {	// Only allow up to 8 iterations
+		if (iterations != 7) {
 			handleFaceCollisions(bsp, faces, iterations + 1);
 		}
 	}
 	
-	/** Handles collisions between this entity and clips
-	 * @param arc The current map (referred internally as an architecture)
+	/**
+	 * Handles collisions between this entity and clips
+	 * 
 	 * @param leaves The list of leaves this entity currently resides in
 	 */
-	private void handleClipCollisions(Architecture arc, List<BspLeaf> leaves) {
+	private void handleClipCollisions(List<BspLeaf> leaves) {
 		Bsp bsp = arc.bsp;
 		for(BspLeaf leaf : bsp.leaves) {
 			for(short clipId : leaf.clips) {
@@ -312,7 +493,6 @@ public abstract class SkatePhysicsEntity extends Entity {
 					planes[i] = bsp.planes[bsp.clipPlaneIndices[clip.firstPlane + i]];
 				}
 				
-				//MTV mtv = bbox.collide(clip.bbox);
 				MTV mtv = CollideUtils.convexHullBoxCollide(planes, bbox);
 				if (mtv != null) {
 					boolean doCollide = clip.interact(this, true);
@@ -355,8 +535,7 @@ public abstract class SkatePhysicsEntity extends Entity {
 	}
 	
 	private void resolveFaceCollision(Bsp bsp, MTV mtv, ArcFace face) {
-		// Check if moving the player's path up one resolves collision, if it does, move along that path, then drop down
-
+		
 		if (face == null) {
 			pos.add(mtv.getMTV());
 			return;
@@ -371,78 +550,62 @@ public abstract class SkatePhysicsEntity extends Entity {
 		
 		Plane plane = mtv.getPlane();
 		if (plane == null) {
-			plane = bsp.planes[mtv.getFace().planeId];
+			plane = bsp.planes[mtv.getFace().planeId];		// HACKY
 		}
-		
+
 		// If floor..
 		if (plane.normal.y >= .49f) {
-			if (Float.isNaN(CollideUtils.convexPolygonRay(bsp, face, pos, new Vector3f(0,-1,0)))) {
+			
+			if (mtv.getAxis().y < .5f) {
 				return;
 			}
 			
-			collideWithFloor(plane);
+			
+			grounded = true;
 			
 			if (face != null) {
-				Architecture arc = arcHandler.getArchitecture();
 				int id = bsp.getTextureMappings()[face.texMapping].textureId;
 				materialStandingOn = arc.getTextures()[id].getMaterial();
 			}
-			return;
+
+			pos.add(mtv.getMTV());
+			//float ry = rot.y;
+			//GeomUtil.rotateAboutNormal(rot, plane.normal, Vector3f.Y_AXIS);
+			//rot.y = ry;
 		} else {
-			// If a wall, & 
-			pos.y += 4f;
+			// This fudges the player if theyre close to the top of the wall
+			pos.y += 2f;
 			MTV wallHopMtv = CollideUtils.bspFaceBoxCollide(bsp.vertices, bsp.edges, bsp.surfEdges, face, plane.normal, bbox);
-			pos.y -= 4f;
+			pos.y -= 2f;
 			
 			if (wallHopMtv == null) {
 				return;
 			}
+			
+			if (grindRail != null)
+				endGrind();
+			
+			
+			// Handle velocity depending on direction to wall
+			float facing = vel.dot(new Vector3f(plane.normal.z, 0f, -plane.normal.x)) > 0 ? 180 : 0;
+			pos.add(mtv.getMTV());
+			
+			direction = (float)Math.toDegrees(Math.atan2(plane.normal.z, plane.normal.x)) + facing;
+			float len = new Vector3f(vel.x, 0f, vel.z).length();
+			float vy = vel.y;
+			vel.set(Vector3f.sub(pos, lastPos));
+			vel.setLength(len);
+			vel.y = vy;
 		}
-		
-		pos.add(mtv.getMTV());
-		// vel.add(Vector3f.div(mtv.getMTV(), Window.deltaTime));
 	}
 
 	protected void collideWithFloor(Plane plane) {
-		
-		// Easy out
-		/*if (mtv.getAxis().y == 1f) {
-			pos.y += mtv.getMTV().y;
-			vel.y = 0f;
-			grounded = true;
-			return;
-		}*/
-		
-		float oldDepth = plane.raycast(Vector3f.add(lastPos, Vector3f.ZERO), new Vector3f(0,-1,0));
-		float depth = plane.raycast(Vector3f.add(pos, Vector3f.ZERO), new Vector3f(0,-1,0));
-
-		if (depth == Float.NEGATIVE_INFINITY || depth > bbox.getHeight()) {
-			return;
-		}
-		
-		if (depth > bbox.getHeight() - .1f) {
-			grounded = true;
-			pos.y += bbox.getHeight() - depth;
-			//vel.y = 0;
-			return;
-		}
-
 		grounded = true;
-		
-		pos.y += bbox.getHeight() - depth;
-		//vel.set(Vector3f.sub(pos, lastPos).div(Window.deltaTime));
-		// vel.y = (pos.y - lastPos.y) / Window.deltaTime;
-		//if (vel.y > 0)
-		//float newHeight = pos.y;
-		//pos.set(lastPos);
-		//pos.y = newHeight;
-		/*if (depth > upwarp) {
-			upwarp = depth;
-			// lastFloorCollided = plane;
-		}*/
 	}
 	
-	/** Applies a force to this entity
+	/**
+	 * Applies a force to this entity
+	 * 
 	 * @param direction the direction of the force
 	 * @param magnitude the magnitude of the force
 	 */
@@ -462,9 +625,9 @@ public abstract class SkatePhysicsEntity extends Entity {
 		vel.y += direction.y * accelVel;
 		vel.z += direction.z * accelVel;
 	}
-	
-	/** Applies friction the entity when called, should be called once per tick
-	 * 
+
+	/**
+	 * Applies friction the entity when called, should be called once per tick
 	 */
 	private void applyFriction() {
 		if (vel.lengthSquared() < .01f)
@@ -502,5 +665,16 @@ public abstract class SkatePhysicsEntity extends Entity {
 	
 	public AxisAlignedBBox getBBox() {
 		return bbox;
+	}
+	
+	public float getGrindLen() {
+		return this.grindLen;
+	}
+	
+	@Override
+	public void cleanUp() {
+		super.cleanUp();
+		trickSfxSource.delete();
+		rideSfxSource.delete();
 	}
 }

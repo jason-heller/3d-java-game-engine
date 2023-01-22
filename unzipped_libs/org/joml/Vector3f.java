@@ -543,22 +543,47 @@ public class Vector3f implements Serializable, Externalizable {
 		y = in.readFloat();
 		z = in.readFloat();
 	}
+	
+	public Vector3f rotateX(float angle) {
+        float sin = (float) Math.sin(angle), cos = (float) Math.cos(angle);
+        float y = this.y * cos - this.z * sin;
+        float z = this.y * sin + this.z * cos;
+        this.y = y;
+        this.z = z;
+        return this;
+    }
 
-	public void rotate(Vector3f rot) {
-		rotate(Vector3f.X_AXIS, rot.x);
-		rotate(Vector3f.Y_AXIS, rot.y);
-		rotate(Vector3f.Z_AXIS, rot.z);
-	}
+    /**
+     * Rotate this vector the specified radians around the Y axis.
+     * 
+     * @param angle
+     *          the angle in radians
+     * @return this
+     */
+    public Vector3f rotateY(float angle) {
+        float sin = (float) Math.sin(angle), cos = (float) Math.cos(angle);
+        float x =  this.x * cos + this.z * sin;
+        float z = -this.x * sin + this.z * cos;
+        this.x = x;
+        this.z = z;
+        return this;
+    }
 
-	public void rotate(Vector3f axis, float thetaRadians) {
-		final float sinTh = (float) Math.sin(thetaRadians);
-		final float cosTh = (float) Math.cos(thetaRadians);
-		final float dp = dot(axis);
-
-		x += axis.x * dp * (1f - cosTh) + x * cosTh + (-axis.z * y + axis.y * z) * sinTh;
-		y += axis.y * dp * (1f - cosTh) + y * cosTh + (axis.z * x - axis.x * z) * sinTh;
-		z += axis.z * dp * (1f - cosTh) + z * cosTh + (-axis.y * x + axis.x * y) * sinTh;
-	}
+    /**
+     * Rotate this vector the specified radians around the Z axis.
+     * 
+     * @param angle
+     *          the angle in radians
+     * @return this
+     */
+    public Vector3f rotateZ(float angle) {
+        float sin = (float) Math.sin(angle), cos = (float) Math.cos(angle);
+        float x = this.x * cos - this.y * sin;
+        float y = this.x * sin + this.y * cos;
+        this.x = x;
+        this.y = y;
+        return this;
+    }
 
 	public Vector3f scale(float factor) {
 		x *= factor;

@@ -3,6 +3,7 @@ package util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -81,6 +82,29 @@ public class MathUtil {
 				xzLen * (float) Math.cos(yaw));
 	}
 
+	// Might be broken
+	public static Vector3f directionVectorToEuler(Vector3f dirNormalized, Vector3f up) {
+		if (up.equals(dirNormalized))
+			return up;
+		
+		final Vector3f side = new Vector3f(dirNormalized).cross(up).normalize();
+		up = new Vector3f(side).cross(dirNormalized);
+		
+		float sqr = (float)Math.sqrt((up.z*up.z) + (dirNormalized.z*dirNormalized.z));
+		
+		float rx = (float)Math.atan2(up.z, -dirNormalized.z);
+		float ry = (float)Math.atan2(-side.z, -sqr);
+		float rz = (float)Math.atan2(side.y, side.x);
+		
+		return new Vector3f(rx, ry, rz);
+			
+		/*float pitch = (float)Math.asin(dirNormalized.y);
+		float acosPitch = (float)Math.acos(pitch);
+		float sinYaw = dirNormalized.x * acosPitch;
+		float yaw = (float)Math.asin(sinYaw);
+		return new Vector3f((float)Math.toDegrees(acosPitch), (float)Math.toDegrees(yaw), 0f);*/
+	}
+	
 	public static float fastSqrt(float f) {
 		return Float.intBitsToFloat((Float.floatToIntBits(f) - (1 << 52) >> 1) + (1 << 61));
 	}
@@ -147,22 +171,6 @@ public class MathUtil {
 		return (float) Math.atan2(z2 - z1, dist);
 	}
 	
-	public static Vector3f directionVectorToEuler(Vector3f dirNormalized, Vector3f up) {
-		if (up.equals(dirNormalized))
-			return up;
-		
-		final Vector3f side = new Vector3f(dirNormalized).cross(up).normalize();
-		up = new Vector3f(side).cross(dirNormalized);
-		
-		float sqr = (float)Math.sqrt((up.z*up.z) + (dirNormalized.z*dirNormalized.z));
-		
-		float rx = (float)Math.atan2(up.z, -dirNormalized.z);
-		float ry = (float)Math.atan2(-side.z, -sqr);
-		float rz = (float)Math.atan2(side.y, side.x);
-		
-		return new Vector3f(rx, ry, rz);
-	}
-
 	public static Vector3f reflect(Vector3f vector, Vector3f normal) {
 		// 2*(V dot N)*N - V
 		final float dp = 2f * Vector3f.dot(vector, normal);

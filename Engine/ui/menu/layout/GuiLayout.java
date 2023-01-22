@@ -6,15 +6,15 @@ public interface GuiLayout {
 
 	public void addSeparator();
 
-	public int getHeight();
+	public float getHeight();
 
-	public int getWidth();
+	public float getWidth();
 
-	public int getX();
+	public float getX();
 
-	public int getY();
+	public float getY();
 
-	public void init(int x, int y, int w, int h);
+	public void init(float x, float y, float w, float h);
 
 	public void newElement(GuiElement element);
 

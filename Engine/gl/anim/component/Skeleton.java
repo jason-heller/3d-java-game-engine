@@ -1,8 +1,5 @@
 package gl.anim.component;
 
-import org.joml.Quaternion;
-import org.joml.Vector3f;
-
 public class Skeleton {
 	
 	private final int numJoints;
@@ -19,6 +16,10 @@ public class Skeleton {
 
 	public Joint getRootJoint() {
 		return rootJoint;
+	}
+
+	public Joint getJoint(String name) {
+		return rootJoint.getJoint(name);
 	}
 
 	/*public void calculateJointPositions(Joint parent) {

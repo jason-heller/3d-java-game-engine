@@ -26,7 +26,7 @@ public class GraphicsPanel extends GuiPanel {
 	private final DisplayMode[] resolutions;
 	private final String[] resMenuOptions;
 
-	public GraphicsPanel(GuiPanel parent, int x, int y, int width, int height) {
+	public GraphicsPanel(GuiPanel parent, float x, float y, float width, float height) {
 		super(parent, x, y, width, height);
 		setLayout(new GuiFlowLayout(GuiFlowLayout.VERTICAL), x, y, 582 / 2, 392);
 

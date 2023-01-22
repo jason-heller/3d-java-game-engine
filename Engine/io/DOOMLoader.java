@@ -51,6 +51,7 @@ private static final String VERSION = "1";
 		int numFrames;
 		float framerate;
 		boolean isLooping = false;
+		boolean noTransition = false;
 		String nextAnim = "";
 		
 		try {
@@ -71,7 +72,10 @@ private static final String VERSION = "1";
 				nextAnim = nextAnim.substring(0, nextAnim.length() - 1);
 			}
 			
-			if (value.startsWith("\"loop"))
+			if (value.startsWith("\"loop_no_transition")) {
+				noTransition = true;
+				isLooping = true;
+			} else if (value.startsWith("\"loop"))
 				isLooping = true;
 			
 		} catch (NumberFormatException e) {
@@ -86,7 +90,7 @@ private static final String VERSION = "1";
 		}
 		
 		
-		Animation animation = new Animation(frames[numFrames-1].getTime(), frames, numJoints, isLooping, nextAnim); // TODO: last frame not guarenteed to be at the end
+		Animation animation = new Animation(animName, frames[numFrames-1].getTime(), frames, numJoints, isLooping, noTransition, nextAnim); // TODO: last frame not guarenteed to be at the end
 		Resources.addAnimation(animName, animation);
 	}
 

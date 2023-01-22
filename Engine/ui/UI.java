@@ -89,7 +89,7 @@ public class UI {
 		image.markAsTemporary();
 	}
 
-	public static Image drawImage(String texture, int x, int y) {
+	public static Image drawImage(String texture, float x, float y) {
 		final Image img = new Image(texture, x, y);
 		img.setOpacity(opacity);
 		img.markAsTemporary();
@@ -97,7 +97,7 @@ public class UI {
 		return img;
 	}
 
-	public static Image drawImage(String texture, int x, int y, int w, int h) {
+	public static Image drawImage(String texture, float x, float y, float w, float h) {
 		final Image img = new Image(texture, x, y);
 		img.w = w;
 		img.h = h;
@@ -107,7 +107,7 @@ public class UI {
 		return img;
 	}
 	
-	public static Image drawImage(String texture, int x, int y, int w, int h, Vector3f color) {
+	public static Image drawImage(String texture, float x, float y, float w, float h, Vector3f color) {
 		final Image img = new Image(texture, x, y);
 		img.w = w;
 		img.h = h;
@@ -118,18 +118,18 @@ public class UI {
 		return img;
 	}
 
-	public static Image drawRect(int x, int y, int width, int height, Vector3f color) {
+	public static Image drawRect(float x, float y, float width, float height, Vector3f color) {
 		return drawImage("none", x, y, width, height, color);
 	}
 
-	public static void drawHollowRect(int x, int y, int width, int height, int thickness, Vector3f color) {
+	public static void drawHollowRect(float x, float y, float width, float height, int thickness, Vector3f color) {
 		drawImage("none", x, y, width, thickness, color);
 		drawImage("none", x, y, thickness, height, color);
 		drawImage("none", x, y + (height - thickness), width, thickness, color);
 		drawImage("none", x + (width - thickness), y, thickness, height, color);
 	}
 	
-	public static Image drawLine(int x1, int y1, int x2, int y2, int width, Vector3f color) {
+	public static Image drawLine(float x1, float y1, float x2, float y2, float width, Vector3f color) {
 		float dx = x2-x1;
 		float dy = y2-y1;
 		float len = (float)Math.sqrt(dx*dx + dy*dy);
@@ -146,23 +146,23 @@ public class UI {
 		return img;
 	}
 
-	public static void drawCircle(int x, int y, int radius, Vector3f color) {
+	public static void drawCircle(float x, float y, float radius, Vector3f color) {
 		drawCircle(x, y, radius, 1, 12, color);
 	}
 	
-	public static void drawCircle(int x, int y, int radius, int width, int partitions, Vector3f color) {
+	public static void drawCircle(float x, float y, float radius, float width, int partitions, Vector3f color) {
 		float prt = (float) (2f * Math.PI) / partitions;
 		for (float i = 0; i < 2 * Math.PI; i += prt) {
-			int dx = (int) (Math.cos(i) * radius);
-			int dy = (int) (Math.sin(i) * radius);
-			int nx = (int) (Math.cos(i + prt) * radius);
-			int ny = (int) (Math.sin(i + prt) * radius);
+			float dx = (float) (Math.cos(i) * radius);
+			float dy = (float) (Math.sin(i) * radius);
+			float nx = (float) (Math.cos(i + prt) * radius);
+			float ny = (float) (Math.sin(i + prt) * radius);
 			drawLine(x + dx, y + dy, x + nx, y + ny, width, color);
 		}
 	}
 
-	public static Text drawString(Font font, String text, int x, int y, float fontSize, int lineWidth, boolean centered,
-			int... offsets) {
+	public static Text drawString(Font font, String text, float x, float y, float fontSize, float lineWidth, boolean centered,
+			float... offsets) {
 		final Text txt = new Text(font, text, x, y, fontSize, lineWidth, centered, offsets);
 		txt.setOpacity(opacity);
 		txt.markAsTemporary();
@@ -170,7 +170,7 @@ public class UI {
 		return txt;
 	}
 
-	public static Text drawString(String text, int x, int y) {
+	public static Text drawString(String text, float x, float y) {
 		final Text txt = new Text(text, x, y);
 		txt.setOpacity(opacity);
 		txt.markAsTemporary();
@@ -178,7 +178,7 @@ public class UI {
 		return txt;
 	}
 
-	public static Text drawString(String text, int x, int y, boolean centered) {
+	public static Text drawString(String text, float x, float y, boolean centered) {
 		final Text txt = new Text(Font.defaultFont, text, x, y, Font.defaultSize, Window.displayWidth / 2 - 40,
 				centered);
 		txt.setOpacity(opacity);
@@ -187,7 +187,7 @@ public class UI {
 		return txt;
 	}
 
-	public static Text drawString(String text, int x, int y, float fontSize, boolean centered) {
+	public static Text drawString(String text, float x, float y, float fontSize, boolean centered) {
 		final Text txt = new Text(Font.defaultFont, text, x, y, fontSize, Window.displayWidth / 2 - 40, centered);
 		txt.setOpacity(opacity);
 		txt.markAsTemporary();
@@ -195,7 +195,7 @@ public class UI {
 		return txt;
 	}
 
-	public static Text drawString(String text, int x, int y, float fontSize, int lineWidth, boolean centered) {
+	public static Text drawString(String text, float x, float y, float fontSize, float lineWidth, boolean centered) {
 		final Text txt = new Text(Font.defaultFont, text, x, y, fontSize, lineWidth, centered);
 		txt.setOpacity(opacity);
 		txt.markAsTemporary();
@@ -209,15 +209,14 @@ public class UI {
 		return text;
 	}
 	
-	public static Text drawString(String text, float fontSize, boolean centered,
-			Matrix4f worldMatrix) {
+	public static Text drawString(String text, float fontSize, boolean centered, Matrix4f worldMatrix) {
 		final Text txt = new Text(Font.defaultFont, text, 0, 0, fontSize, Integer.MAX_VALUE, centered);
 		txt.setOpacity(opacity);
 		worldSpaceComponents.put(worldMatrix, txt);
 		return txt;
 	}
 	
-	public static Image drawImage(String texture, int x, int y, int w, int h, Matrix4f worldMatrix) {
+	public static Image drawImage(String texture, float x, float y, float w, float h, Matrix4f worldMatrix) {
 		final Image img = new Image(texture, x, y);
 		img.w = w;
 		img.h = h / Window.getAspectRatio();

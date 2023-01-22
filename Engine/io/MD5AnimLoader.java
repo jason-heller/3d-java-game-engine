@@ -78,7 +78,7 @@ public class MD5AnimLoader {
 			value = getLabel(match, "numAnimatedComponents");		// is the number of parameters per frame used to compute the frame skeletons. These parameters, combined with the baseframe skeleton given in the MD5 Anim file, permit to build a skeleton for each frame.
 			// numAnimComponents = Integer.parseInt(value);
 			
-			anim = new Animation(duration, frames, numJoints, false, "");
+			anim = new Animation("MD5ANIM"+Math.random(), duration, frames, numJoints, false, false, "");
 			
 		} catch (NumberFormatException e) {
 			throw new NumberFormatException("could not parse value: " + value);

@@ -25,18 +25,12 @@ public class CollideUtils {
 	 * Gets the MTV between an axis aligned bounding box and a face defined within a
 	 * architecture's BSP
 	 * 
-	 * @param -
-	 *            vertices the vertices of the BSP
-	 * @param -
-	 *            edges the edges of the BSP
-	 * @param -
-	 *            surfEdges the surface edgfes of a BSP
-	 * @param -
-	 *            face the face of the BSP
-	 * @param -
-	 *            normal the face's normal
-	 * @param -
-	 *            box the bounding box to collide with
+	 * @param - vertices the vertices of the BSP
+	 * @param - edges the edges of the BSP
+	 * @param - surfEdges the surface edgfes of a BSP
+	 * @param - face the face of the BSP
+	 * @param - normal the face's normal
+	 * @param - box the bounding box to collide with
 	 * @return The minimum translation vector of the collision, or null if no
 	 *         collision occured
 	 */

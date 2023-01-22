@@ -9,10 +9,10 @@ import org.lwjgl.opengl.GL11;
 import gl.Camera;
 import gl.Render;
 import gl.anim.Animator;
+import gl.line.LineRender;
 import gl.res.Mesh;
 import gl.res.Model;
 import gl.res.Texture;
-import map.architecture.Architecture;
 import scene.Scene;
 import scene.entity.Entity;
 
@@ -57,6 +57,9 @@ public class AnimationHandler {
 			invTransRotMatrix.rotateY(entity.rot.y);
 			invTransRotMatrix.rotateZ(entity.rot.z);
 			
+			//if (Debug.showNormals) {
+				// TODO
+			//}
 			
 			for(int i = 0; i < numMeshes; i++) {
 				Mesh mesh = model.getMeshes()[i];
@@ -71,6 +74,7 @@ public class AnimationHandler {
 
 				mesh.bind(0, 1, 2, 3, 4);
 				shader.modelMatrix.loadMatrix(entity.getMatrix());
+				shader.normalMatrix.loadMatrix(entity.getMatrix().toMatrix3f()); //  camera.getViewMatrix()
 				shader.invTransRotMatrix.loadMatrix(invTransRotMatrix);
 				shader.jointTransforms.loadMatrixArray(animator.getJointTransforms());
 				

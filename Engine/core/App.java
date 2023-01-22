@@ -19,6 +19,7 @@ import io.Settings;
 import scene.MainMenu;
 import scene.Scene;
 import scene.entity.EntityHandler;
+import scene.mapscene.trick.TrickList;
 import ui.UI;
 
 public class App {

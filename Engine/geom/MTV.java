@@ -71,7 +71,7 @@ public class MTV implements Comparable<MTV> {
 
 	@Override
 	public int compareTo(MTV o) {
-		return (int) (depth - o.getDepth());
+		return (int) Math.round(depth - o.getDepth());
 	}
 	
 	public ArcFace getFace() {

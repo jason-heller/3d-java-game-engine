@@ -14,7 +14,7 @@ public class Text implements Component {
 	public static final byte ALIGN_BOTTOM = 3;
 	private String text;
 	private final float x, y;
-	public int offsetX, offsetY;
+	public float offsetX, offsetY;
 	private float w;
 	private float h;
 
@@ -28,9 +28,9 @@ public class Text implements Component {
 	private int depth = UI.DEPTH_SEQUENTIAL;
 
 	private int alignment = ALIGN_LEFT;
-	private int lineWidth = UI.width;
+	private float lineWidth = UI.width;
 
-	public Text(Font font, String text, int x, int y, float textSize, boolean centered) {
+	public Text(Font font, String text, float x, float y, float textSize, boolean centered) {
 		this.font = font;
 		this.x = x;
 		this.y = y;
@@ -39,7 +39,7 @@ public class Text implements Component {
 		setText(text);
 	}
 
-	public Text(Font font, String text, int x, int y, float textSize, int lineWidth, boolean centered, int... offsets) {
+	public Text(Font font, String text, float x, float y, float textSize, float lineWidth, boolean centered, float... offsets) {
 		this.font = font;
 		this.x = x;
 		this.y = y;
@@ -47,18 +47,18 @@ public class Text implements Component {
 		this.lineWidth = lineWidth;
 		this.centered = centered;
 
-		for (final int offset : offsets) {
+		for (final float offset : offsets) {
 			this.lineWidth = Math.max(this.lineWidth, offset);
 		}
 
 		setText(text, offsets);
 	}
 
-	public Text(String text, int x, int y) {
+	public Text(String text, float x, float y) {
 		this(Font.defaultFont, text, x, y, .3f, false);
 	}
 
-	public Text(String text, int x, int y, float textSize, boolean centered) {
+	public Text(String text, float x, float y, float textSize, boolean centered) {
 		this(Font.defaultFont, text, x, y, textSize, centered);
 	}
 
@@ -154,7 +154,7 @@ public class Text implements Component {
 		this.opacity = opacity;
 	}
 
-	public void setText(String text, int... offsets) {
+	public void setText(String text, float... offsets) {
 		this.text = text;
 		
 		final List<Image> letterList = new ArrayList<Image>();
@@ -232,7 +232,7 @@ public class Text implements Component {
 		}
 	}
 
-	public void setPosition(int x, int y) {
+	public void setPosition(float x, float y) {
 		//if (x != x2 && y != y2) {
 			offsetX = x;
 			offsetY = y;

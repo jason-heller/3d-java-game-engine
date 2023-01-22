@@ -16,7 +16,7 @@ uniform float specularity;
 in vec3 toCamera;
 uniform vec3 lightDirection;
 
-const float ambientFactor = 1.0;
+const float ambientFactor = 0.7;
 const float baseAmbient = 1.0 - ambientFactor;
 
 void main(void){

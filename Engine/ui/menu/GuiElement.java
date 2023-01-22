@@ -3,7 +3,7 @@ package ui.menu;
 import io.Input;
 
 public abstract class GuiElement {
-	public int x = 0, y = 0, width = 0, height = 0;
+	public float x = 0, y = 0, width = 0, height = 0;
 	protected boolean hasFocus = true;
 	protected boolean tempDisable = false;
 
@@ -16,7 +16,7 @@ public abstract class GuiElement {
 		tempDisable = false;
 	}
 	
-	public void draw(int dx, int dy) {
+	public void draw(float dx, float dy) {
 		if (!isFocused()) {
 			return;
 		}
@@ -43,7 +43,7 @@ public abstract class GuiElement {
 		tempDisable = true;
 	}
 
-	public abstract void setPosition(int x, int y);
+	public abstract void setPosition(float x, float y);
 
 	public abstract void update();
 }

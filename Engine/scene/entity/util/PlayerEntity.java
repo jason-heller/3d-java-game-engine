@@ -1,19 +1,19 @@
 package scene.entity.util;
 
 import org.joml.Vector3f;
-import org.lwjgl.input.Keyboard;
 
-import dev.cmd.Console;
 import geom.Plane;
 import gl.Camera;
 import gl.CameraFollowable;
 import gl.Window;
 import gl.anim.Animator;
-import gl.line.LineRender;
 import io.Input;
 import scene.PlayableScene;
+import scene.mapscene.MapScene;
+import scene.mapscene.trick.TrickManager;
+import ui.UI;
 import util.Colors;
-import util.GeomUtil;
+import util.MathUtil;
 
 /**
  * @author Jason
@@ -24,10 +24,15 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 	////////////////////////////////
 	
 	public static final float CAMERA_STANDING_HEIGHT = 5f;
+	
+	private static final float CAM_FOLLOW_SPEED = 30f, CAM_GRIND_FOLLOW_SPEED = 5f;
 
-	public static final float BBOX_WIDTH = 2f, BBOX_HEIGHT = 6f;
+	public static final float BBOX_WIDTH = 1.5f, BBOX_HEIGHT = 6f;
 
-	private static final float RAIL_GRAVITATION = 3f;
+	private static final float RAILTRAJECT_ADJSPEED = 50f;
+	private static final float RAILTRAJECT_MAX = 25f, RAILTRAJECT_MIN = 8f;
+	
+	public static boolean viewGrindState = false;
 	
 	////////////////////////////////
 	
@@ -36,23 +41,30 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 	private static int hp = 15;
 	private static int maxHp = 15;
 	
-	private static float direction;
-	
 	public static boolean isEnabled = false;
 	
 	private Vector3f viewAngle = new Vector3f();
 	
-	public PlayerEntity(Camera camera) {
+	private float railExitTrajectory = 0f;
+	
+	private TrickManager trickManager;
+	
+	//private boolean boardIsFacingBack = false;
+	private boolean ridingSwitch = false;
+	
+	public PlayerEntity(MapScene scene) {
 		super("player", new Vector3f(BBOX_WIDTH, BBOX_HEIGHT, BBOX_WIDTH));
-		this.camera = camera;
+		this.camera = scene.getCamera();
 		this.setModel("untitled");
 		this.setAnimator(new Animator(getModel().getSkeleton(), this));
-		getAnimator().loop("idle");
+		getAnimator().start("idle");
 		
+		trickManager = new TrickManager(scene, this);
 	}
 	
 	@Override
 	public void update(PlayableScene scene) {
+		
 		if (!isEnabled)
 			return;
 		
@@ -60,78 +72,64 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 			return;
 		}
 		
-		super.update(scene);
+		boolean isNotBuffering = !trickManager.getPlayerIsBuffering();
 
-		Vector3f boardPos = Vector3f.add(pos, new Vector3f(0, -BBOX_HEIGHT, 0));
-
-		final boolean A = Input.isDown("walk_left"),
-				GRIND = Input.isPressed(Keyboard.KEY_Z),
-				D = Input.isDown("walk_right"),
-				S = Input.isDown("walk_backward"), 
-				JUMP = Input.isPressed("jump");
+		final boolean LEFT = Input.isDown("left"),
+				RIGHT = Input.isDown("right"),
+				DOWN = Input.isDown("down");
+		
+		final boolean LEFT_RELEASED = Input.isReleased("left"),
+				RIGHT_RELEASED = Input.isReleased("right");
 		
 		// Architecture arc = ((PlayableScene)scene).getArchitecture();
 		
 		float speed = accelSpeed;
 		
-		if (GRIND && grindRail == null) {
-			grindRail = scene.getArchitecture().getNearestRail(boardPos, vel, RAIL_GRAVITATION);
-
-			if (grindRail != null) {
-				Vector3f edge =  Vector3f.sub(grindRail.end, grindRail.start);
-				railLengthSqr = edge.lengthSquared();
-				Vector3f edgeNormal = edge.normalize();
-				Vector3f newPoint = GeomUtil.projectPointOntoLine(boardPos, grindRail.start, edgeNormal);
-				
-				
-				grindOrigin = grindRail.start;
-				grindSpeed = vel.length();
-				
-				if (vel.dot(edgeNormal) < 0) {
-					edgeNormal.negate();
-					grindOrigin = grindRail.end;
-				}
-				
-				grindNormal = edgeNormal;
-				pos.set(newPoint.x, newPoint.y + BBOX_HEIGHT, newPoint.z);
-			}
-		}
 		
-		if (grindOrigin != null) {
-			LineRender.drawBox(grindOrigin, new Vector3f(1,1,1), Colors.WHITE);
-			LineRender.drawLine(grindOrigin, Vector3f.add(grindOrigin, Vector3f.mul(grindNormal, (float)Math.sqrt(railLengthSqr))));
-		}
+		trickManager.update();
 		
-		LineRender.drawBox(boardPos, new Vector3f(RAIL_GRAVITATION,RAIL_GRAVITATION,RAIL_GRAVITATION), Colors.RED);
-		
-		if (S)
+		if (DOWN && isNotBuffering)
 			speed = 0f;
 
 		// Handle game logic per tick, such as movement etc
-		if (grounded) {
-			if (A && D) {
-			} else if (A) {
-				direction -= Window.deltaTime * 240f;
-				getAnimator().start("turn_l");
-			} else if (D) {
-				direction += Window.deltaTime * 240f;
-				getAnimator().start("turn_r");
+		float turnSpeed = isNotBuffering ? 240 : 100;
+	
+		if (grindRail == null) {
+			if (!previouslyGrounded && grounded && vel.y <= 0f) {
+				getAnimator().start("land");
+				rideSfxSource.play("ride");
+				trickManager.handleOnTrickEnd();
+				grindLen = 0f;
 			}
 			
-			if ((vel.y < 0 || grindRail != null) && JUMP) {
-				jump(jumpVel);
-				getAnimator().start("ollie");
-				grindRail = null;
+			if (grounded) {
+				
+				if (this.vel.lengthSquared() < 1600) {
+					turnSpeed /= 2f;
+				}
+				
+				if (LEFT && RIGHT && isNotBuffering) {
+					getAnimator().start("idle");
+				} else if (LEFT) {
+					direction -= Window.deltaTime * turnSpeed;
+					
+					if (isNotBuffering)
+						getAnimator().start("turn_l");
+				} else if (RIGHT) {
+					direction += Window.deltaTime * turnSpeed;
+					
+					if (isNotBuffering)
+						getAnimator().start("turn_r");
+				}
+				
+				if ((LEFT_RELEASED || RIGHT_RELEASED) && isNotBuffering) {
+					getAnimator().start("idle");
+				}
 			}
+		} else {
+			rot.y = (float) Math.toDegrees(MathUtil.pointDirection(0, 0, grindNormal.x, grindNormal.z)) + 90f;
+			direction = -rot.y;
 		}
-		
-		if (!previouslyGrounded && grounded) {
-			getAnimator().start("land");
-		}
-		
-		viewAngle.set(0f, -direction, 0f);
-		
-		Camera.animSpeed = 0f;
 		
 		if (camera.getControlStyle() == Camera.FIRST_PERSON) {
 			if (camera.getFocus() == this) {
@@ -139,7 +137,7 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 			}
 		}
 		
-		if (speed != 0 && !deactivated) {
+		if (!deactivated && grindRail == null) {
 			Camera.animSpeed = 4.5f;
 			if (!grounded) {
 				Camera.animSpeed = 0f;
@@ -150,6 +148,53 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 			double dRad = direction * Math.PI / 180.0;
 			accelerate(new Vector3f(-(float) Math.sin(dRad), 0, (float) Math.cos(dRad)), speed);
 		}
+		
+		viewAngle.set(0f, rot.y, 0f);
+		
+		Camera.animSpeed = 0f;
+		super.update(scene);
+	
+		if (ridingSwitch) {
+			/*Joint joint = model.getSkeleton().getJoint("pubis");
+			for(int i = joint.index; i < model.getSkeleton().getNumJoints(); i++) {
+				getAnimator().getJointTransforms()[i].rotateY(180f);
+			}*/
+		}
+	}
+	
+	@Override
+	protected void handleGrindState() {
+		final boolean LEFT = Input.isDown("left"),
+				RIGHT = Input.isDown("right");
+		
+		super.handleGrindState();
+		
+		if (LEFT) {
+			railExitTrajectory = Math.min(railExitTrajectory - Window.deltaTime * RAILTRAJECT_ADJSPEED, -RAILTRAJECT_MIN);
+		} else if (RIGHT) {
+			railExitTrajectory = Math.max(railExitTrajectory + Window.deltaTime * RAILTRAJECT_ADJSPEED, RAILTRAJECT_MIN);
+		} else {
+			railExitTrajectory = 0f;
+		}
+		
+		railExitTrajectory = MathUtil.clamp(railExitTrajectory, -RAILTRAJECT_MAX, RAILTRAJECT_MAX);
+		
+		if (viewGrindState) {
+			UI.drawRect(560, 195, 160, 10, Colors.BLACK);
+			if (railExitTrajectory > 0f) {
+				UI.drawRect(640, 193, ((railExitTrajectory / RAILTRAJECT_MAX) * 80), 2, Colors.PURPLE);
+			} else {
+				float depth = 640 + ((railExitTrajectory / RAILTRAJECT_MAX) * 80);
+				UI.drawRect(depth, 193, 640 - depth, 2, Colors.PURPLE);
+			}
+			UI.drawRect(638 + (this.grindBalance)*2, 190, 4, 20, Colors.CYAN);
+		}
+	}
+
+	@Override
+	public void endGrind() {
+		super.endGrind();
+		//((ThirdPersonCameraController) camera.getFocus()).setTrackingSpeed(30f);
 	}
 
 	public void heal(int health) {
@@ -192,5 +237,43 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 
 	public Vector3f getRotation() {
 		return rot;
+	}
+
+	public void startGrind() {
+		if (this.grindRail != null) {
+			this.endGrind();
+		} else {
+			grind();
+			railExitTrajectory = 0f;
+			//((ThirdPersonCameraController) camera.getFocus()).setTrackingSpeed(CAM_GRIND_FOLLOW_SPEED);
+		}
+	}
+
+	public boolean isGrinding() {
+		return grindRail != null;
+	}
+
+	public void jump() {
+		// Jump off rail
+		if (grindRail != null) {
+			float exitDir = railExitTrajectory;
+			direction += exitDir;
+			float turnRad = (float) Math.toRadians(-exitDir);
+	
+			vel.rotateY(turnRad);
+		}
+		
+		jump(jumpVel);
+		endGrind();
+		rideSfxSource.stop();
+		trickSfxSource.play("ollie");
+	}
+
+	public void setSwitch(boolean isSwitch) {
+		this.ridingSwitch = isSwitch;
+	}
+
+	public boolean isSwitch() {
+		return ridingSwitch;
 	}
 }

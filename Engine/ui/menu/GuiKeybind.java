@@ -17,7 +17,7 @@ public class GuiKeybind extends GuiElement {
 	private int key = 0;
 	private boolean edit = false;
 
-	public GuiKeybind(int x, int y, String label, String bind) {
+	public GuiKeybind(float x, float y, String label, String bind) {
 		this.x = x;
 		this.y = y;
 		this.label = label;
@@ -34,7 +34,7 @@ public class GuiKeybind extends GuiElement {
 	}
 
 	@Override
-	public void setPosition(int x, int y) {
+	public void setPosition(float x, float y) {
 		this.x = x;
 		this.y = y;
 	}

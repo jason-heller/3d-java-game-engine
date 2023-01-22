@@ -40,13 +40,12 @@ void main(void){
 	
 	lightColor = vec3(0.0);
 	
-	float totalWeight = 0.0;
-	for(int i = 0; i < 6; ++i) {
-		float weight = dot(pass_normals, lightNormals[i]);
-		if (weight <= 0.0)
-			continue;
-		lightColor += lights[i] * weight;
-		totalWeight += weight;
-	}
-	lightColor /= totalWeight;
+	vec3 worldNormal = (mat3(modelMatrix) * in_normals.xyz);
+	vec3 nSqr = worldNormal * worldNormal;
+	ivec3 isNegative = ivec3(worldNormal.x < 0.0, worldNormal.y < 0.0, worldNormal.z < 0.0);
+	lightColor = vec3(
+		nSqr.x * lights[isNegative.x] +
+		nSqr.y * lights[isNegative.y + 2] +
+		nSqr.z * lights[isNegative.z + 4]
+	);
 }

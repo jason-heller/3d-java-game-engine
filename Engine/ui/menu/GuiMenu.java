@@ -19,7 +19,7 @@ public class GuiMenu extends GuiElement {
 	private final Text[] texts;
 	private boolean bordered;
 
-	public GuiMenu(int x, int y, String... options) {
+	public GuiMenu(float x, float y, String... options) {
 		this.x = x;
 		this.y = y;
 		this.texts = new Text[options.length];
@@ -47,7 +47,7 @@ public class GuiMenu extends GuiElement {
 	}
 
 	@Override
-	public void setPosition(int x, int y) {
+	public void setPosition(float x, float y) {
 		this.x = x;
 		this.y = y;
 	}

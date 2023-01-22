@@ -19,19 +19,22 @@ import scene.PlayableScene;
 import scene.entity.DummyEntity;
 import scene.entity.EntityHandler;
 import scene.entity.util.PlayerEntity;
+import scene.mapscene.trick.TrickList;
+import ui.UI;
 
 public class MapScene extends PlayableScene {
 	
 	private Skybox skybox;
 	private ItemHandler itemHandler;
 	
+	private int score;
+	
 	public MapScene() {
 		super();
 		App.scene = this;		// Hack to make the variable update before constructors runs
 		
-		player = new PlayerEntity(camera);
-		camera.setControlStyle(Camera.THIRD_PERSON);
-		camera.setFocus(player);
+		player = new PlayerEntity(this);
+		camera.setControlStyle(Camera.THIRD_PERSON, player);
 		
 		boolean mapLoadSucceeded = arcHandler.load(this, new Vector3f(), PlayableScene.currentMap);
 		
@@ -71,6 +74,7 @@ public class MapScene extends PlayableScene {
 		itemHandler = new ItemHandler(this, viewModelHandler);
 		
 		SpeechHandler.start();
+		TrickList.init();
 	}
 
 	@Override
@@ -116,6 +120,7 @@ public class MapScene extends PlayableScene {
 			Console.send("map " + PlayableScene.currentMap);
 		}
 
+		UI.drawString("" + score, 50, 680);
 	}
 
 	@Override
@@ -139,6 +144,10 @@ public class MapScene extends PlayableScene {
 	@Override
 	public void postRender() {
 		viewModelHandler.render(this);
+	}
+
+	public void addScore(int score) {
+		this.score += score;
 	}
 
 }

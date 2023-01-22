@@ -42,4 +42,18 @@ public class Joint {
 	public Matrix4f getInverseBindMatrix() {
 		return invBindMatrix;
 	}
+
+	public Joint getJoint(String name) {
+		if (this.name.equals(name)) {
+			return this;
+		}
+		
+		for(Joint child : children) {
+			if (child.name.equals(name)) {
+				return child.getJoint(name);
+			}
+		}
+		
+		return null;
+	}
 }
