@@ -13,7 +13,6 @@ import static map.architecture.read.ArcLoadTextures.readTextureInfo;
 import static map.architecture.read.ArcLoadTextures.readTextureList;
 import static map.architecture.read.ArcLoadVis.readVis;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -38,6 +37,7 @@ import scene.entity.EntityHandler;
 import ui.UI;
 import util.Colors;
 import util.CounterInputStream;
+import util.Vectors;
 
 public class ArcLoader {
 
@@ -100,7 +100,7 @@ public class ArcLoader {
 				switch(id) {
 				case GEOMETRY:
 					loadInfo("Loading level geometry", total, 1);
-					readGeometry(bsp, Vector3f.ZERO, in);
+					readGeometry(bsp, Vectors.ZERO, in);
 					break;
 				
 				case CLIPS:

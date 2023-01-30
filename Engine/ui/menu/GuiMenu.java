@@ -1,7 +1,6 @@
 package ui.menu;
 
 import audio.AudioHandler;
-import dev.cmd.Console;
 import io.Input;
 import ui.Font;
 import ui.Text;

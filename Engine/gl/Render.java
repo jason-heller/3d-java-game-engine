@@ -3,14 +3,11 @@ package gl;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
 
 import core.App;
 import core.Resources;
 import dev.Debug;
-import dev.cmd.Console;
 import gl.fbo.FBO;
 import gl.generic.GenericShader;
 import gl.generic.LightGenericShader;
@@ -20,10 +17,10 @@ import gl.post.PostProcessing;
 import gl.res.Mesh;
 import gl.res.Texture;
 import gl.res.TexturedModel;
-import gl.res.mesh.MeshData;
 import map.architecture.functions.commands.CamView;
 import scene.Scene;
 import ui.UI;
+import util.Matrices;
 
 public class Render {
 	//private static FrameBuffer screenMultisampled;
@@ -208,7 +205,7 @@ public class Render {
 			texture.bind(0);
 		}
 		
-		genericShader.modelMatrix.loadMatrix(Matrix4f.mul(camera.getViewModelMatrix(), matrix, null));
+		genericShader.modelMatrix.loadMatrix(Matrices.mul(camera.getViewModelMatrix(), matrix));
 		model.bind(0, 1, 2);
 		GL11.glDrawElements(GL11.GL_TRIANGLES, model.getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
 		drawCalls++;
@@ -293,17 +290,5 @@ public class Render {
 		camera.setRoll(roll);
 		camera.getPosition().set(origPos);
 		camera.updateViewMatrix();
-	}
-
-	public static void resizeFbos() {
-		//screen.unbind();
-		final int width = (int) (Window.getWidth() * scale);
-		final int height = (int) (Window.getHeight() * scale);
-		final int widthQtr = width / 4;
-		final int heightQtr = height / 4;
-		/*screen.resize(width, height);
-		screenPong.resize(width, height);
-		reflection.resize(widthQtr * waterQuality, heightQtr * waterQuality);
-		refraction.resize(widthQtr * waterQuality, heightQtr * waterQuality);*/
 	}
 }

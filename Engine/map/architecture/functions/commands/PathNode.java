@@ -6,7 +6,6 @@ import core.App;
 import dev.cmd.Console;
 import map.architecture.functions.ArcFunction;
 import scene.PlayableScene;
-import scene.entity.DummyEntity;
 import scene.entity.EntityHandler;
 import scene.entity.util.NavigableEntity;
 

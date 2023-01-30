@@ -3,7 +3,6 @@ package util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -108,12 +107,21 @@ public class MathUtil {
 	public static float fastSqrt(float f) {
 		return Float.intBitsToFloat((Float.floatToIntBits(f) - (1 << 52) >> 1) + (1 << 61));
 	}
+	
+	public static float invSqrt(float f) {
+		float x = 0.5f * f;
+	    int i = Float.floatToIntBits(f);
+	    i = 0x5f3759df - (i >> 1);
+	    f = Float.intBitsToFloat(i);
+	    f *= (1.5f - x * f * f);
+	    return f;
+	}
 
 	public static Vector3f getDirection(Matrix4f matrix) {
 		final Matrix4f inverse = new Matrix4f();
 		matrix.invert(inverse);
 
-		return new Vector3f(inverse.m20, inverse.m21, inverse.m22);
+		return new Vector3f(inverse.m20(), inverse.m21(), inverse.m22());
 	}
 
 	private static float[] intersection(float[] a, float[] b, float[] p, float[] q) {
@@ -146,15 +154,15 @@ public class MathUtil {
 		up = new Vector3f(side).cross(forward);
 
 		final Matrix4f matrix = new Matrix4f();
-		matrix.m00 = side.x;
-		matrix.m01 = side.y;
-		matrix.m02 = side.z;
-		matrix.m10 = up.x;
-		matrix.m11 = up.y;
-		matrix.m12 = up.z;
-		matrix.m20 = -forward.x;
-		matrix.m21 = -forward.y;
-		matrix.m22 = -forward.z;
+		matrix.m00(side.x);
+		matrix.m01(side.y);
+		matrix.m02(side.z);
+		matrix.m10(up.x);
+		matrix.m11(up.y);
+		matrix.m12(up.z);
+		matrix.m20(-forward.x);
+		matrix.m21(-forward.y);
+		matrix.m22(-forward.z);
 		return matrix;
 	}
 
@@ -173,9 +181,9 @@ public class MathUtil {
 	
 	public static Vector3f reflect(Vector3f vector, Vector3f normal) {
 		// 2*(V dot N)*N - V
-		final float dp = 2f * Vector3f.dot(vector, normal);
-		final Vector3f s = Vector3f.mul(normal, dp);
-		return Vector3f.sub(vector, s);
+		final float dp = 2f * Vectors.dot(vector, normal);
+		final Vector3f s = Vectors.mul(normal, dp);
+		return Vectors.sub(vector, s);
 	}
 
 	public static float sCurveLerp(float s, float t, float amount) {
@@ -267,6 +275,10 @@ public class MathUtil {
 			new Vector3f(0,0,-1)
 	};
 	
+	public static final float HALFPI = 1.57079f;
+
+	public static final float PI = (float)Math.PI;
+	
 	public static Vector3f rayBoxEscapeNormal(Vector3f origin, Vector3f dir, float tx, float ty, float tz, float size) {
 		final Vector3f topLeft = new Vector3f(tx,ty+size,tz);
 		final Vector3f btmRight = new Vector3f(tx+size,ty,tz+size);
@@ -288,7 +300,7 @@ public class MathUtil {
 		
 		float d = planeNormal.dot(rayNormal);
 		if (Math.abs(d) > .00001f) {
-			dist = (Vector3f.sub(planeOrigin, rayOrigin).dot(planeNormal)) / d;
+			dist = (Vectors.sub(planeOrigin, rayOrigin).dot(planeNormal)) / d;
 		}
 		
 		if (dist == Float.MAX_VALUE || dist < 0) {
@@ -329,7 +341,7 @@ public class MathUtil {
 			return originalDistance;
 		}
 		
-		float dist = Vector3f.distanceSquared(rayOrigin, intersectionPoint);
+		float dist = Vectors.distanceSquared(rayOrigin, intersectionPoint);
 		if (dist > originalDistance) {
 			output=(planeNormal);
 			Console.log("yehaw",planeNormal);
@@ -347,5 +359,10 @@ public class MathUtil {
 		float phi = Math.abs(angle2 - angle1) % 360;
 		float distance = phi > 180f ? 360f - phi : phi;
         return distance;
+	}
+
+	public static float invsqrt(float fma) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

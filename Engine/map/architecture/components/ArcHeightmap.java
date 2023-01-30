@@ -1,14 +1,13 @@
 package map.architecture.components;
 
-import java.util.Set;
-
 import org.joml.Vector3f;
 
-import dev.cmd.Console;
 import geom.AxisAlignedBBox;
+import geom.BoundingBox;
 import geom.Plane;
 import gl.res.Mesh;
 import util.MathUtil;
+import util.Vectors;
 
 /**
  * @author Jason
@@ -63,12 +62,12 @@ public class ArcHeightmap {
 		
 		surf = surfEdges[face.firstEdge + 2];
 		edge = edges[Math.abs(surf)];
-		strideZ = Vector3f.sub(vertices[edge.end], vertices[edge.start]);
+		strideZ = Vectors.sub(vertices[edge.end], vertices[edge.start]);
 		if (surf > 0)
 			strideZ.negate();
 		surf = surfEdges[face.firstEdge + 3];
 		edge = edges[Math.abs(surf)];
-		strideX = Vector3f.sub(vertices[edge.end], vertices[edge.start]);
+		strideX = Vectors.sub(vertices[edge.end], vertices[edge.start]);
 		if (surf > 0)
 			strideX.negate();
 
@@ -80,7 +79,7 @@ public class ArcHeightmap {
 			}
 			
 			if (plane.normal.x > 0f) {
-				Vector3f temp = Vector3f.negate(strideZ);
+				Vector3f temp = new Vector3f(-strideZ.x, -strideZ.y, -strideZ.z);
 				strideZ.set(strideX);
 				strideX.set(temp);
 			}
@@ -97,8 +96,8 @@ public class ArcHeightmap {
 			
 			vert.set(origin);
 			
-			vert.add(Vector3f.mul(strideX, vertexCounterX));
-			vert.add(Vector3f.mul(strideZ, vertexCounterZ));
+			vert.add(Vectors.mul(strideX, vertexCounterX));
+			vert.add(Vectors.mul(strideZ, vertexCounterZ));
 			vertexCounterX++;
 			
 			if (vertexCounterX > subdivisions) {
@@ -160,8 +159,8 @@ public class ArcHeightmap {
 		model.unbind();
 	}
 	
-	public boolean intersects(AxisAlignedBBox box) {
-		return bounds.intersects(box);
+	public boolean intersects(BoundingBox box) {
+		return box.intersects(bounds);
 	}
 	
 	/** gets the height at x, z on the heightmap.
@@ -170,9 +169,9 @@ public class ArcHeightmap {
 	 * @param vertices
 	 * @return
 	 */
-	public float getHeightAt(AxisAlignedBBox bbox, ArcHeightmapVertex[] vertices) {
-		float x = bbox.getX();
-		float z = bbox.getZ();
+	public float getHeightAt(BoundingBox bbox, ArcHeightmapVertex[] vertices) {
+		float x = bbox.getCenter().x;
+		float z = bbox.getCenter().z;
 		float w = bbox.getWidth();
 		float l = bbox.getLength();
 		
@@ -196,10 +195,10 @@ public class ArcHeightmap {
 		int xCounter = (int) (px / strideX.x);
 		int zCounter = (int) (pz / strideZ.z);
 		
-		Vector3f left = Vector3f.mul(strideX, xCounter);
-		Vector3f right = Vector3f.mul(strideX, xCounter + 1);
-		Vector3f bottom = Vector3f.mul(strideZ, zCounter);
-		Vector3f top = Vector3f.mul(strideZ, zCounter + 1);		
+		Vector3f left = Vectors.mul(strideX, xCounter);
+		Vector3f right = Vectors.mul(strideX, xCounter + 1);
+		Vector3f bottom = Vectors.mul(strideZ, zCounter);
+		Vector3f top = Vectors.mul(strideZ, zCounter + 1);		
 		int vertexStride = subdivisions + 1;
 		int blVertIndex = firstVertex + (xCounter + (zCounter * vertexStride));
 		int brVertIndex = blVertIndex + 1;
@@ -210,16 +209,16 @@ public class ArcHeightmap {
 			return Float.NEGATIVE_INFINITY;
 		}
 		
-		p1 = Vector3f.add(right, bottom);
+		p1 = Vectors.add(right, bottom);
 		p1.y += (vertices[brVertIndex].offset);
-		p2 = Vector3f.add(left, top);
+		p2 = Vectors.add(left, top);
 		p2.y += (vertices[tlVertIndex].offset);
 		
 		if ((p2.x - p1.x) * (pz - p1.z) - (p2.z - p1.z) * (px - p1.x) > 0f) {
-			p3 = Vector3f.add(left, bottom);
+			p3 = Vectors.add(left, bottom);
 			p3.y += (vertices[blVertIndex].offset);
 		} else {
-			p3 = Vector3f.add(right, top);
+			p3 = Vectors.add(right, top);
 			p3.y += (vertices[trVertIndex].offset);
 		}
 		
@@ -238,10 +237,10 @@ public class ArcHeightmap {
 		int xCounter = (int) (px / strideX.x);
 		int zCounter = (int) (pz / strideZ.z);
 		
-		Vector3f left = Vector3f.mul(strideX, xCounter);
-		Vector3f right = Vector3f.mul(strideX, xCounter + 1);
-		Vector3f bottom = Vector3f.mul(strideZ, zCounter);
-		Vector3f top = Vector3f.mul(strideZ, zCounter + 1);		
+		Vector3f left = Vectors.mul(strideX, xCounter);
+		Vector3f right = Vectors.mul(strideX, xCounter + 1);
+		Vector3f bottom = Vectors.mul(strideZ, zCounter);
+		Vector3f top = Vectors.mul(strideZ, zCounter + 1);		
 		int vertexStride = subdivisions + 1;
 		int blVertIndex = firstVertex + (xCounter + (zCounter * vertexStride));
 		int brVertIndex = blVertIndex + 1;
@@ -252,16 +251,16 @@ public class ArcHeightmap {
 			return Float.NEGATIVE_INFINITY;
 		}
 		
-		p1 = Vector3f.add(right, bottom);
+		p1 = Vectors.add(right, bottom);
 		p1.y = (vertices[brVertIndex].getBlend());
-		p2 = Vector3f.add(left, top);
+		p2 = Vectors.add(left, top);
 		p2.y = (vertices[tlVertIndex].getBlend());
 		
 		if ((p2.x - p1.x) * (pz - p1.z) - (p2.z - p1.z) * (px - p1.x) > 0f) {
-			p3 = Vector3f.add(left, bottom);
+			p3 = Vectors.add(left, bottom);
 			p3.y = (vertices[blVertIndex].getBlend());
 		} else {
-			p3 = Vector3f.add(right, top);
+			p3 = Vectors.add(right, top);
 			p3.y = (vertices[trVertIndex].getBlend());
 		}
 		

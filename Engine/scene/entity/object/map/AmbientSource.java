@@ -6,6 +6,7 @@ import audio.AudioHandler;
 import audio.Source;
 import scene.PlayableScene;
 import scene.entity.Entity;
+import util.Vectors;
 
 public class AmbientSource extends Entity {
 
@@ -18,7 +19,7 @@ public class AmbientSource extends Entity {
 	
 	public AmbientSource(String name, Vector3f pos, String sfx, float volume, float dist) {
 		super(name);
-		this.pos = pos;
+		this.position = pos;
 		this.sfx = sfx;
 		this.volume = volume;
 		this.dist = dist;
@@ -31,7 +32,7 @@ public class AmbientSource extends Entity {
 	
 	@Override
 	public void update(PlayableScene scene) {
-		float toCamSqr = Vector3f.distanceSquared(pos, scene.getCamera().getPosition());
+		float toCamSqr = Vectors.distanceSquared(position, scene.getCamera().getPosition());
 		if (toCamSqr < dist * dist) {
 
 			if (!playing) {

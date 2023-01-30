@@ -16,7 +16,7 @@ out vec3 toCamera;
 out vec3 lightColor;
 
 uniform mat4 modelMatrix;
-uniform mat3 invTransRotMatrix;
+//uniform mat3 invTransRotMatrix;
 uniform mat4 jointTransforms[MAX_JOINTS];
 uniform mat4 projectionViewMatrix;
 uniform vec3 lights[6];

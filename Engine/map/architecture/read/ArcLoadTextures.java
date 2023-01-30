@@ -8,7 +8,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
 import core.Resources;
-import dev.cmd.Console;
 import gl.res.Texture;
 import gl.res.TextureUtils;
 import gr.zdimensions.jsquish.Squish;

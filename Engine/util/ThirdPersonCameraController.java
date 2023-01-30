@@ -12,7 +12,7 @@ import scene.PlayableScene;
 public class ThirdPersonCameraController implements CameraFollowable {
 	
 	private float followDistance = 37.5f;
-	private float trackingSpeed = 30f;
+	private float trackingSpeed = 32f;
 	
 	private CameraFollowable following;
 	
@@ -27,8 +27,8 @@ public class ThirdPersonCameraController implements CameraFollowable {
 
 	@Override
 	public Vector3f getViewAngle() {
-		Vector3f diff = Vector3f.sub(position, following.getPosition()).normalize();
-		direction = Vector3f.lerp(diff, direction, trackingSpeed * Window.deltaTime);
+		Vector3f diff = Vectors.sub(position, following.getPosition()).normalize();
+		direction = direction.lerp(diff, trackingSpeed * Window.deltaTime);
 		
 		return direction;
 	}
@@ -36,9 +36,9 @@ public class ThirdPersonCameraController implements CameraFollowable {
 	@Override
 	public Vector3f getPosition() {
 		Vector3f target = new Vector3f(following.getPosition());
-		float dirRad = (float) Math.toRadians(following.getViewAngle().y);
-		Vector3f dir = new Vector3f((float)-Math.sin(dirRad) * .4f, .2f, (float)-Math.cos(dirRad) * .4f);
-		target.add(Vector3f.mul(dir, followDistance));
+		float dirRad = following.getViewAngle().y;
+		Vector3f dir = new Vector3f((float)-Math.sin(dirRad) * .7f, .2f, (float)-Math.cos(dirRad) * .7f);
+		target.add(Vectors.mul(dir, followDistance));
 		
 		// Do collision
 		Architecture arc = ((PlayableScene)App.scene).getArchitecture();
@@ -47,24 +47,20 @@ public class ThirdPersonCameraController implements CameraFollowable {
 			
 			if (ray != null && ray.getDistance() < followDistance - 2f) {
 				float raycastLength = ray.getDistance() - 2f;
-				target = Vector3f.add(following.getPosition(), Vector3f.mul(dir, raycastLength));
+				target = Vectors.add(following.getPosition(), Vectors.mul(dir, raycastLength));
 			}
 		}
 		
-		position = Vector3f.lerp(target, position, 10f * Window.deltaTime);
+		position = target.lerp(position, 10f * Window.deltaTime);
 		
 		return position;
-	}
-
-	public void setTrackingSpeed(float trackingSpeed) {
-		this.trackingSpeed = trackingSpeed;
 	}
 
 	public void setFollowing(CameraFollowable following) {
 		this.following = following;
 
 		position = getPosition();
-		Vector3f diff = Vector3f.sub(position, following.getPosition());
-		direction = MathUtil.directionVectorToEuler(diff, Vector3f.Y_AXIS);
+		Vector3f diff = Vectors.sub(position, following.getPosition());
+		direction = MathUtil.directionVectorToEuler(diff, Vectors.POSITIVE_Y);
 	}
 }

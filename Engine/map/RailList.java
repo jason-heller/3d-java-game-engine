@@ -8,9 +8,10 @@ import java.util.List;
 
 public class RailList {
 
-	public static final int BLOCK_SIZE = 100;
+	public static final int BLOCK_SIZE = 64;		// size in units of each rail square
 
 	public static int numBlocksX, numBlocksZ;
+	public static int numBlocks;
 	
 	private List<Rail> rails = new ArrayList<>();
 

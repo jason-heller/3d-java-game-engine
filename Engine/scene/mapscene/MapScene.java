@@ -3,12 +3,9 @@ package scene.mapscene;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import audio.speech.SpeechHandler;
 import core.App;
-import core.Resources;
 import dev.cmd.Console;
 import gl.Camera;
-import gl.anim.Animator;
 import gl.skybox.Skybox;
 import gl.skybox.Skybox2D;
 import gl.skybox._3d.Skybox3D;
@@ -48,20 +45,6 @@ public class MapScene extends PlayableScene {
 		// arcHandler.getArchitecture().callCommand(player, "trigger_soundscape");
 		player.getPosition().y += 5;
 		
-		////// Test code ///////
-		DummyEntity e = new DummyEntity();
-		e.update(this);
-		e.pos.y += 10;
-		e.scale = 2f;
-		e.visible=true;
-		e.setAnimator(null);
-		/*e.setModel("untitled");
-		e.rot.z = 90f;
-		Animator anim = new Animator(e.getModel().getSkeleton(), e);
-		anim.loop("wlk_s");
-		anim.setSpeedMultiplier(-1f);*/
-		EntityHandler.addEntity(e);
-		
 		if (arcHandler.isSkyboxEnabled()) {
 			SkyboxCamera skyCam = arcHandler.getArchitecture().getSkyCamera();
 			if (skyCam != null) {
@@ -73,7 +56,6 @@ public class MapScene extends PlayableScene {
 		
 		itemHandler = new ItemHandler(this, viewModelHandler);
 		
-		SpeechHandler.start();
 		TrickList.init();
 	}
 
@@ -85,7 +67,6 @@ public class MapScene extends PlayableScene {
 	@Override
 	public void cleanUp() {
 		super.cleanUp();
-		SpeechHandler.stop();
 		if (arcHandler.isSkyboxEnabled())
 			skybox.cleanUp();
 	}
@@ -105,9 +86,8 @@ public class MapScene extends PlayableScene {
 		
 		itemHandler.update();
 		
-		if (ui.isPaused()) return;
-		
-		//speechRecog.update();
+		if (ui.isPaused())
+			return;
 		
 		if (PlayerEntity.getHp() <= 0) {
 			int key = Input.getAny();

@@ -21,6 +21,7 @@ import map.architecture.vis.BspLeaf;
 import map.architecture.vis.Cluster;
 import scene.entity.Entity;
 import scene.entity.EntityHandler;
+import util.Vectors;
 
 public class ShadowRender {
 	private static final float MAX_SHADOW_RENDER_DIST_SQR = 300 * 300;
@@ -48,14 +49,14 @@ public class ShadowRender {
 			
 			// If light is too far away, don't render shadows
 			Camera camera = App.scene.getCamera();
-			if (Vector3f.distanceSquared(light.getPosition(), camera.getPosition()) > MAX_SHADOW_RENDER_DIST_SQR) {
+			if (Vectors.distanceSquared(light.getPosition(), camera.getPosition()) > MAX_SHADOW_RENDER_DIST_SQR) {
 				continue;
 			}
 			
 			light.updateLightView();
 			setProjViewFrustumBounds(0.5f, light.getLightReachInUnits());
 			
-			Matrix4f.mul(lightProjection, light.getLightViewMatrix(), lightSpaceMatrix);
+			lightProjection.mul(light.getLightViewMatrix(), lightSpaceMatrix);
 			
 			light.getFbo().bind();
 			
@@ -66,10 +67,10 @@ public class ShadowRender {
 			shader.lightSpaceMatrix.loadMatrix(lightSpaceMatrix);
 			shader.modelMatrix.loadMatrix(new Matrix4f());
 			for(BspLeaf leaf : leaves) {
-				//Vector3f bounds = Vector3f.sub(leaf.max, leaf.min).mul(0.5f);
-				Vector3f center = Vector3f.add(leaf.max, leaf.min).mul(0.5f);
+				//Vector3f bounds = Vectors.sub(leaf.max, leaf.min).mul(0.5f);
+				Vector3f center = Vectors.add(leaf.max, leaf.min).mul(0.5f);
 				float diffCutoff = (light.getOuterCutoff() - light.getCutoff()) + 100;
-				if (Vector3f.distanceSquared(camera.getPosition(), center) > diffCutoff * diffCutoff)
+				if (Vectors.distanceSquared(camera.getPosition(), center) > diffCutoff * diffCutoff)
 					continue;
 				
 				Cluster[] clusters = leaf.getMeshes();
@@ -122,20 +123,20 @@ public class ShadowRender {
 		// Commented out since this will get replaced by setProjViewFrustumBounds anyways
 		// final float frustumLength = Camera.FAR_PLANE - Camera.NEAR_PLANE;
 
-		m.m00 = yScale;
-		m.m11 = xScale;
+		m.m00(yScale);
+		m.m11(xScale);
 		// m.m22 = -((Camera.FAR_PLANE + Camera.NEAR_PLANE) / frustumLength);
-		m.m23 = -1;
+		m.m23(-1);
 		// m.m32 = -(2 * Camera.NEAR_PLANE * Camera.FAR_PLANE / frustumLength);
-		m.m33 = 0;
+		m.m33(0);
 		
 		return m;
 	}
 	
 	private void setProjViewFrustumBounds(float near, float far) {
 		final float frustumLength = far - near;
-		lightProjection.m22 = -((far + near) / frustumLength);
-		lightProjection.m32 = -(2 * near * far / frustumLength);
+		lightProjection.m22(-((far + near) / frustumLength));
+		lightProjection.m32(-(2 * near * far / frustumLength));
 	}
 	
 	/*private Matrix4f createOrtho(float left, float right, float bottom, float top, float near, float far) {

@@ -20,9 +20,7 @@ import gl.res.ModelBuilder;
 import gl.res.Texture;
 import gl.res.TextureUtils;
 import gr.zdimensions.jsquish.Squish;
-import io.MD5AnimLoader;
 import io.MFLoader;
-import map.ground.TerrainUtils;
 
 public class Resources {
 	private static Map<String, Texture> textureMap = new HashMap<String, Texture>();
@@ -80,11 +78,6 @@ public class Resources {
 	}
 
 	public static void addAnimation(String key, Animation animation) {
-		animationMap.put(key, animation);
-	}
-	
-	public static void addAnimation(String key, String path) {
-		final Animation animation = MD5AnimLoader.load(path);
 		animationMap.put(key, animation);
 	}
 
@@ -308,16 +301,6 @@ public class Resources {
 		for (int sound : soundMap.values()) {
 			AL10.alDeleteBuffers(sound);
 		}
-	}
-
-	public static float[][][] addHeightmapByTexture(String path) {
-		float[][][] data = TextureUtils.getRawTextureData("res/" + path);
-		return data;
-	}
-	
-	public static int[][] addHeightmap(String path) {
-		int[][] data = TerrainUtils.readHeightFile(path);
-		return data;
 	}
 
 	public static void removeModel(String key) {

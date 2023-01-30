@@ -7,16 +7,16 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
-import core.App;
 import dev.cmd.Console;
 import geom.Frustum;
 import io.Input;
-import scene.PlayableScene;
 import util.MathUtil;
+import util.Matrices;
 import util.ThirdPersonCameraController;
+import util.Vectors;
 
 public class Camera {
-	private static final float MAX_PITCH = 90;
+	private static final float MAX_PITCH = MathUtil.HALFPI;
 
 	private static float zoom, targetZoom, zoomSpeed;
 
@@ -56,7 +56,7 @@ public class Camera {
 	private final Vector3f flinch = new Vector3f();
 	
 	private Vector3f lookAt = null;
-	private Vector3f viewDirection = new Vector3f();
+	private final Vector3f viewDirection = new Vector3f();
 
 	private CameraFollowable focus = null;
 
@@ -67,28 +67,12 @@ public class Camera {
 	public Camera() {
 		updateProjection();
 	}
-	
-	private static Matrix4f createProjectionMatrix(float width, float height) {
-		final Matrix4f projectionMatrix = new Matrix4f();
-		final float aspectRatio = width / height;
-		final float y_scale = (float) (1f / Math.tan(Math.toRadians((fov - zoom) / 2f)));
-		final float x_scale = y_scale / aspectRatio;
-		final float frustum_length = FAR_PLANE - NEAR_PLANE;
-
-		projectionMatrix.m00 = x_scale;
-		projectionMatrix.m11 = y_scale;
-		projectionMatrix.m22 = -((FAR_PLANE + NEAR_PLANE) / frustum_length);
-		projectionMatrix.m23 = -1;
-		projectionMatrix.m32 = -(2 * NEAR_PLANE * FAR_PLANE / frustum_length);
-		projectionMatrix.m33 = 0;
-		return projectionMatrix;
-	}
 
 	private void handleControl() {
 		// Yaw/pitch look
 		if (controlStyle == SPECTATOR || controlStyle == FIRST_PERSON) {
 			if (Mouse.isGrabbed()) {
-				final float offset = 10f;
+				final float offset = 200f;
 				final float pitchChange = Input.getMouseDY() * (mouseSensitivity / offset);
 				final float angleChange = Input.getMouseDX() * (mouseSensitivity / offset);
 				rawPitch -= pitchChange;
@@ -100,9 +84,9 @@ public class Camera {
 		// WASD movement
 		if (controlStyle == SPECTATOR && !Console.isVisible()) {
 			final Vector3f forward = MathUtil.getDirection(viewMatrix);
-			final float yawRad = (float) Math.toRadians(rawYaw);
-			final Vector3f strafe = new Vector3f(-(float) Math.sin(yawRad), 0, (float) Math.cos(yawRad))
-					.perpindicular();
+
+			final Vector3f strafe = new Vector3f((float) Math.cos(rawYaw), 0, (float) Math.sin(rawYaw));
+			//strafe.orthogonalize(Vectors.POSITIVE_Y);
 
 			float speed = Input.isDown(Keyboard.KEY_LCONTROL) ? cameraSpeed / 4f : cameraSpeed;
 			speed *= Window.deltaTime;
@@ -116,9 +100,9 @@ public class Camera {
 			}
 
 			if (Input.isDown(Keyboard.KEY_D)) {
-				strafe.mul(-speed);
-			} else if (Input.isDown(Keyboard.KEY_A)) {
 				strafe.mul(speed);
+			} else if (Input.isDown(Keyboard.KEY_A)) {
+				strafe.mul(-speed);
 			} else {
 				strafe.zero();
 			}
@@ -185,7 +169,7 @@ public class Camera {
 			swayTime = Math.max(swayTime - Window.deltaTime, 0f);
 			if (swayTime == 0f) {
 				swayTarget.zero();
-			} else if (Vector3f.distanceSquared(swayDir, swayTarget) < .5) {
+			} else if (swayDir.distanceSquared(swayTarget) < .5) {
 				float remainder = 1f;
 				float w1 = (float) (Math.random() - 0.5);
 				remainder -= w1;
@@ -203,22 +187,17 @@ public class Camera {
 		if (controlStyle == THIRD_PERSON && focus != null) {
 			position.set(focus.getPosition());
 			lookAt = focus.getViewAngle();
-			rawPitch = (float) Math.toDegrees(Math.asin(lookAt.y));
-			rawYaw = -(float) Math.toDegrees(Math.atan2(lookAt.x, lookAt.z));
+			rawPitch = (float) (Math.asin(lookAt.y));
+			rawYaw = -(float) (Math.atan2(lookAt.x, lookAt.z));
 		}
 
 		if (controlStyle == NO_CONTROL && focus != null) {
 			final Vector3f lookPos = new Vector3f(focus.getPosition());
-			lookAt = Vector3f.sub(position, lookPos).normalize();
-			rawPitch = MathUtil.lerp(rawPitch, (float) Math.toDegrees(Math.asin(lookAt.y)), 1f);
+			lookAt = Vectors.sub(position, lookPos).normalize();
+			rawPitch = MathUtil.lerp(rawPitch, (float) (Math.asin(lookAt.y)), 1f);
 			rawYaw = MathUtil.angleLerp(rawYaw, -(float) Math.toDegrees(Math.atan2(lookAt.x, lookAt.z)), 1f);
-			//angleAroundPlayer = -(rawYaw - 360);
 		} else {
 			handleControl();
-
-			rawYaw %= 360;
-			rawYaw += 360;
-			rawYaw %= 360;
 		}
 
 		updateViewMatrix();
@@ -270,8 +249,19 @@ public class Camera {
 		updateProjection((float) Display.getWidth(), (float) Display.getHeight());
 	}
 	
-	public void updateProjection(float w, float h) {
-		this.projectionMatrix = createProjectionMatrix(w, h);
+	public void updateProjection(float width, float height) {
+		projectionMatrix = new Matrix4f();
+		final float aspectRatio = width / height;
+		final float y_scale = (float) (1f / Math.tan(Math.toRadians((fov - zoom) / 2f)));
+		final float x_scale = y_scale / aspectRatio;
+		final float frustum_length = FAR_PLANE - NEAR_PLANE;
+
+		projectionMatrix.m00(x_scale);
+		projectionMatrix.m11(y_scale);
+		projectionMatrix.m22(-((FAR_PLANE + NEAR_PLANE) / frustum_length));
+		projectionMatrix.m23(-1);
+		projectionMatrix.m32(-(2 * NEAR_PLANE * FAR_PLANE / frustum_length));
+		projectionMatrix.m33(0);
 	}
 
 	public void clearEffectRotations() {
@@ -290,14 +280,13 @@ public class Camera {
 		viewMatrix.rotateX(effectedPitch);
 		viewMatrix.rotateY(effectedYaw);
 		viewMatrix.rotateZ(effectedRoll);
-		final Vector3f negativeCameraPos = new Vector3f(-position.x, -position.y, -position.z);
-		viewMatrix.translate(negativeCameraPos);
+		viewMatrix.translate(-position.x, -position.y, -position.z);
 
-		viewDirection.x = -viewMatrix.m02;
-		viewDirection.y = -viewMatrix.m12;
-		viewDirection.z = -viewMatrix.m22;
+		viewDirection.x = -viewMatrix.m02();
+		viewDirection.y = -viewMatrix.m12();
+		viewDirection.z = -viewMatrix.m22();
 
-		Matrix4f.mul(projectionMatrix, viewMatrix, projectionViewMatrix);
+		Matrices.mul(projectionMatrix, viewMatrix, projectionViewMatrix);
 
 		frustum.update(projectionViewMatrix);
 		
@@ -325,14 +314,12 @@ public class Camera {
 		viewMatrix.rotateX(rawPitch);
 		viewMatrix.rotateY(rawYaw);
 		viewMatrix.rotateZ(rawRoll);
-		final Vector3f negativeCameraPos = new Vector3f(-position.x, -position.y, -position.z);
-		viewMatrix.translate(negativeCameraPos);
+		viewMatrix.translate(-position.x, -position.y, -position.z);
 
-		viewDirection.x = -viewMatrix.m02;
-		viewDirection.y = -viewMatrix.m12;
-		viewDirection.z = -viewMatrix.m22;
+		viewDirection.x = -viewMatrix.m02();
+		viewDirection.y = -viewMatrix.m12();
 
-		Matrix4f.mul(projectionMatrix, viewMatrix, projectionViewMatrix);
+		Matrices.mul(projectionMatrix, viewMatrix, projectionViewMatrix);
 
 		frustum.update(projectionViewMatrix);
 	}
@@ -344,10 +331,10 @@ public class Camera {
 		Vector3f look = this.getDirectionVector();
 		Vector2f v = new Vector2f(attackDir.x, attackDir.z);
 		
-		float forwardFlinch = Vector2f.dot(v, new Vector2f(look.x, look.z));
+		float forwardFlinch = v.dot(new Vector2f(look.x, look.z));
 		float sideFlinch = 1f - forwardFlinch;
 		v.perpendicular();
-		float altFlinch = Vector2f.dot(v, new Vector2f(look.x, look.z));
+		float altFlinch = v.dot(new Vector2f(look.x, look.z));
 		flinchDir.set(new Vector3f(sideFlinch, forwardFlinch, altFlinch));
 	}
 
@@ -371,7 +358,7 @@ public class Camera {
 	}
 
 	public Vector3f getDirectionVector() {
-		return viewDirection;
+		return new Vector3f(viewDirection);
 	}
 
 	public Frustum getFrustum() {
@@ -385,6 +372,10 @@ public class Camera {
 	public Matrix4f getProjectionMatrix() {
 		return projectionMatrix;
 	}
+	
+	public Matrix4f getViewMatrix() {
+		return viewMatrix;
+	}
 
 	public Matrix4f getProjectionViewMatrix() {
 		return projectionViewMatrix;
@@ -392,10 +383,6 @@ public class Camera {
 
 	public Vector2f getScreenShake() {
 		return screenShake;
-	}
-
-	public Matrix4f getViewMatrix() {
-		return viewMatrix;
 	}
 
 	public float getYaw() {

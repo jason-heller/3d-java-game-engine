@@ -39,7 +39,7 @@ public class Skybox3D implements Skybox {
 		
 		
 		Matrix4f matrix = new Matrix4f();
-		Vector3f position = new Vector3f(skyboxCamera.pos).mul(skyboxCamera.getScale()).negate();
+		Vector3f position = new Vector3f(skyboxCamera.position).mul(skyboxCamera.getScale()).negate();
 		position.sub(new Vector3f(camera.getPosition()).div(skyboxCamera.getScale()));
 		matrix.rotateX(camera.getEffectedPitch());
 		matrix.rotateY(camera.getEffectedYaw());
@@ -54,7 +54,7 @@ public class Skybox3D implements Skybox {
 		GL20.glEnableVertexAttribArray(2);
 
 		Matrix4f skyProjView = new Matrix4f();
-		Matrix4f.mul(camera.getProjectionMatrix(), matrix, skyProjView);
+		camera.getProjectionMatrix().mul(matrix, skyProjView);
 		shader.projectionViewMatrix.loadMatrix(skyProjView);
 
 		//shader.sampler.loadTexUnit(0);

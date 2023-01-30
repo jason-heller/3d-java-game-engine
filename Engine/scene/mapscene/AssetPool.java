@@ -20,7 +20,8 @@ public class AssetPool {
 		
 		addSound("ollie", "temp_ollie.ogg");
 		addSound("grind", "temp_grind_rock.ogg");
-		addSound("ride", "temp_ride.ogg");
+		addSound("ride_rock", "temp_ride_rock.ogg");
+		addSound("ride_grass", "temp_ride_grass.ogg");
 	}
 
 	private static void addModel(String key, String val) {

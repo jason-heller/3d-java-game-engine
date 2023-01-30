@@ -107,8 +107,6 @@ public class GraphicsPanel extends GuiPanel {
 			@Override
 			public void onClick(String option, int index) {
 				Window.setDisplayMode(resolutions[index]);
-
-				Render.resizeFbos();
 			}
 
 		});
@@ -126,7 +124,6 @@ public class GraphicsPanel extends GuiPanel {
 			@Override
 			public void onRelease(float value) {
 				Render.scale = value / 100f;
-				Render.resizeFbos();
 			}
 
 		});

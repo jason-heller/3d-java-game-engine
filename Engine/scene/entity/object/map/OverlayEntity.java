@@ -12,7 +12,7 @@ public class OverlayEntity extends Entity {
 	public OverlayEntity(Vector3f pos, Mesh model, Texture tex, BspLeaf leaf) {
 		super("overlay");
 		setModel(model, tex);
-		this.pos = pos;
+		this.position = pos;
 		this.leaf = leaf;
 	}
 	

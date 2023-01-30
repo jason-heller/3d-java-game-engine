@@ -23,7 +23,7 @@ public class SkyboxCamera extends Entity {
 	public SkyboxCamera(Vector3f position, float scale, boolean hasFog, float fogStart, float fogEnd,
 			Vector3f fogColor) {
 		super("sky_camera");
-		this.pos = position;
+		this.position = position;
 		this.scale = scale / 4f;		// oops
 		this.hasFog = hasFog;
 		this.fogColor = fogColor;
@@ -32,7 +32,7 @@ public class SkyboxCamera extends Entity {
 	}
 	
 	public void updateLeaf(Bsp bsp, Pvs pvs) {
-		cameraLeaf = bsp.walk(pos);
+		cameraLeaf = bsp.walk(position);
 		int[] vis = pvs.getData(cameraLeaf, 0);
 		
 		for(int i = 0; i < bsp.leaves.length; i++) {

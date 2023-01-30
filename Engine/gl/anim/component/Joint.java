@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.joml.Matrix4f;
-import org.joml.Quaternion;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class Joint {
@@ -13,17 +13,17 @@ public class Joint {
 	public final String name;
 
 	public Vector3f position;
-	public Quaternion rotation;
+	public Quaternionf rotation;
 	
 	public Vector3f animPos = new Vector3f();
-	public Quaternion animRot = new Quaternion();
+	public Quaternionf animRot = new Quaternionf();
 	
 	private final Matrix4f invBindMatrix;
 
 	public final List<Joint> children = new ArrayList<Joint>();
 
 	
-	public Joint(byte index, String name, Vector3f pos, Quaternion rot) {
+	public Joint(byte index, String name, Vector3f pos, Quaternionf rot) {
 		this.index = index;
 		this.name = name;
 		this.position = pos;

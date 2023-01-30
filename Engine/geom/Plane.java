@@ -1,7 +1,8 @@
 package geom;
 
 import org.joml.Vector3f;
-import org.joml.Vector4f;
+
+import util.Vectors;
 
 public class Plane {
 	public static final byte IN_FRONT = 0x0, BEHIND = 0x1, COPLANAR = 0x2;
@@ -25,12 +26,12 @@ public class Plane {
 	}
 	
 	public Plane(Vector3f p1, Vector3f p2, Vector3f p3) {
-		normal = Vector3f.cross(Vector3f.sub(p2, p1), Vector3f.sub(p3, p1)).normalize();
+		normal = Vectors.cross(Vectors.sub(p2, p1), Vectors.sub(p3, p1)).normalize();
 		dist = (normal.x * p1.x + normal.y * p1.y + normal.z * p1.z);
 	}
 
 	public byte classify(Vector3f point, float planeThickness) {
-		final float fDist = Vector3f.dot(normal, point) - dist;
+		final float fDist = normal.dot(point) - dist;
 		if (fDist > planeThickness) {
 			return IN_FRONT;
 		}
@@ -50,12 +51,12 @@ public class Plane {
 	}
 
 	public void set(Vector3f p1, Vector3f p2, Vector3f p3) {
-		this.normal = Vector3f.sub(p2, p1).cross(Vector3f.sub(p3, p1));
+		this.normal = Vectors.sub(p2, p1).cross(Vectors.sub(p3, p1));
 		dist = normal.x * p1.x + normal.y * p1.y + normal.z * p1.z;
 	}
 	
 	public static Vector3f projectPoint(Vector3f point, Vector3f norm, float dist) {
-		return Vector3f.sub(point, Vector3f.mul(norm, point.dot(norm) + dist));
+		return Vectors.sub(point, Vectors.mul(norm, point.dot(norm) + dist));
 	}
 	
 	public boolean isFrontFacingTo(Vector3f direction) {
@@ -64,7 +65,7 @@ public class Plane {
 	}
 
 	public Vector3f projectPoint(Vector3f point) {
-		return Vector3f.sub(point, Vector3f.mul(normal, (float) signedDistanceTo(point)));
+		return Vectors.sub(point, Vectors.mul(normal, (float) signedDistanceTo(point)));
 	}
 
 	public Vector3f raycastPoint(Vector3f org, Vector3f dir) {
@@ -73,16 +74,16 @@ public class Plane {
 			return org;
 			
 		float t = (dist - normal.dot(org)) / dp;
-		return Vector3f.add(org, Vector3f.mul(dir, t));
+		return Vectors.add(org, Vectors.mul(dir, t));
 	}
 	
 	public float raycast(Vector3f org, Vector3f dir) {
 		final float dp = normal.dot(dir);
 		if (Math.abs(dp) < .00001f)
-			return Float.POSITIVE_INFINITY;
+			return Float.NaN;
 
 		float t = (dist - normal.dot(org)) / dp;
-		return t >= 0 ? t : Float.POSITIVE_INFINITY;
+		return t >= 0 ? t : Float.NaN;
 	}
 
 	public float signedDistanceTo(Vector3f point) {
@@ -90,15 +91,15 @@ public class Plane {
 	}
 
 	public void translate(Vector3f offset) {
-		final Vector3f newPt = Vector3f.add(offset, Vector3f.mul(normal, dist));
+		final Vector3f newPt = Vectors.add(offset, Vectors.mul(normal, dist));
 		dist = normal.x * newPt.x + normal.y * newPt.y + normal.z * newPt.z;
 	}
 
 	public boolean intersects(AxisAlignedBBox aabb) {
 		final Vector3f center = aabb.getCenter();
 		final Vector3f bounds = aabb.getBounds();
-		final Vector3f tl = Vector3f.sub(center, bounds);
-		final Vector3f br = Vector3f.add(center, bounds);
+		final Vector3f tl = Vectors.sub(center, bounds);
+		final Vector3f br = Vectors.add(center, bounds);
 		
 		float sign = Math.signum(tl.dot(normal) + dist);
 		if (Math.signum(br.dot(normal) + dist) != sign) return true;

@@ -14,6 +14,7 @@ import map.architecture.ActiveLeaves;
 import map.architecture.Architecture;
 import map.architecture.vis.BspLeaf;
 import scene.PlayableScene;
+import util.Vectors;
 
 public class EntityHandler {
 
@@ -35,8 +36,8 @@ public class EntityHandler {
 	}
 
 	public static void addEntity(Entity entity) {
-		Integer leafId = new Integer(-1);
-		BspLeaf leaf = arc.bsp.walk(entity.pos, leafId);
+		Integer leafId = Integer.valueOf(-1);
+		BspLeaf leaf = arc.bsp.walk(entity.position, leafId);
 		/*List<Entity> batch = entities.get(leaf);
 		
 		if (batch == null) {
@@ -106,7 +107,7 @@ public class EntityHandler {
 		}*/
 		
 		for(Entity entity : dynamicEntities) {
-			float dist = Vector3f.distanceSquared(entity.pos, camPos);
+			float dist = Vectors.distanceSquared(entity.position, camPos);
 			
 			if (!entity.deactivated && dist <= entity.deactivationRange * entity.deactivationRange) {
 				List<Entity> batch = entities.get(entity.getLeaf());
@@ -188,7 +189,7 @@ public class EntityHandler {
 		return entities;
 	}
 
-	public static Entity raycast(Vector3f origin, Vector3f direction, List<BspLeaf> leaves, Entity ignore) {
+	/*public static Entity raycast(Vector3f origin, Vector3f direction, List<BspLeaf> leaves, Entity ignore) {
 		float closest = Float.POSITIVE_INFINITY;
 		Entity closestEntity = null;
 		List<Entity> entities = getEntities(leaves);
@@ -205,5 +206,5 @@ public class EntityHandler {
 		}
 		
 		return closestEntity;
-	}
+	}*/
 }

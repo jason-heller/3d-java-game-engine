@@ -12,7 +12,6 @@ import org.lwjgl.opengl.GL30;
 
 import core.Resources;
 import dev.Debug;
-import dev.cmd.Console;
 import gl.Camera;
 import gl.Render;
 import gl.arc.ArcRenderMaster;
@@ -68,7 +67,7 @@ public class EntityRender {
 			final Vector3f dir = light.getViewDirection();
 			
 			Matrix4f lightSpaceMatrix = new Matrix4f();
-			Matrix4f.mul(lightProjectionMatrix, light.getLightViewMatrix(), lightSpaceMatrix);
+			lightProjectionMatrix.mul(light.getLightViewMatrix(), lightSpaceMatrix);
 			
 			shader.lightPos.loadVec3(i, pos.x, pos.y, pos.z);
 			shader.lightDir.loadVec3(i, dir.x, dir.y, dir.z);
@@ -122,15 +121,15 @@ public class EntityRender {
 					texture.bind(0);
 			}
 			
-			shader.lights.loadVec3(arc.getLightsAt(entity.pos));
+			shader.lights.loadVec3(arc.getLightsAt(entity.position));
 			Vector3f color = entity.getColor();
 			shader.color.loadVec4(color.x, color.y, color.z, entity.getColorBlendFactor());
 			
 			if (mesh == billboard) {
 				Matrix4f matrix = new Matrix4f();
-				matrix.translate(entity.pos);
+				matrix.translate(entity.position);
 				matrix.rotateY(-camera.getYaw());
-				matrix.scale(entity.scale);
+				matrix.scale(entity.scale.x, entity.scale.y, entity.scale.z);
 				matrix.scale(texture.width / 128f, texture.height / 128f, 1f);
 				shader.modelMatrix.loadMatrix(matrix);
 			} else {

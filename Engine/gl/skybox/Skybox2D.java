@@ -41,15 +41,17 @@ public class Skybox2D implements Skybox {
 	public void render(Architecture arc, Camera camera) {
 		shader.start();
 		Matrix4f matrix = new Matrix4f(camera.getViewMatrix());
-		matrix.m30 = 0;
-		matrix.m31 = 0;
-		matrix.m32 = 0;
+		matrix.m30(0);
+		matrix.m31(0);
+		matrix.m32(0);
 		
-		shader.projectionViewMatrix.loadMatrix(Matrix4f.mul(camera.getProjectionMatrix(), matrix, null));
+		Matrix4f projView = new Matrix4f();
+		camera.getProjectionMatrix().mul(matrix, projView);
+		shader.projectionViewMatrix.loadMatrix(projView);
 		Texture t = Resources.getTexture("skybox");
-		if (t!=null) {
+		
+		if (t != null)
 			t.bind(0);
-		}
 		
 		box.bind(0);
 		GL11.glDrawElements(GL11.GL_TRIANGLES, box.getIndexCount(), GL11.GL_UNSIGNED_INT, 0);

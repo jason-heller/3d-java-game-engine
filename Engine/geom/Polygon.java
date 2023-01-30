@@ -1,18 +1,13 @@
 package geom;
 
 import org.joml.Matrix4f;
-import org.joml.Quaternion;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import util.Vectors;
+
 public class Polygon {
 	private static final float EPSILON = .00001f;
-	
-	public static Polygon transform(Polygon polyNotTransformed, Matrix4f matrix) {
-		final Polygon poly = new Polygon(polyNotTransformed);
-		poly.applyMatrix(matrix);
-		return poly;
-	}
 
 	public Vector3f p1, p2, p3;
 	public Vector3f normal;
@@ -33,7 +28,7 @@ public class Polygon {
 		this.p2 = new Vector3f(p2);
 		this.p3 = new Vector3f(p3);
 
-		normal = Vector3f.cross(Vector3f.sub(this.p2, this.p1), Vector3f.sub(this.p3, this.p1)).normalize();
+		normal = Vectors.cross(Vectors.sub(this.p2, this.p1), Vectors.sub(this.p3, this.p1)).normalize();
 
 		plane = new Plane(normal, this.p1);
 	}
@@ -54,7 +49,7 @@ public class Polygon {
 
 		center = new Vector3f(p1.x, p1.y, p1.z);
 
-		normal = Vector3f.cross(Vector3f.sub(p2, p1), Vector3f.sub(p3, p1)).normalize();
+		normal = Vectors.cross(Vectors.sub(p2, p1), Vectors.sub(p3, p1)).normalize();
 		plane = new Plane(normal, p1);
 
 		min = new Vector3f(Math.min(p3.x, Math.min(p1.x, p2.x)), Math.min(p3.y, Math.min(p1.y, p2.y)),
@@ -63,18 +58,6 @@ public class Polygon {
 				Math.max(p3.z, Math.max(p1.z, p2.z)));
 	}
 
-	public void applyMatrix(Matrix4f matrix) {
-		p1.mul(matrix);
-		p2.mul(matrix);
-		p3.mul(matrix);
-		final Quaternion q = Quaternion.fromMatrix(matrix);
-		q.normalize();
-		Vector3f.rotateVector(normal, q);
-		min = new Vector3f(Math.min(p3.x, Math.min(p1.x, p2.x)), Math.min(p3.y, Math.min(p1.y, p2.y)),
-				Math.min(p3.z, Math.min(p1.z, p2.z)));
-		max = new Vector3f(Math.max(p3.x, Math.max(p1.x, p2.x)), Math.max(p3.y, Math.max(p1.y, p2.y)),
-				Math.max(p3.z, Math.max(p1.z, p2.z)));
-	}
 
 	public float barryCentric(float relx, float rely) {
 		final float det = (p2.z - p3.z) * (p1.x - p3.x) + (p3.x - p2.x) * (p1.z - p3.z);
@@ -85,9 +68,9 @@ public class Polygon {
 	}
 
 	public boolean containsPoint(Vector3f point) {
-		final Vector3f v0 = Vector3f.sub(p1, point);
-		final Vector3f v1 = Vector3f.sub(p2, point);
-		final Vector3f v2 = Vector3f.sub(p3, point);
+		final Vector3f v0 = Vectors.sub(p1, point);
+		final Vector3f v1 = Vectors.sub(p2, point);
+		final Vector3f v2 = Vectors.sub(p3, point);
 
 		final float ab = v0.dot(v1);
 		final float ac = v0.dot(v2);
@@ -135,9 +118,9 @@ public class Polygon {
 		t.mul(transform);
 		p3.set(t.x, t.y, t.z);
 
-		normal = Vector3f.cross(Vector3f.sub(p2, p1), Vector3f.sub(p3, p1)).normalize();
+		normal = Vectors.cross(Vectors.sub(p2, p1), Vectors.sub(p3, p1)).normalize();
 		plane.normal = normal;
-		plane.dist = Vector3f.dot(normal, p1);
+		plane.dist = normal.dot(p1);
 
 		min = new Vector3f(Math.min(p3.x, Math.min(p1.x, p2.x)), Math.min(p3.y, Math.min(p1.y, p2.y)),
 				Math.min(p3.z, Math.min(p1.z, p2.z)));
@@ -161,7 +144,7 @@ public class Polygon {
         u.sub(p1);
         v = new Vector3f(p3);
         v.sub(p1);
-        n = Vector3f.cross(u, v);
+        n = Vectors.cross(u, v);
         
         if (n.length() == 0) {
             return null;

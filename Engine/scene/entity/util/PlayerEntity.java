@@ -1,19 +1,26 @@
 package scene.entity.util;
 
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import dev.cmd.Console;
 import geom.Plane;
 import gl.Camera;
 import gl.CameraFollowable;
 import gl.Window;
 import gl.anim.Animator;
+import gl.anim.component.Joint;
+import gl.anim.component.Skeleton;
 import io.Input;
+import map.architecture.util.BspRaycast;
 import scene.PlayableScene;
 import scene.mapscene.MapScene;
+import scene.mapscene.trick.Trick;
 import scene.mapscene.trick.TrickManager;
 import ui.UI;
 import util.Colors;
 import util.MathUtil;
+import util.Vectors;
 
 /**
  * @author Jason
@@ -24,15 +31,11 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 	////////////////////////////////
 	
 	public static final float CAMERA_STANDING_HEIGHT = 5f;
-	
-	private static final float CAM_FOLLOW_SPEED = 30f, CAM_GRIND_FOLLOW_SPEED = 5f;
 
 	public static final float BBOX_WIDTH = 1.5f, BBOX_HEIGHT = 6f;
-
-	private static final float RAILTRAJECT_ADJSPEED = 50f;
-	private static final float RAILTRAJECT_MAX = 25f, RAILTRAJECT_MIN = 8f;
 	
 	public static boolean viewGrindState = false;
+	public static boolean REGULAR_STANCE = true, GOOFY_STANCE = false;
 	
 	////////////////////////////////
 	
@@ -45,11 +48,10 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 	
 	private Vector3f viewAngle = new Vector3f();
 	
-	private float railExitTrajectory = 0f;
-	
 	private TrickManager trickManager;
 	
 	//private boolean boardIsFacingBack = false;
+	private final boolean stance = REGULAR_STANCE;
 	private boolean ridingSwitch = false;
 	
 	public PlayerEntity(MapScene scene) {
@@ -64,47 +66,51 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 	
 	@Override
 	public void update(PlayableScene scene) {
+		if (getAnimator().getCurrentAnimation().equals("fall")) {
+			this.setColor(Vectors.POSITIVE_X);
+		}
+		
+		rotation.identity();
 		
 		if (!isEnabled)
 			return;
 		
-		if (camera.getControlStyle() == Camera.SPECTATOR) {
-			return;
-		}
-		
 		boolean isNotBuffering = !trickManager.getPlayerIsBuffering();
 
-		final boolean LEFT = Input.isDown("left"),
+		boolean LEFT = Input.isDown("left"),
 				RIGHT = Input.isDown("right"),
 				DOWN = Input.isDown("down");
 		
 		final boolean LEFT_RELEASED = Input.isReleased("left"),
 				RIGHT_RELEASED = Input.isReleased("right");
 		
+		if (camera.getControlStyle() == Camera.SPECTATOR || Console.isVisible()) {
+			LEFT = RIGHT = false;
+			DOWN = true;
+		}
+		
 		// Architecture arc = ((PlayableScene)scene).getArchitecture();
 		
 		float speed = accelSpeed;
-		
-		
-		trickManager.update();
-		
+
 		if (DOWN && isNotBuffering)
 			speed = 0f;
 
 		// Handle game logic per tick, such as movement etc
-		float turnSpeed = isNotBuffering ? 240 : 100;
+		float turnSpeed = isNotBuffering ? 4.1f : 0;
 	
 		if (grindRail == null) {
 			if (!previouslyGrounded && grounded && vel.y <= 0f) {
+				trickEndFlagHandler();
 				getAnimator().start("land");
 				rideSfxSource.play("ride");
-				trickManager.handleOnTrickEnd();
+				trickManager.handleOnComboEnd();
 				grindLen = 0f;
 			}
 			
 			if (grounded) {
 				
-				if (this.vel.lengthSquared() < 1600) {
+				if (this.vel.lengthSquared() < 1000) {
 					turnSpeed /= 2f;
 				}
 				
@@ -127,13 +133,14 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 				}
 			}
 		} else {
-			rot.y = (float) Math.toDegrees(MathUtil.pointDirection(0, 0, grindNormal.x, grindNormal.z)) + 90f;
-			direction = -rot.y;
+			float newRotation = MathUtil.pointDirection(0, 0, grindNormal.x, grindNormal.z) + MathUtil.HALFPI;
+			rotation.rotateY(newRotation);
+			direction = -newRotation;
 		}
 		
 		if (camera.getControlStyle() == Camera.FIRST_PERSON) {
 			if (camera.getFocus() == this) {
-				camera.getPosition().set(pos.x, pos.y + Camera.offsetY, pos.z);
+				camera.getPosition().set(position.x, position.y + Camera.offsetY, position.z);
 			}
 		}
 		
@@ -144,49 +151,36 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 				speed = airAccel;
 			}
 			
-			rot.y = -direction;
-			double dRad = direction * Math.PI / 180.0;
-			accelerate(new Vector3f(-(float) Math.sin(dRad), 0, (float) Math.cos(dRad)), speed);
+			rotation.setAngleAxis(-direction, 0, 1, 0);
+			accelerate(new Vector3f(-(float) Math.sin(direction), 0, (float) Math.cos(direction)), speed);
 		}
 		
-		viewAngle.set(0f, rot.y, 0f);
+		viewAngle.set(0f, -direction, 0f);
+		
+		scale.x = stance ^ ridingSwitch ? -1f : 1f;
+
+		if (ridingSwitch) {
+			UI.drawString("(Switch)", 80, 540);
+		}
 		
 		Camera.animSpeed = 0f;
 		super.update(scene);
-	
-		if (ridingSwitch) {
-			/*Joint joint = model.getSkeleton().getJoint("pubis");
-			for(int i = joint.index; i < model.getSkeleton().getNumJoints(); i++) {
-				getAnimator().getJointTransforms()[i].rotateY(180f);
-			}*/
+
+		trickManager.update();
+		// Trick currentTrick = getCurrentTrick();
+
+		if (!trickManager.hasFlippedStance() && animator.getCurrentAnimation().equals("fall")) {
+			trickManager.flipStance();
 		}
 	}
 	
 	@Override
 	protected void handleGrindState() {
-		final boolean LEFT = Input.isDown("left"),
-				RIGHT = Input.isDown("right");
 		
 		super.handleGrindState();
-		
-		if (LEFT) {
-			railExitTrajectory = Math.min(railExitTrajectory - Window.deltaTime * RAILTRAJECT_ADJSPEED, -RAILTRAJECT_MIN);
-		} else if (RIGHT) {
-			railExitTrajectory = Math.max(railExitTrajectory + Window.deltaTime * RAILTRAJECT_ADJSPEED, RAILTRAJECT_MIN);
-		} else {
-			railExitTrajectory = 0f;
-		}
-		
-		railExitTrajectory = MathUtil.clamp(railExitTrajectory, -RAILTRAJECT_MAX, RAILTRAJECT_MAX);
-		
+
 		if (viewGrindState) {
 			UI.drawRect(560, 195, 160, 10, Colors.BLACK);
-			if (railExitTrajectory > 0f) {
-				UI.drawRect(640, 193, ((railExitTrajectory / RAILTRAJECT_MAX) * 80), 2, Colors.PURPLE);
-			} else {
-				float depth = 640 + ((railExitTrajectory / RAILTRAJECT_MAX) * 80);
-				UI.drawRect(depth, 193, 640 - depth, 2, Colors.PURPLE);
-			}
 			UI.drawRect(638 + (this.grindBalance)*2, 190, 4, 20, Colors.CYAN);
 		}
 	}
@@ -232,11 +226,11 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 
 	@Override
 	public Vector3f getPosition() {
-		return pos;
+		return position;
 	}
 
-	public Vector3f getRotation() {
-		return rot;
+	public Quaternionf getRotation() {
+		return rotation;
 	}
 
 	public void startGrind() {
@@ -244,7 +238,6 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 			this.endGrind();
 		} else {
 			grind();
-			railExitTrajectory = 0f;
 			//((ThirdPersonCameraController) camera.getFocus()).setTrackingSpeed(CAM_GRIND_FOLLOW_SPEED);
 		}
 	}
@@ -256,17 +249,31 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 	public void jump() {
 		// Jump off rail
 		if (grindRail != null) {
-			float exitDir = railExitTrajectory;
+			float exitDir = (float)Math.toRadians((Math.abs(grindBalance) < 20) ? 0f : this.grindBalance / 2f);
 			direction += exitDir;
-			float turnRad = (float) Math.toRadians(-exitDir);
 	
-			vel.rotateY(turnRad);
+			vel.rotateY(-exitDir);
 		}
 		
 		jump(jumpVel);
 		endGrind();
 		rideSfxSource.stop();
 		trickSfxSource.play("ollie");
+	}
+	
+	public void trickEndFlagHandler() {
+		Trick currentTrick = trickManager.getCurrentTrick();
+		
+		if (currentTrick == null)
+			return;
+		
+		if (currentTrick.isLandBackwards()
+				&& getAnimator().getCurrentAnimation().equals(currentTrick.getAnimation().getName())) {
+			Skeleton skeleton = model.getSkeleton();
+			Joint joint = skeleton.getJoint("board");
+
+			getAnimator().getCurrentJointTransforms()[joint.index].getRotation().rotateZ(3.14159f);
+		}
 	}
 
 	public void setSwitch(boolean isSwitch) {
@@ -275,5 +282,27 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 
 	public boolean isSwitch() {
 		return ridingSwitch;
+	}
+
+	public boolean getFrontside() {
+		Vector3f euler = new Vector3f();
+		rotation.getEulerAnglesXYZ(euler);
+		float dirRad = euler.y;
+
+		float dx = (float) -Math.cos(dirRad);
+		float dz = (float) Math.sin(dirRad);
+
+		Vector3f orig = new Vector3f((position.x + dx) + (dz * 2f), position.y, (position.z + dz) - (dx * 2f));
+		BspRaycast ray = arc.raycast(orig, new Vector3f(0, -1, 0));
+
+		return (ray == null || ray.getDistance() >= bbox.getHeight() + 1) ^ ridingSwitch ^ stance;
+	}
+
+	public Trick getCurrentTrick() {
+		return trickManager.getCurrentTrick();
+	}
+	
+	public boolean isRegularStance() {
+		return stance;
 	}
 }

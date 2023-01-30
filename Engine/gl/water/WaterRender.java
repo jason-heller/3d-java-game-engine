@@ -29,7 +29,7 @@ public class WaterRender {
 		GL20.glEnableVertexAttribArray(0);
 		GL20.glEnableVertexAttribArray(1);
 		
-		Vector3f bounds = Vector3f.sub(max, min);
+		Vector3f bounds = new Vector3f(max).sub(min);
 		waterShader.offset.loadVec3(min.x, max.y, min.z);
 		waterShader.scales.loadVec2(bounds.x, bounds.z);
 		waterShader.timer.loadFloat(Render.getTimer());

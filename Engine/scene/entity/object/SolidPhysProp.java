@@ -14,10 +14,10 @@ public class SolidPhysProp extends PhysicsEntity implements Spawnable {
 
 	public SolidPhysProp(Vector3f pos, Vector3f rot, String name) {
 		super(name, new Vector3f());
-		this.pos.set(pos);
-		this.rot.set(rot);
+		this.position.set(pos);
+		this.rotation.rotateXYZ(rot.x, rot.y, rot.z);
 		setModel(new String[] {name}, new String[] {name});
-		bbox.getBounds().set(model.getMeshes()[0].bounds);
+		bbox.getHalfSize().set(model.getMeshes()[0].bounds);
 
 		
 		solid = true;
@@ -28,7 +28,7 @@ public class SolidPhysProp extends PhysicsEntity implements Spawnable {
 		if (args.length < 2)
 			return false;
 		
-		this.pos.set(pos);
+		this.position.set(pos);
 		this.name = args[1];
 		setModel(new String[] {args[1]}, new String[] {args[1]});
 		
@@ -36,7 +36,7 @@ public class SolidPhysProp extends PhysicsEntity implements Spawnable {
 		//if (args.length > 2)
 		//	model.gettext(args[2]);
 		
-		bbox.getBounds().set(model.getMeshes()[0].bounds);
+		bbox.getHalfSize().set(model.getMeshes()[0].bounds);
 		return true;
 	}
 }

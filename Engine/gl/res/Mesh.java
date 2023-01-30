@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL30;
 
 import gl.anim.component.Skeleton;
 import gl.res.mesh.MeshData;
+import util.Vectors;
 
 public class Mesh {
 	private static final int BYTES_PER_FLOAT = 4;
@@ -42,8 +43,8 @@ public class Mesh {
 	}
 	
 	public void setBounds(Vector3f max, Vector3f min) {
-		center = Vector3f.add(max, min).div(2f);
-		bounds = Vector3f.sub(max, min).div(2f);
+		center = Vectors.add(max, min).div(2f);
+		bounds = Vectors.sub(max, min).div(2f);
 	}
 
 	private void bind() {

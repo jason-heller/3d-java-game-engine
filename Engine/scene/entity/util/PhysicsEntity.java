@@ -9,6 +9,7 @@ import org.joml.Vector3f;
 import core.App;
 import dev.Debug;
 import geom.AxisAlignedBBox;
+import geom.BoundingBox;
 import geom.CollideUtils;
 import geom.MTV;
 import geom.Plane;
@@ -31,6 +32,7 @@ import scene.PlayableScene;
 import scene.entity.Entity;
 import scene.entity.EntityHandler;
 import util.Colors;
+import util.Vectors;
 
 // TODO: Deprecate this ?
 public abstract class PhysicsEntity extends Entity {
@@ -69,7 +71,7 @@ public abstract class PhysicsEntity extends Entity {
 	
 	public PhysicsEntity(String name, Vector3f bounds) {
 		super(name);
-		bbox = new AxisAlignedBBox(pos, bounds);
+		bbox = new BoundingBox(position, bounds);
 		arcHandler = ((PlayableScene)App.scene).getArcHandler();
 	}
 
@@ -91,10 +93,10 @@ public abstract class PhysicsEntity extends Entity {
 	@Override
 	public void update(PlayableScene scene) {
 		if (Debug.showHitboxes) {
-			LineRender.drawBox(bbox.getCenter(), bbox.getBounds(), Colors.YELLOW);
+			LineRender.drawBox(bbox.getCenter(), bbox.getHalfSize(), Colors.YELLOW);
 		}
 		
-		lastPos.set(pos);
+		lastPos.set(position);
 		
 		// Add vertical speed
 		if (!submerged && !climbing && applyGravity) {
@@ -103,12 +105,12 @@ public abstract class PhysicsEntity extends Entity {
 
 		// Add horizontal speed
 		if (!climbing) {
-			pos.x += vel.x * Window.deltaTime;
-			pos.z += vel.z * Window.deltaTime;
+			position.x += vel.x * Window.deltaTime;
+			position.z += vel.z * Window.deltaTime;
 		}
 
 		// Apply y-speed
-		pos.y += vel.y * Window.deltaTime;
+		position.y += vel.y * Window.deltaTime;
 
 		applyFriction();
 
@@ -119,15 +121,15 @@ public abstract class PhysicsEntity extends Entity {
 		Architecture architecture = arcHandler.getArchitecture();
 		Bsp bsp = architecture.bsp;
 		
-		Vector3f max = Vector3f.add(bbox.getCenter(), bbox.getBounds());
-		Vector3f min = Vector3f.sub(bbox.getCenter(), bbox.getBounds());
+		Vector3f max = Vectors.add(bbox.getCenter(), bbox.getHalfSize());
+		Vector3f min = Vectors.sub(bbox.getCenter(), bbox.getHalfSize());
 		
 		List<BspLeaf> leaves = bsp.walk(max, min);
 		List<ArcFace> faces = bsp.getFaces(leaves);
 		
-		leaf = bsp.walk(pos);
+		leaf = bsp.walk(position);
 		submerged = leaf.isUnderwater;
-		fullySubmerged = (submerged && pos.y < leaf.max.y);
+		fullySubmerged = (submerged && position.y < leaf.max.y);
 		
 		// Main collision handling
 		upwarp = 0f;
@@ -139,7 +141,7 @@ public abstract class PhysicsEntity extends Entity {
 		handleClipCollisions(architecture, leaves);
 		
 		
-		pos.y += upwarp;
+		position.y += upwarp;
 		
 		super.update(scene);
 	}
@@ -157,11 +159,11 @@ public abstract class PhysicsEntity extends Entity {
 					float height = hmap.getHeightAt(bbox, bsp.heightmapVerts) + bbox.getHeight();
 					if (Float.isFinite(height)) {
 						float fudge = (!grounded && vel.y < 0f ? .2f : 0f);
-						if (height >= pos.y - fudge) {
-							pos.y = height;
+						if (height >= position.y - fudge) {
+							position.y = height;
 							vel.y = 0f;
 							grounded = true;
-							float blend = hmap.getBlendAt(pos.x, pos.z, bsp.heightmapVerts);
+							float blend = hmap.getBlendAt(position.x, position.z, bsp.heightmapVerts);
 
 							if (blend >= 0f) {
 								int id = (blend < .5f) ? hmap.getTexture1() : hmap.getTexture2();
@@ -202,16 +204,15 @@ public abstract class PhysicsEntity extends Entity {
 		}
 	}
 	
-	private void handleBBoxCollision(AxisAlignedBBox other) {
-		MTV mtv = bbox.collide(other);
-
-		if (mtv != null) {
-			if (mtv.getAxis().y > .5f) {
+	protected void handleBBoxCollision(BoundingBox other) {
+		if (bbox.intersects(other)) {
+			if (bbox.getIntersectionAxis().y > .5f) {
 				vel.y = 0f;
 				grounded = true;
-				pos.y = other.getCenter().y + bbox.getBounds().y + other.getBounds().y;
+				position.y = other.getCenter().y + bbox.getHalfSize().y + other.getHalfSize().y;
 			} else {
-				vel.add(mtv.getMTV());
+				Vector3f mtv = new Vector3f(bbox.getIntersectionAxis()).mul(bbox.getIntersectionDepth());
+				vel.add(mtv);
 			}
 		}
 	}
@@ -228,27 +229,28 @@ public abstract class PhysicsEntity extends Entity {
 			if (obj.solidity == 0)
 				continue;
 			
-			AxisAlignedBBox otherBox = obj.getBBox();
+			BoundingBox otherBox = obj.getBBox();
 			if (bbox.intersects(otherBox)) {
 				if (obj.solidity == 1) {
 					handleBBoxCollision(otherBox);
 				} else {
-					Mesh model = bsp.objects.getModel(obj.model);
+					// TODO: THIS
+					/*Mesh model = bsp.objects.getModel(obj.model);
 					if (model.getNavMesh() == null)
 						continue;
 					
 					Vector3f[] navMesh = model.getNavMesh();
 					for(int i = 0; i < navMesh.length; i += 3) {
-						Vector3f p1 = Vector3f.add(navMesh[i], obj.pos);
-						Vector3f p2 = Vector3f.add(navMesh[i + 1], obj.pos);
-						Vector3f p3 = Vector3f.add(navMesh[i + 2], obj.pos);
+						Vector3f p1 = Vectors.add(navMesh[i], obj.pos);
+						Vector3f p2 = Vectors.add(navMesh[i + 1], obj.pos);
+						Vector3f p3 = Vectors.add(navMesh[i + 2], obj.pos);
 						Polygon tri = new Polygon(p1, p2, p3);
 
-						MTV mtv = bbox.collide(tri);
+						MTV mtv = bbox.intersects(tri);
 						if (mtv != null) {
 							resolveTriCollision(mtv, tri);
 						}
-					}
+					}*/
 				}
 			}
 		}
@@ -328,7 +330,8 @@ public abstract class PhysicsEntity extends Entity {
 	}
 	
 	private void resolveTriCollision(MTV mtv, Polygon tri) {
-		if (mtv.getAxis().y < .5f) {
+		// TODO: THIS
+		/*if (mtv.getAxis().y < .5f) {
 			bbox.getCenter().y += STEP_HEIGHT;
 			MTV stepMtv = bbox.collide(tri);
 			bbox.getCenter().y -= STEP_HEIGHT;
@@ -340,7 +343,7 @@ public abstract class PhysicsEntity extends Entity {
 			}
 		}
 		
-		if (Debug.viewCollide && mtv != null) {
+		if (Debug.showCollisions && mtv != null) {
 			LineRender.drawTriangle(tri, Colors.RED);
 		}
 		
@@ -350,14 +353,14 @@ public abstract class PhysicsEntity extends Entity {
 		}
 		
 		pos.add(mtv.getMTV());
-		vel.add(Vector3f.div(mtv.getMTV(), Window.deltaTime));
+		vel.add(Vectors.div(mtv.getMTV(), Window.deltaTime));*/
 	}
 	
 	private void resolveFaceCollision(Bsp bsp, MTV mtv, ArcFace face) {
 		// Check if moving the player's path up one resolves collision, if it does, move along that path, then drop down
 
 		if (face == null) {
-			pos.add(mtv.getMTV());
+			position.add(mtv.getMTV());
 			return;
 		}
 		
@@ -380,7 +383,7 @@ public abstract class PhysicsEntity extends Entity {
 			
 		}
 		
-		if (Debug.viewCollide && mtv != null) {
+		if (Debug.showCollisions && mtv != null) {
 			for(int i = face.firstEdge; i < face.numEdges + face.firstEdge; i++) {
 				ArcEdge edge = bsp.edges[Math.abs(bsp.surfEdges[i])];
 				LineRender.drawLine(bsp.vertices[edge.start], bsp.vertices[edge.end], Colors.RED);
@@ -401,15 +404,15 @@ public abstract class PhysicsEntity extends Entity {
 			return;
 		}
 		
-		pos.add(mtv.getMTV());
-		vel.add(Vector3f.div(mtv.getMTV(), Window.deltaTime));
+		position.add(mtv.getMTV());
+		vel.add(Vectors.div(mtv.getMTV(), Window.deltaTime));
 	}
 
 	protected void collideWithFloor(Plane plane, MTV mtv) {
 		
 		// Easy out
 		if (mtv.getAxis().y == 1f) {
-			pos.y += mtv.getMTV().y;
+			position.y += mtv.getMTV().y;
 			vel.y = 0f;
 			grounded = true;
 			return;
@@ -418,20 +421,20 @@ public abstract class PhysicsEntity extends Entity {
 		float depth = Float.NEGATIVE_INFINITY;
 		
 		final Vector3f[] points = new Vector3f[] {
-				new Vector3f(bbox.getBounds().x, -bbox.getBounds().y, bbox.getBounds().z),
-				new Vector3f(bbox.getBounds().x, -bbox.getBounds().y, -bbox.getBounds().z),
-				new Vector3f(-bbox.getBounds().x, -bbox.getBounds().y, bbox.getBounds().z),
-				new Vector3f(-bbox.getBounds().x, -bbox.getBounds().y, -bbox.getBounds().z)
+				new Vector3f(bbox.getHalfSize().x, -bbox.getHalfSize().y, bbox.getHalfSize().z),
+				new Vector3f(bbox.getHalfSize().x, -bbox.getHalfSize().y, -bbox.getHalfSize().z),
+				new Vector3f(-bbox.getHalfSize().x, -bbox.getHalfSize().y, bbox.getHalfSize().z),
+				new Vector3f(-bbox.getHalfSize().x, -bbox.getHalfSize().y, -bbox.getHalfSize().z)
 				};
 
 		for(int i = 0; i < points.length; i++) {
-			float newDepth = plane.raycast(Vector3f.add(pos, points[i]), Vector3f.Y_AXIS);
+			float newDepth = plane.raycast(Vectors.add(position, points[i]), Vectors.POSITIVE_Y);
 
 			if (!Float.isInfinite(newDepth) && newDepth > depth) 
 				depth = newDepth;
 		}
 		
-		if (depth == Float.NEGATIVE_INFINITY || depth > bbox.getBounds().y) {
+		if (Float.isNaN(depth) || depth > bbox.getHalfSize().y) {
 			return;
 		}
 
@@ -453,7 +456,7 @@ public abstract class PhysicsEntity extends Entity {
 			vel.x += direction.x * magnitude * Window.deltaTime;
 			vel.z += direction.z * magnitude * Window.deltaTime;
 		} else {
-			final float projVel = Vector3f.dot(vel, direction); // Vector projection of Current vel onto accelDir.
+			final float projVel = Vectors.dot(vel, direction); // Vector projection of Current vel onto accelDir.
 			float accelVel = magnitude * Window.deltaTime; // Accelerated vel in direction of movment
 
 			// If necessary, truncate the accelerated vel so the vector projection does
@@ -541,7 +544,7 @@ public abstract class PhysicsEntity extends Entity {
 		return climbing;
 	}
 	
-	public AxisAlignedBBox getBBox() {
+	public BoundingBox getBBox() {
 		return bbox;
 	}
 }

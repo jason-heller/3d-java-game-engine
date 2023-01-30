@@ -6,8 +6,8 @@ import java.nio.file.Files;
 import java.util.List;
 
 import audio.AudioHandler;
-import audio.speech.SpeechHandler;
 import core.App;
+import dev.Debug;
 import dev.RailBuilder;
 import gl.Camera;
 import gl.Render;
@@ -18,10 +18,18 @@ import scene.PlayableScene;
 import scene.entity.Entity;
 import scene.entity.EntityHandler;
 import scene.entity.SpawnHandler;
-import scene.entity.util.PlayerEntity;
 import scene.mapscene.MapScene;
 
 public class CommandMethods {
+	
+	private static void incorrectParams(String cmd, String ... strings) {
+		String s = "Usage: "+cmd+" ";
+		for(int i = 0; i < strings.length; i++) {
+			s += "<"+strings[i]+"> ";
+		}
+		Console.log(s);
+	}
+	
 	public static void logMessage(String msg) {
 		Console.log(msg);
 	}
@@ -118,19 +126,19 @@ public class CommandMethods {
 				return;
 			}
 
-			entity.pos.x = Float.parseFloat(b);
-			entity.pos.y = Float.parseFloat(c);
-			entity.pos.z = Float.parseFloat(d);
+			entity.position.x = Float.parseFloat(b);
+			entity.position.y = Float.parseFloat(c);
+			entity.position.z = Float.parseFloat(d);
 		} else {
 			entity = playableScene.getPlayer();
 
-			entity.pos.x = Float.parseFloat(a);
-			entity.pos.y = Float.parseFloat(b);
-			entity.pos.z = Float.parseFloat(c);
+			entity.position.x = Float.parseFloat(a);
+			entity.position.y = Float.parseFloat(b);
+			entity.position.z = Float.parseFloat(c);
 		}
 		
 		Camera camera = playableScene.getCamera();
-		camera.getPosition().set(entity.pos);
+		camera.getPosition().set(entity.position);
 		playableScene.getArcHandler().update(camera);
 	}
 	
@@ -150,19 +158,19 @@ public class CommandMethods {
 				return;
 			}
 
-			entity.pos.x += Float.parseFloat(b);
-			entity.pos.y += Float.parseFloat(c);
-			entity.pos.z += Float.parseFloat(d);
+			entity.position.x += Float.parseFloat(b);
+			entity.position.y += Float.parseFloat(c);
+			entity.position.z += Float.parseFloat(d);
 		} else {
 			entity = playableScene.getPlayer();
 
-			entity.pos.x += Float.parseFloat(a);
-			entity.pos.y += Float.parseFloat(b);
-			entity.pos.z += Float.parseFloat(c);
+			entity.position.x += Float.parseFloat(a);
+			entity.position.y += Float.parseFloat(b);
+			entity.position.z += Float.parseFloat(c);
 		}
 		
 		Camera camera = playableScene.getCamera();
-		camera.getPosition().set(entity.pos);
+		camera.getPosition().set(entity.position);
 		playableScene.getArcHandler().update(camera);
 	}
 	
@@ -207,20 +215,8 @@ public class CommandMethods {
 		quit();
 	}
 	
-	public static void speak(String say) {
-		SpeechHandler.speak(say);
-	}
-	
 	public static void raillist_build() {
 		RailBuilder.buildRailList();
-	}
-
-	private static void incorrectParams(String cmd, String ... strings) {
-		String s = "Usage: "+cmd+" ";
-		for(int i = 0; i < strings.length; i++) {
-			s += "<"+strings[i]+"> ";
-		}
-		Console.log(s);
 	}
 	
 	public static void switch_stance() {
@@ -228,5 +224,14 @@ public class CommandMethods {
 			PlayableScene s = (PlayableScene)App.scene;
 			s.getPlayer().setSwitch(!s.getPlayer().isSwitch());
 		}
+	}
+	
+	public static void rail_mode() {
+		Debug.railMode = !Debug.railMode;
+		
+		if (Debug.railMode)
+			RailBuilder.fillList();
+		
+		App.scene.getCamera().setControlStyle(Camera.SPECTATOR);
 	}
 }

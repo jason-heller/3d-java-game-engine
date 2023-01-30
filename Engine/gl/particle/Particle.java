@@ -3,10 +3,10 @@ package gl.particle;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-import dev.cmd.Console;
 import gl.Camera;
 import gl.Window;
 import gl.res.Texture;
+import util.Vectors;
 
 public class Particle {
 	private Vector3f position, velocity;
@@ -144,13 +144,13 @@ public class Particle {
 	}
 
 	protected boolean update(Camera camera) {
-		position.add(Vector3f.mul(velocity, Window.deltaTime * 135));
+		position.add(Vectors.mul(velocity, Window.deltaTime * 135));
 		rotation += rotationSpeed * Window.deltaTime * 1000f;
 		velocity.y -= gravity * Window.deltaTime * 60;
 
 		elapsedTime += Window.deltaTime * 135f;
 
-		distance = Vector3f.sub(new Vector3f(camera.getPosition()), position).lengthSquared();
+		distance = Vectors.sub(new Vector3f(camera.getPosition()), position).lengthSquared();
 
 		updateTextureCoordInfo();
 		if (elapsedTime > life) {

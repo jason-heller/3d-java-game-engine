@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
 
-import org.joml.Quaternion;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import core.Resources;
@@ -116,7 +116,7 @@ public class MFLoader {
 		String[] boneNames = new String[numBones];
 		byte[] boneParents = new byte[numBones];
 		Vector3f[] boneLocations = new Vector3f[numBones];
-		Quaternion[] boneRotations = new Quaternion[numBones];
+		Quaternionf[] boneRotations = new Quaternionf[numBones];
 		
 		byte c;
 		for(int i = 0; i < numBones; i++) {
@@ -131,7 +131,7 @@ public class MFLoader {
 
 		for(int i = 0; i < numBones; i++) {
 			Vector3f bonePos = new Vector3f(bb.getFloat(), bb.getFloat(), bb.getFloat());		// Pos/Rot of bone in object local space;
-			Quaternion boneRot = new Quaternion(bb.getFloat(), bb.getFloat(), bb.getFloat(), bb.getFloat());
+			Quaternionf boneRot = new Quaternionf(bb.getFloat(), bb.getFloat(), bb.getFloat(), bb.getFloat());
 			boneLocations[i] = bonePos;
 			boneRotations[i] = boneRot;
 		}
@@ -141,7 +141,7 @@ public class MFLoader {
 		return new Skeleton(numBones, root);
 	}
 
-	private static Joint createJointHierarchy(byte[] boneParents, String[] boneNames, Vector3f[] boneLocations, Quaternion[] boneRotations) {
+	private static Joint createJointHierarchy(byte[] boneParents, String[] boneNames, Vector3f[] boneLocations, Quaternionf[] boneRotations) {
 		int numBones = boneParents.length;
 		Joint[] joints = new Joint[numBones];
 	

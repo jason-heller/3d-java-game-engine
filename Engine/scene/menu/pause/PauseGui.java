@@ -1,6 +1,5 @@
 package scene.menu.pause;
 
-import org.joml.Vector3f;
 import org.lwjgl.input.Keyboard;
 
 import audio.AudioHandler;
@@ -8,6 +7,7 @@ import core.App;
 import io.Input;
 import ui.Text;
 import ui.UI;
+import util.Vectors;
 
 public class PauseGui {
 	public PausePanel pause;
@@ -69,7 +69,7 @@ public class PauseGui {
 		}
 
 		if (isPaused()) {
-			UI.drawRect(0, 0, UI.width, UI.height, Vector3f.ZERO).setOpacity(.35f);
+			UI.drawRect(0, 0, UI.width, UI.height, Vectors.ZERO).setOpacity(.35f);
 			pause.draw();
 			UI.drawString(title);
 		}

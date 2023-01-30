@@ -7,6 +7,7 @@ import org.joml.Vector3f;
 
 import gl.Camera;
 import map.architecture.vis.BspLeaf;
+import util.Vectors;
 
 public class ActiveLeaves {
 
@@ -19,8 +20,9 @@ public class ActiveLeaves {
 
 	public void addLeaf(Camera camera, BspLeaf leaf) {
 		Vector3f camPos = camera.getPosition();
-		Vector3f boxPos = Vector3f.add(leaf.max, leaf.min).mul(0.5f);
-		float distSqr = Vector3f.distanceSquared(camPos, boxPos);
+		Vector3f boxPos = Vectors.add(leaf.max, leaf.min).mul(0.5f);
+
+		float distSqr = camPos.distanceSquared(boxPos);
 		
 		if (distSqr < cutoffDist * cutoffDist) {
 			activeLeavesNear.add(leaf);

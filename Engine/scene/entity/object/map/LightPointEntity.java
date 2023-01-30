@@ -8,6 +8,7 @@ import map.architecture.vis.BspLeaf;
 import scene.PlayableScene;
 import scene.entity.Entity;
 import scene.entity.util.LightStyle;
+import util.Vectors;
 
 public class LightPointEntity extends Entity {
 	
@@ -17,7 +18,7 @@ public class LightPointEntity extends Entity {
 	
 	public LightPointEntity(Vector3f pos, LightStyle style, float linear, float quadratic, Vector3f color) {
 		super("light");
-		this.pos = pos;
+		this.position = pos;
 		this.color = color;
 		this.style = style;
 		this.linear = linear;
@@ -56,9 +57,9 @@ public class LightPointEntity extends Entity {
 	
 	private void updateFaceLightAlpha(float brightness, List<BspLeaf> renderedLeaves) {
 		for(BspLeaf leaf : renderedLeaves) {
-			Vector3f center = Vector3f.add(leaf.max, leaf.min).mul(0.5f);
+			Vector3f center = Vectors.add(leaf.max, leaf.min).mul(0.5f);
 			// FIXME: 400*400 is a hack, should really determine its actual reach
-			if (Vector3f.distanceSquared(center, pos) < 400*400) {
+			if (Vectors.distanceSquared(center, position) < 400*400) {
 				leaf.setAlpha(style, brightness);
 			}
 		}

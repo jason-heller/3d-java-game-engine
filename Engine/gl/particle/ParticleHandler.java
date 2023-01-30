@@ -17,6 +17,7 @@ import org.lwjgl.opengl.GL11;
 import core.Resources;
 import gl.Camera;
 import gl.res.Texture;
+import util.Vectors;
 
 public class ParticleHandler {
 	private static Map<Texture, List<Particle>> particles = Collections
@@ -136,16 +137,16 @@ public class ParticleHandler {
 
 		Vector4f direction = new Vector4f(x, y, z, 1);
 		if (coneDirection.x != 0 || coneDirection.z != 0 || coneDirection.y != 1 && coneDirection.y != -1) {
-			final Vector3f rotateAxis = Vector3f.cross(coneDirection, new Vector3f(0, 1, 0));
+			final Vector3f rotateAxis = Vectors.cross(coneDirection, new Vector3f(0, 1, 0));
 			rotateAxis.normalize();
-			final float rotateAngle = (float) Math.acos(Vector3f.dot(coneDirection, new Vector3f(0, 1, 0)));
+			final float rotateAngle = (float) Math.acos(Vectors.dot(coneDirection, new Vector3f(0, 1, 0)));
 			final Matrix4f rotationMatrix = new Matrix4f();
-			rotationMatrix.rotate((float) -Math.toDegrees(rotateAngle), rotateAxis);
-			direction = Matrix4f.transform(rotationMatrix, direction);
+			rotationMatrix.rotate((float) -rotateAngle, rotateAxis);
+			direction = rotationMatrix.transform(direction);
 		} else if (coneDirection.y == -1) {
 			direction.y *= -1;
 		}
-		return new Vector3f(direction);
+		return new Vector3f(direction.x ,direction.y, direction.z);
 	}
 	
 	public static int size() {

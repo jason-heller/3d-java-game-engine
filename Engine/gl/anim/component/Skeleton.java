@@ -25,7 +25,7 @@ public class Skeleton {
 	/*public void calculateJointPositions(Joint parent) {
 		for(Joint child : parent.children) {
 			Vector3f rotPos = Vector3f.rotateVector(child.position, parent.rotation);
-			Vector3f newPos = Vector3f.add(parent.position, rotPos);
+			Vector3f newPos = Vectors.add(parent.position, rotPos);
 			Quaternion newQuat = new Quaternion();
 			Quaternion.mul(parent.rotation, child.rotation, newQuat);
 			newQuat.normalize();

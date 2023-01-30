@@ -7,7 +7,6 @@ import java.util.Map;
 
 import org.joml.Vector3f;
 
-import dev.cmd.Console;
 import geom.Plane;
 import gl.res.Mesh;
 import map.architecture.components.ArcEdge;

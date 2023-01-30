@@ -13,10 +13,12 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL33;
 
+import geom.BoundingBox;
 import geom.Polygon;
 import gl.Camera;
 import gl.Render;
 import gl.res.Mesh;
+import util.Vectors;
 
 public class LineRender {
 	private static final Vector3f DEFAULT_LINE_COLOR = new Vector3f(1, 0, 1);
@@ -152,7 +154,7 @@ public class LineRender {
 	}*/
 	
 	public static void drawPoint(Vector3f point) {
-		drawLine(point, Vector3f.add(point, Vector3f.Y_AXIS));
+		drawLine(point, Vectors.add(point, Vectors.POSITIVE_Y));
 	}
 	
 	public static void drawLine(Vector3f p1, Vector3f p2) {
@@ -164,34 +166,93 @@ public class LineRender {
 		points.add(p2);
 		colors.add(color);
 	}
+	
+	public static void drawArrow(Vector3f p1, Vector3f p2, Vector3f color) {
+		//Camera camera = App.scene.getCamera();
+		
+		Vector3f normal = Vectors.sub(p1, p2).normalize();
+		Vector3f axis = Vectors.POSITIVE_Y;//.getOrthogonal(normal);
+		
+		normal.rotateAxis(-((float)Math.PI/4f), axis.x, axis.y, axis.z);
+		drawLine(p2, Vectors.add(p2, normal), color);
+		
+		normal.rotateAxis(((float)Math.PI/4f)*2f, axis.x, axis.y, axis.z);
+		drawLine(p2, Vectors.add(p2, normal), color);
+		
+		drawLine(p1, p2, color);
+	}
+	
+	private static final Vector3f NEGATIVE_X = new Vector3f(-1,1,1);
+	private static final Vector3f NEGATIVE_Y = new Vector3f(1,-1,1);
+	private static final Vector3f NEGATIVE_Z = new Vector3f(1,1,-1);
+	private static final Vector3f NEGATIVE_XZ = new Vector3f(-1,1,-1);
+	private static final Vector3f NEGATIVE_XY = new Vector3f(-1,-1,1);
+	private static final Vector3f NEGATIVE_YZ = new Vector3f(1,-1,-1);
+	private static final Vector3f NEGATIVE_XYZ = new Vector3f(-1,-1,-1);
 
 	public static void drawBox(Vector3f center, Vector3f bounds, Vector3f color) {
-		LineRender.drawLine(Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(1,1,1))),
-				Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(-1,1,1))), color);
-		LineRender.drawLine(Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(1,1,1))),
-				Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(1,1,-1))), color);
-		LineRender.drawLine(Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(-1,1,-1))),
-				Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(1,1,-1))), color);
-		LineRender.drawLine(Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(-1,1,-1))),
-				Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(-1,1,1))), color);
+		LineRender.drawLine(Vectors.add(center, bounds),
+				Vectors.add(center, Vectors.mul(bounds, NEGATIVE_X)), color);
+		LineRender.drawLine(Vectors.add(center, bounds),
+				Vectors.add(center, Vectors.mul(bounds, NEGATIVE_Z)), color);
+		LineRender.drawLine(Vectors.add(center, Vectors.mul(bounds, NEGATIVE_XZ)),
+				Vectors.add(center, Vectors.mul(bounds, NEGATIVE_Z)), color);
+		LineRender.drawLine(Vectors.add(center, Vectors.mul(bounds, NEGATIVE_XZ)),
+				Vectors.add(center, Vectors.mul(bounds, NEGATIVE_X)), color);
 		
-		LineRender.drawLine(Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(1,-1,1))),
-				Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(-1,-1,1))), color);
-		LineRender.drawLine(Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(1,-1,1))),
-				Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(1,-1,-1))), color);
-		LineRender.drawLine(Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(-1,-1,-1))),
-				Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(1,-1,-1))), color);
-		LineRender.drawLine(Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(-1,-1,-1))),
-				Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(-1,-1,1))), color);
+		LineRender.drawLine(Vectors.add(center, Vectors.mul(bounds, NEGATIVE_Y)),
+				Vectors.add(center, Vectors.mul(bounds, NEGATIVE_XY)), color);
+		LineRender.drawLine(Vectors.add(center, Vectors.mul(bounds, NEGATIVE_Y)),
+				Vectors.add(center, Vectors.mul(bounds, NEGATIVE_YZ)), color);
+		LineRender.drawLine(Vectors.add(center, Vectors.mul(bounds, NEGATIVE_XYZ)),
+				Vectors.add(center, Vectors.mul(bounds, NEGATIVE_YZ)), color);
+		LineRender.drawLine(Vectors.add(center, Vectors.mul(bounds, NEGATIVE_XYZ)),
+				Vectors.add(center, Vectors.mul(bounds, NEGATIVE_XY)), color);
 		
-		LineRender.drawLine(Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(1,-1,1))),
-				Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(1,1,1))), color);
-		LineRender.drawLine(Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(1,-1,-1))),
-				Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(1,1,-1))), color);
-		LineRender.drawLine(Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(-1,-1,-1))),
-				Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(-1,1,-1))), color);
-		LineRender.drawLine(Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(-1,-1,1))),
-				Vector3f.add(center, Vector3f.mul(bounds, new Vector3f(-1,1,1))), color);
+		LineRender.drawLine(Vectors.add(center, Vectors.mul(bounds, NEGATIVE_Y)),
+				Vectors.add(center, bounds), color);
+		LineRender.drawLine(Vectors.add(center, Vectors.mul(bounds, NEGATIVE_YZ)),
+				Vectors.add(center, Vectors.mul(bounds, NEGATIVE_Z)), color);
+		LineRender.drawLine(Vectors.add(center, Vectors.mul(bounds, NEGATIVE_XYZ)),
+				Vectors.add(center, Vectors.mul(bounds, NEGATIVE_XZ)), color);
+		LineRender.drawLine(Vectors.add(center, Vectors.mul(bounds, NEGATIVE_XY)),
+				Vectors.add(center, Vectors.mul(bounds, NEGATIVE_X)), color);
+	}
+	
+	public static void drawBox(BoundingBox box, Vector3f color) {
+		Vector3f center = box.getCenter();
+		Vector3f bounds = box.getHalfSize();
+		
+		Vector3f dx = Vectors.mul(box.X, bounds.x);
+		Vector3f dy = Vectors.mul(box.Y, bounds.y);
+		Vector3f dz = Vectors.mul(box.Z, bounds.z);
+		Vector3f[] v = new Vector3f[] {
+				new Vector3f(center).add(dx).add(dy).add(dz),
+				new Vector3f(center).sub(dx).add(dy).add(dz),
+				new Vector3f(center).add(dx).add(dy).sub(dz),
+				new Vector3f(center).sub(dx).add(dy).sub(dz),
+				
+				new Vector3f(center).add(dx).sub(dy).add(dz),
+				new Vector3f(center).sub(dx).sub(dy).add(dz),
+				new Vector3f(center).add(dx).sub(dy).sub(dz),
+				new Vector3f(center).sub(dx).sub(dy).sub(dz)
+		};
+		
+		LineRender.drawLine(v[0], v[1], color);
+		LineRender.drawLine(v[1], v[3], color);
+		LineRender.drawLine(v[2], v[3], color);
+		LineRender.drawLine(v[2], v[0], color);
+		
+		LineRender.drawLine(v[0], v[4], color);
+		LineRender.drawLine(v[1], v[5], color);
+		LineRender.drawLine(v[2], v[6], color);
+		LineRender.drawLine(v[3], v[7], color);
+		
+		LineRender.drawLine(v[4], v[5], color);
+		LineRender.drawLine(v[5], v[7], color);
+		LineRender.drawLine(v[6], v[7], color);
+		LineRender.drawLine(v[6], v[4], color);
+
 	}
 
 	public static void drawTriangle(Polygon tri, Vector3f color) {

@@ -6,10 +6,11 @@ import java.util.Locale;
 
 import javax.swing.JOptionPane;
 
+import org.lwjgl.LWJGLException;
+import org.lwjgl.input.Controllers;
 import org.lwjgl.opengl.Display;
 
 import audio.AudioHandler;
-import audio.speech.SpeechHandler;
 import dev.cmd.Console;
 import gl.Render;
 import gl.Window;
@@ -19,7 +20,6 @@ import io.Settings;
 import scene.MainMenu;
 import scene.Scene;
 import scene.entity.EntityHandler;
-import scene.mapscene.trick.TrickList;
 import ui.UI;
 
 public class App {
@@ -64,7 +64,6 @@ public class App {
 		Controls.init();
 		Window.create();
 		Render.init();
-		Console.init();
 		
 		Window.update();
 		
@@ -75,7 +74,7 @@ public class App {
 		}
 		
 		Console.send("run autoexec");
-		
+
 		//SpeechRecognizer_Old.init();
 
 		while ((!Display.isCloseRequested() && !forceClose)) {
@@ -129,8 +128,8 @@ public class App {
 		Render.cleanUp();
 		Resources.cleanUp();
 		AudioHandler.cleanUp();
-		//SpeechHandler.cleanUp();
 		Window.destroy();
+		Input.cleanUp();
 		Settings.save();
 		Controls.save();
 	}

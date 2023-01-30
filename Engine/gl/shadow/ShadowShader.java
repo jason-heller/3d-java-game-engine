@@ -2,11 +2,6 @@ package gl.shadow;
 
 import shader.ShaderProgram;
 import shader.UniformMat4;
-import shader.UniformSampler;
-import shader.UniformSamplerArray;
-import shader.UniformVec2Array;
-import shader.UniformVec3Array;
-import shader.UniformVec4;
 
 public class ShadowShader extends ShaderProgram {
 

@@ -10,6 +10,7 @@ import core.Resources;
 import gl.Camera;
 import gl.Window;
 import gl.res.Texture;
+import util.Vectors;
 
 public class ParticleEmitter {
 
@@ -26,16 +27,16 @@ public class ParticleEmitter {
 
 		Vector4f direction = new Vector4f(x, y, z, 1);
 		if (coneDirection.x != 0 || coneDirection.z != 0 || coneDirection.y != 1 && coneDirection.y != -1) {
-			final Vector3f rotateAxis = Vector3f.cross(coneDirection, new Vector3f(0, 1, 0));
+			final Vector3f rotateAxis = Vectors.cross(coneDirection, new Vector3f(0, 1, 0));
 			rotateAxis.normalize();
-			final float rotateAngle = (float) Math.acos(Vector3f.dot(coneDirection, new Vector3f(0, 1, 0)));
+			final float rotateAngle = (float) Math.acos(Vectors.dot(coneDirection, new Vector3f(0, 1, 0)));
 			final Matrix4f rotationMatrix = new Matrix4f();
-			rotationMatrix.rotate((float) -Math.toDegrees(rotateAngle), rotateAxis);
-			direction = Matrix4f.transform(rotationMatrix, direction);
+			rotationMatrix.rotate((float) -rotateAngle, rotateAxis);
+			direction = rotationMatrix.transform(direction);
 		} else if (coneDirection.y == -1) {
 			direction.y *= -1;
 		}
-		return new Vector3f(direction);
+		return new Vector3f(direction.x, direction.y, direction.z);
 	}
 
 	private final float pps, averageSpeed, gravityComplient, averageLifeLength, averageScale;
@@ -79,7 +80,7 @@ public class ParticleEmitter {
 			velocity = generateRandomUnitVector();
 		}
 		velocity.normalize();
-		velocity.scale(generateValue(averageSpeed, speedError));
+		velocity.mul(generateValue(averageSpeed, speedError));
 		final float scale = generateValue(averageScale, scaleError);
 		final float lifeLength = generateValue(averageLifeLength, lifeError);
 		new Particle(texture, new Vector3f(center), velocity, gravityComplient, lifeLength, generateRotation(),
@@ -87,7 +88,7 @@ public class ParticleEmitter {
 	}
 
 	public void generateParticles(Camera camera) {
-		range = Vector3f.distance(camera.getPosition(), origin);
+		range = camera.getPosition().distance(origin);
 		if (range > MAX_RANGE) {
 			return;
 		}

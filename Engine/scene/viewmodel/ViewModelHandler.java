@@ -14,6 +14,8 @@ import gl.res.TexturedModel;
 import gl.res.mesh.MeshData;
 import scene.PlayableScene;
 import util.MathUtil;
+import util.Matrices;
+import util.Vectors;
 
 public class ViewModelHandler {
 	public static final int MAX_MODELS = 4;
@@ -63,7 +65,7 @@ public class ViewModelHandler {
 		Matrix4f m = new Matrix4f();
 		
 		lastCamPos.y = camera.getPosition().y;
-		float len = Vector3f.distanceSquared(camera.getPosition(), lastCamPos);
+		float len = Vectors.distanceSquared(camera.getPosition(), lastCamPos);
 
 		if (len > 0.01f) {
 			swayTimer += Window.deltaTime;
@@ -98,7 +100,7 @@ public class ViewModelHandler {
 		camMatrix.rotateZ(-camera.getEffectedRoll());
 		camMatrix.rotateY(-camera.getEffectedYaw());
 		camMatrix.rotateX(-camera.getEffectedPitch());
-		camMatrix.translate(Vector3f.mul(new Vector3f(sway.x + swayYaw, sway.y + swayPitch, sway.z), .7f));
+		camMatrix.translate(Vectors.mul(new Vector3f(sway.x + swayYaw, sway.y + swayPitch, sway.z), .7f));
 		Vector3f[] lights = scene.getArchitecture().getLightsAt(camera.getPosition());
 		
 		for(int i = 0; i < MAX_MODELS; i++) {
@@ -111,7 +113,7 @@ public class ViewModelHandler {
 			Matrix4f matrix = viewModel.getMatrix();
 			
 			model.getMeshData().update(model, texture, camMatrix);
-			Render.renderViewModel(model, texture, Matrix4f.mul(m, matrix, null), lights);
+			Render.renderViewModel(model, texture, Matrices.mul(m, matrix), lights);
 
 		}
 	}

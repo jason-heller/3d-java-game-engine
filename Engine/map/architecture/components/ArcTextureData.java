@@ -3,7 +3,6 @@ package map.architecture.components;
 import java.util.List;
 
 import core.Resources;
-import dev.cmd.Console;
 import gl.res.Texture;
 import map.architecture.Architecture;
 

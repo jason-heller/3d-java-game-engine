@@ -5,7 +5,6 @@ import org.lwjgl.opengl.GL13;
 
 import core.Resources;
 import gl.Render;
-import gl.fbo.FBO;
 import shader.UniformFloat;
 import shader.UniformSampler;
 

@@ -1,327 +1,276 @@
 package geom;
 
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
-import org.joml.Quaternion;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
+
+import util.Vectors;
 
 public class BoundingBox {
 
-	public Vector3f bounds;
+	public Vector3f halfSize;
 	public Vector3f center;
 	
-	protected float scale;
 	public Vector3f X, Y, Z;
 	
-	public float yaw, pitch, roll;
-	public float overlap;
+	private Vector3f xBounds = new Vector3f();
+	private Vector3f yBounds = new Vector3f();
+	private Vector3f zBounds = new Vector3f();
+	
+	private Vector3f intersectionAxis;
+	private float intersectionDepth;
 
 	public BoundingBox(float x, float y, float z, float w, float h, float l) {
 		this.center = new Vector3f(x, y, z);
-		this.X = new Vector3f(Vector3f.X_AXIS);
-		this.Y = new Vector3f(Vector3f.Y_AXIS);
-		this.Z = new Vector3f(Vector3f.Z_AXIS);
-		this.bounds = new Vector3f(w, h, l);
-		yaw = pitch = roll = 0f;
+		this.X = new Vector3f(Vectors.POSITIVE_X);
+		this.Y = new Vector3f(Vectors.POSITIVE_Y);
+		this.Z = new Vector3f(Vectors.POSITIVE_Z);
+		this.halfSize = new Vector3f(w, h, l);
+		
+		xBounds.set(X).mul(halfSize.x);
+		yBounds.set(Y).mul(halfSize.y);
+		zBounds.set(Z).mul(halfSize.z);
 	}
 
 	public BoundingBox(Vector3f center, float w, float h, float l) {
 		this.center = center;
-		this.X = new Vector3f(Vector3f.X_AXIS);
-		this.Y = new Vector3f(Vector3f.Y_AXIS);
-		this.Z = new Vector3f(Vector3f.Z_AXIS);
-		this.bounds = new Vector3f(w, h, l);
-		yaw = pitch = roll = 0f;
+		this.X = new Vector3f(Vectors.POSITIVE_X);
+		this.Y = new Vector3f(Vectors.POSITIVE_Y);
+		this.Z = new Vector3f(Vectors.POSITIVE_Z);
+		this.halfSize = new Vector3f(w, h, l);
+		
+		xBounds.set(X).mul(halfSize.x);
+		yBounds.set(Y).mul(halfSize.y);
+		zBounds.set(Z).mul(halfSize.z);
 	}
 
 	public BoundingBox(Vector3f center, Vector3f max, Vector3f min) {
-		this(center, Vector3f.sub(max, min));
+		this(center, Vectors.sub(max, min));
 
 	}
 	
 	public BoundingBox(Vector3f center, Vector3f bounds) {
-		this.bounds = bounds;
+		this.halfSize = bounds;
 		this.center = center;
-		this.X = new Vector3f(Vector3f.X_AXIS);
-		this.Y = new Vector3f(Vector3f.Y_AXIS);
-		this.Z = new Vector3f(Vector3f.Z_AXIS);
-		yaw = pitch = roll = 0f;
+		this.X = new Vector3f(Vectors.POSITIVE_X);
+		this.Y = new Vector3f(Vectors.POSITIVE_Y);
+		this.Z = new Vector3f(Vectors.POSITIVE_Z);
+		
+		xBounds.set(X).mul(halfSize.x);
+		yBounds.set(Y).mul(halfSize.y);
+		zBounds.set(Z).mul(halfSize.z);
 
 	}
 	
-	public void update(Vector3f pos, Vector3f rot, float scale) {
-		this.center = pos;
-		this.X.set(1f,0f,0f);
-		this.Y.set(0f,1f,0f);
-		this.Z.set(0f,0f,1f);
-		Matrix3f mat = new Matrix3f();
-		mat.rotateX(rot.x);
-		mat.rotateY(rot.y);
-		mat.rotateZ(rot.z);
-		mat.transform(X);
-		mat.transform(Y);
-		mat.transform(Z);
-
-		this.scale = scale;
+	public boolean intersects(AxisAlignedBBox box) {
+		return intersects(new BoundingBox(box.getCenter(), box.getBounds()));
 	}
 	
-	public Vector3f intersects(BoundingBox box) {
-		Vector4f axis = new Vector4f(0, 0, 0, 100);
-
-		// Ugly but works
-		if ((axis = axisTest(axis, X, box)) == null)
-			return null;
-		if ((axis = axisTest(axis, Y, box)) == null)
-			return null;
-		if ((axis = axisTest(axis, Z, box)) == null)
-			return null;
-		if ((axis = axisTest(axis, box.X, box)) == null)
-			return null;
-		if ((axis = axisTest(axis, box.Y, box)) == null)
-			return null;
-		if ((axis = axisTest(axis, box.Z, box)) == null)
-			return null;
-		if ((axis = axisTest(axis, Vector3f.cross(X, box.X), box)) == null)
-			return null;
-		if ((axis = axisTest(axis, Vector3f.cross(X, box.Y), box)) == null)
-			return null;
-		if ((axis = axisTest(axis, Vector3f.cross(X, box.Z), box)) == null)
-			return null;
-		if ((axis = axisTest(axis, Vector3f.cross(Y, box.X), box)) == null)
-			return null;
-		if ((axis = axisTest(axis, Vector3f.cross(Y, box.Y), box)) == null)
-			return null;
-		if ((axis = axisTest(axis, Vector3f.cross(Y, box.Z), box)) == null)
-			return null;
-		if ((axis = axisTest(axis, Vector3f.cross(Z, box.X), box)) == null)
-			return null;
-		if ((axis = axisTest(axis, Vector3f.cross(Z, box.Y), box)) == null)
-			return null;
-		if ((axis = axisTest(axis, Vector3f.cross(Z, box.Z), box)) == null)
-			return null;
-
-		return new Vector3f(axis.x, axis.y, axis.z);
+	public boolean intersects(BoundingBox box) {
+		intersectionDepth = Float.POSITIVE_INFINITY;
+		Vector3f range = Vectors.sub(box.getCenter(), center);
+		
+		return !(
+				isSeparated(range, X, box) ||
+				isSeparated(range, Y, box) ||
+				isSeparated(range, Z, box) ||
+				isSeparated(range, box.X, box) ||
+				isSeparated(range, box.Y, box) ||
+				isSeparated(range, box.Z, box) ||
+				isSeparated(range, cross(X, box.X), box) ||
+				isSeparated(range, cross(X, box.Y), box) ||
+				isSeparated(range, cross(X, box.Z), box) ||
+				isSeparated(range, cross(Y, box.X), box) ||
+				isSeparated(range, cross(Y, box.Y), box) ||
+				isSeparated(range, cross(Y, box.Z), box) ||
+				isSeparated(range, cross(Z, box.X), box) ||
+				isSeparated(range, cross(Z, box.Y), box) ||
+				isSeparated(range, cross(Z, box.Z), box)
+		);
 	}
-
-	private Vector4f axisTest(Vector4f overlapAxis, Vector3f axis, BoundingBox other) {
-		if (axis.isZero())
-			return overlapAxis;
-		float dot, rad;
-
-		// Calculate extremes for this OBB
-		dot = Vector3f.dot(axis, center);
-		rad = Math.abs(Vector3f.dot(axis, X)) * bounds.x*scale + Math.abs(Vector3f.dot(axis, Y)) * bounds.y*scale
-				+ Math.abs(Vector3f.dot(axis, Z)) * bounds.z*scale;
-
-		float selfMin = dot - rad;
-		float selfMax = dot + rad;
-
-		// Calculate extremes for other OBB
-		dot = Vector3f.dot(axis, other.center);
-		rad = Math.abs(Vector3f.dot(axis, other.X)) * other.bounds.x*other.scale + Math.abs(Vector3f.dot(axis, other.Y)) * other.bounds.y*other.scale
-				+ Math.abs(Vector3f.dot(axis, other.Z)) * other.bounds.z*other.scale;
-
-		float otherMin = dot - rad;
-		float otherMax = dot + rad;
-
-		if (selfMin > otherMax || selfMax < otherMin) {
-			// Axis is not overlapping
-			return null;
+	
+	public boolean intersects(Vector3f[] convexVertices, Vector3f planeNormal) {
+		intersectionDepth = Float.POSITIVE_INFINITY;
+		final int len = convexVertices.length / 2;
+		
+		Vector3f[] axisList = new Vector3f[len + 4];
+		
+		Vector3f[] boxVertices = new Vector3f[] {
+				new Vector3f(center).add(xBounds).add(yBounds).add(zBounds),
+				new Vector3f(center).sub(xBounds).add(yBounds).add(zBounds),
+				new Vector3f(center).add(xBounds).add(yBounds).sub(zBounds),
+				new Vector3f(center).sub(xBounds).add(yBounds).sub(zBounds),
+				
+				new Vector3f(center).add(xBounds).sub(yBounds).add(zBounds),
+				new Vector3f(center).sub(xBounds).sub(yBounds).add(zBounds),
+				new Vector3f(center).add(xBounds).sub(yBounds).sub(zBounds),
+				new Vector3f(center).sub(xBounds).sub(yBounds).sub(zBounds)
+		};
+		
+		axisList[0] = planeNormal;
+		axisList[1] = X;
+		axisList[2] = Y;
+		axisList[3] = Z;
+		
+		for(int i = 0; i < len; i++) {
+			Vector3f v1 = convexVertices[i * 2];
+			Vector3f v2 = convexVertices[i * 2 + 1];
+			
+			axisList[i + 4] = new Vector3f(v2).sub(v1).cross(planeNormal).normalize();
+		}
+		
+		for (int i = 0; i < axisList.length; i++) {
+			if (isSeparated(boxVertices, convexVertices, axisList[i]))
+				return false;
 		}
 
-		// Axis overlaps
-
-		float d0 = selfMax - otherMin;
-		float d1 = otherMax - selfMin;
-
-		float overlap = (d0 < d1) ? -d0 : d1;
-		float axisLengthSquared = axis.x * axis.x + axis.y * axis.y + axis.z * axis.z;
-		float overlapSquared = (overlap * overlap) / axisLengthSquared;
-
-		if (overlapSquared < overlapAxis.w) {
-			overlapAxis.w = overlapSquared;
-			Vector3f xyz = Vector3f.mul(axis, (overlap / axisLengthSquared));
-			overlapAxis.x = xyz.x;
-			overlapAxis.y = xyz.y;
-			overlapAxis.z = xyz.z;
-		}
-
-		return overlapAxis;
+		return true;
 	}
 	
-	private boolean axisTest(float rad, float p0, float p1) {
-		float min = Math.min(p0, p1);
-		float max = Math.max(p0, p1);
-		if (min > rad || max < -rad) return true;
+	public boolean intersects(Plane plane) {
+		final Vector3f normal = plane.normal;
 		
-		//float d0 = max - (-rad);
-		//float d1 = rad - min;
-		//float o = (d0 < d1) ? d0 : d1;
+		float length = halfSize.x * Math.abs(normal.dot(X)) +
+				halfSize.y * Math.abs(normal.dot(Y)) +
+				halfSize.z * Math.abs(normal.dot(Z));
 		
-		return false;
+		float dp = normal.dot(center);
+		float dist = Math.abs(dp - plane.dist);
+		
+		return dist <= length;
 	}
-
-	/**
-	 * Checks an overlap between a triangle's plane and an AABB.
-	 * 
-	 * @param normal
-	 *            - the triangle's normal.
-	 * @param d
-	 *            - plane equation (normal.x + d = 0)
-	 * @param bounds
-	 *            - the bounds of the AABB
-	 *            
-	 * @returns true is overlapping, false otherwise
-	 */
-	private boolean planeBoxOverlap(Vector3f normal, float d,
-			Vector3f bounds) {
-		// vmin is the AABB's bounds, with some axis flipped depending on the direction of the normal
-		Vector3f vmin = new Vector3f((normal.x > 0.0) ? -bounds.x : +bounds.x,
-				(normal.y > 0.0) ? -bounds.y : +bounds.y,
-				(normal.z > 0.0) ? -bounds.z : +bounds.z);
-
-		float dist = Vector3f.dot(normal, vmin) + d;
-		if (dist > 0.0)
-			return false;
-		Vector3f vmax = Vector3f.negate(vmin);
-		if (Vector3f.dot(normal, vmax) + d >= 0.0) {
-
-			if (overlap > -dist) {
-				overlap = -dist;
-			}
+	
+	private boolean isSeparated(Vector3f range, Vector3f axis, BoundingBox box) {
+		float minOverlap = Math.abs(range.dot(axis));
+		
+		float separation = 
+				Math.abs(xBounds.dot(axis)) +
+				Math.abs(yBounds.dot(axis)) +
+				Math.abs(zBounds.dot(axis)) +
+				Math.abs(box.getBoundsX().dot(axis)) +
+				Math.abs(box.getBoundsY().dot(axis)) +
+				Math.abs(box.getBoundsZ().dot(axis));
+		
+		if (minOverlap > separation) 
 			return true;
-		}
+		
+		mtv(axis, separation - minOverlap);
+		
 		return false;
 	}
 	
-	private boolean directionTest(float a, float b, float c, float bounds) {
-		float min = Math.min(Math.min(a, b), c);
-		float max = Math.max(Math.max(a, b), c);
-		if (min > bounds || max < -bounds) return true;
-		
-		float d0 = max - (-bounds);
-		float d1 = bounds - min;
-		float o = (d0 < d1) ? d0 : d1;
+	private boolean isSeparated(Vector3f[] polygonVertices1, Vector3f[] polygonVertices2, Vector3f axis) {
+		float min1 = Float.POSITIVE_INFINITY, max1 = Float.NEGATIVE_INFINITY;
+		float min2 = Float.POSITIVE_INFINITY, max2 = Float.NEGATIVE_INFINITY;
 
-		if (overlap > o) {
-			overlap = o;
+		for(Vector3f vertex : polygonVertices1) {
+			float projection = vertex.dot(axis);
+			
+			min1 = Math.min(min1, projection);
+			max1 = Math.max(max1, projection);
 		}
 		
+		for(Vector3f vertex : polygonVertices2) {
+			float projection = vertex.dot(axis);
+			
+			min2 = Math.min(min2, projection);
+			max2 = Math.max(max2, projection);
+		}
+		
+		if (max1 < min2 || max2 < min1)
+			return true;
+		
+		float smallestOverlap = Math.min(max2 - min1, max1 - min2);
+		//float escapeDist = smallestOverlap / axis.dot(axis);
+		
+		mtv(axis, smallestOverlap);
+		
 		return false;
-	}
-
-	public boolean intersects(Polygon tri) {
-		overlap = 9999;
-		// Use separating axis theorem to test overlap between triangle and box.
-		// Need to test for overlap in these directions:
-		// 1) the {x,y,z}-directions (actually, since we use the AABB of the
-		// triangle we do not even need to test these)
-		// 2) normal of the triangle
-		// 3) crossproduct(edge from triangle, {x,y,z}-direction). This gives
-		// 3x3=9 more tests.
-
-		// Move everything so that the boxcenter is in (0,0,0).
-		Vector3f v0 = Vector3f.sub(tri.p1, center);
-		Vector3f v1 = Vector3f.sub(tri.p2, center);
-		Vector3f v2 = Vector3f.sub(tri.p3, center);
-
-		// Bullet 3:
-		// Test the 9 tests first (this was faster).
-
-		Vector3f e0 = Vector3f.sub(v1, v0);
-		Vector3f e1 = Vector3f.sub(v2, v1);
-		Vector3f e2 = Vector3f.sub(v0, v2);
-		
-		
-		Vector3f ea = new Vector3f();
-		Vector3f e_v0 = new Vector3f();
-		Vector3f e_v1 = new Vector3f();
-		Vector3f e_v2 = new Vector3f();
-			
-		// EDGE 0
-		
-		ea = Vector3f.abs(e0);
-		e_v0 = Vector3f.cross(e0, v0);
-		e_v1 = Vector3f.cross(e0, v1);
-		e_v2 = Vector3f.cross(e0, v2);
-
-		if (axisTest(ea.z * bounds.y + ea.y * bounds.z, e_v0.x, e_v2.x))
-			return false; // X
-		if (axisTest(ea.z * bounds.x + ea.x * bounds.z, e_v0.y, e_v2.y))
-			return false; // Y
-		if (axisTest(ea.y * bounds.x + ea.x * bounds.y, e_v1.z, e_v2.z))
-			return false; // Z
-
-		// EDGE 1
-		
-		ea = Vector3f.abs(e1);
-		e_v0 = Vector3f.cross(e1, v0);
-		e_v1 = Vector3f.cross(e1, v1);
-		e_v2 = Vector3f.cross(e1, v2);
-
-		if (axisTest(ea.z * bounds.y + ea.y * bounds.z, e_v0.x, e_v2.x))
-			return false;
-		if (axisTest(ea.z * bounds.x + ea.x * bounds.z, e_v0.y, e_v2.y))
-			return false;
-		if (axisTest(ea.y * bounds.x + ea.x * bounds.y, e_v0.z, e_v1.z))
-			return false;
-
-		// EDGE 2
-		
-		ea = Vector3f.abs(e2);
-		e_v0 = Vector3f.cross(e2, v0);
-		e_v1 = Vector3f.cross(e2, v1);
-		e_v2 = Vector3f.cross(e2, v2);
-
-		if (axisTest(ea.z * bounds.y + ea.y * bounds.z, e_v0.x, e_v1.x))
-			return false;
-		
-		if (axisTest(ea.z * bounds.x + ea.x * bounds.z, e_v0.y, e_v1.y))
-			return false;
-		if (axisTest(ea.y * bounds.x + ea.x * bounds.y, e_v1.z, e_v2.z))
-			return false;
-		
-		// Bullet 1:
-		// First test overlap in the {x,y,z}-directions.
-		// Find min, max of the triangle each direction, and test for overlap in
-		// that
-		// direction -- this is equivalent to testing a minimal AABB around the
-		// triangle against the AABB.
-		if (directionTest(v0.x, v1.x, v2.x, bounds.x))
-			return false; // Test in X-direction.
-		
-		if (directionTest(v0.y, v1.y, v2.y, bounds.y))
-			return false; // Test in Y-direction.
-		
-		if (directionTest(v0.z, v1.z, v2.z, bounds.z))
-			return false; // Test in Z-direction.
-		
-		// Bullet 2:
-		// Test if the box intersects the plane of the triangle. Compute plane
-		// equation of triangle: normal*x+d=0.
-		Vector3f normal = tri.normal;
-		float d = -Vector3f.dot(normal, v0); // plane eq: normal.x+d=0
-		if (!planeBoxOverlap(normal, d, bounds))
-			return false;
-			
-		return true; // box and triangle overlaps
 	}
 	
-	public boolean intersection(Vector3f normal, float d) {
-		Vector3f vmin = new Vector3f(
-				(normal.x > 0.0) ? -bounds.x : bounds.x,
-				(normal.y > 0.0) ? -bounds.y : bounds.y,
-				(normal.z > 0.0) ? -bounds.z : bounds.z);
-
-		float dist = Vector3f.dot(normal, vmin) + d;
-		if (dist > 0.0) return false;
-		Vector3f vmax = Vector3f.negate(vmin);
-		if (Vector3f.dot(normal, vmax) + d >= 0f) return true;
-		
-		return false;
+	private void mtv(Vector3f axis, float depth) {
+		if (depth < intersectionDepth) {
+			intersectionDepth = depth;
+			intersectionAxis = axis;
+		}
 	}
 
+	public boolean collide(Vector3f origin, Vector3f direction) {
+		intersectionDepth = Float.POSITIVE_INFINITY;
+		float min = Float.NEGATIVE_INFINITY;
+		float max = Float.POSITIVE_INFINITY;
+		
+		Vector3f delta = Vectors.sub(center, origin);
+		float[] range;
+		
+		// X
+		range = axisTest(delta, direction, X, halfSize.x);
+		
+		max = Math.min(max, range[1]);
+		min = Math.max(min, range[0]);
+		
+		if (max < min )
+			return false;
+		
+		// Y
+		range = axisTest(delta, direction, X, halfSize.x);
+		
+		max = Math.min(max, range[1]);
+		min = Math.max(min, range[0]);
+		
+		if (max < min )
+			return false;
+		
+		// Z
+		range = axisTest(delta, direction, X, halfSize.x);
+		
+		max = Math.min(max, range[1]);
+		min = Math.max(min, range[0]);
+		
+		if (max < min )
+			return false;
+		
+		return true;
+	}
+
+	private float[] axisTest(Vector3f delta, Vector3f direction, Vector3f axis, float magnitude) {
+		float e = axis.dot(delta);
+		float f = direction.dot(axis);
+		
+		float t1 = (e - magnitude) / f;
+		float t2 = (e + magnitude) / f;
+		
+		if (t1 > t2) {
+			float w = t1;
+			t2 = t1;
+			t1 = w;
+		}
+		
+		return new float[] {t1, t2};
+	}
+
+	public void setRotation(Quaternionf rot) {
+
+		X.set(Vectors.POSITIVE_X).rotate(rot);
+		Y.set(Vectors.POSITIVE_Y).rotate(rot);
+		Z.set(Vectors.POSITIVE_Z).rotate(rot);
+		
+		xBounds.set(X).mul(halfSize.x);
+		yBounds.set(Y).mul(halfSize.y);
+		zBounds.set(Z).mul(halfSize.z);
+	}
+	
+	public Vector3f getBoundsX() {
+		return xBounds;
+	}
+	
+	public Vector3f getBoundsY() {
+		return yBounds;
+	}
+	
+	public Vector3f getBoundsZ() {
+		return zBounds;
+	}
+	
 	public void setPosition(float x, float y, float z) {
 		center.set(x, y, z);
 	}
@@ -329,47 +278,36 @@ public class BoundingBox {
 	public void setPosition(Vector3f position) {
 		setPosition(position.x, position.y, position.z);
 	}
-
-	public void setRotation(float rx, float ry, float rz) {
-		this.yaw = rx;
-		this.pitch = ry;
-		this.roll = rz;
-		Matrix4f matrix = new Matrix4f();
-
-		matrix.rotateZ(rz);
-		matrix.rotateY(ry);
-		matrix.rotateX(rx);
-
-		X.set(Vector3f.X_AXIS);
-		Y.set(Vector3f.Y_AXIS);
-		Z.set(Vector3f.Z_AXIS);
-
-		matrix.transform(X);
-		matrix.transform(Y);
-		matrix.transform(Z);
-	}
-
-	public boolean containsPoint(float x, float z) {
-		if (x > center.x-bounds.x*scale && x < center.x+bounds.x*scale
-		&&  z > center.z-bounds.z*scale && z < center.z+bounds.z*scale) {
-			return true;
-		}
-		return false;
-	}
-
-	public void transform(Vector3f translation, Quaternion rotation, float scale) {
-		center.add(translation);
-		Vector3f.rotateVector(X, rotation);
-		Vector3f.rotateVector(Y, rotation);
-		Vector3f.rotateVector(Z, rotation);
-		bounds.mul(scale);
-	}
-
+	
 	public Vector3f getCenter() {
 		return center;
 	}
 	
-	public Vector3f getBounds() {
-		return bounds;
+	public Vector3f getHalfSize() {
+		return halfSize;
+	}
+	
+	public float getWidth() {
+		return halfSize.x;
+	}
+	
+	public float getHeight() {
+		return halfSize.y;
+	}
+	
+	public float getLength() {
+		return halfSize.z;
+	}
+	
+	public float getIntersectionDepth() {
+		return this.intersectionDepth;
+	}
+	
+	public Vector3f getIntersectionAxis() {
+		return this.intersectionAxis;
+	}
+	
+	private Vector3f cross(Vector3f axis1, Vector3f axis2) {
+		return new Vector3f(axis1).cross(axis2);
 	}
 }

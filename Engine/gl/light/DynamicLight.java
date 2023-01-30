@@ -45,9 +45,9 @@ public class DynamicLight {
 		final Vector3f negPosition = new Vector3f(-position.x, -position.y, -position.z);
 		lightView.translate(negPosition);
 		
-		viewDirection.x = -lightView.m02;
-		viewDirection.y = -lightView.m12;
-		viewDirection.z = -lightView.m22;
+		viewDirection.x = -lightView.m02();
+		viewDirection.y = -lightView.m12();
+		viewDirection.z = -lightView.m22();
 	}
 
 	public void cleanUp() {

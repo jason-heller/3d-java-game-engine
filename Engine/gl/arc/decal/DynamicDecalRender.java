@@ -26,8 +26,8 @@ public class DynamicDecalRender {
 		Matrix4f viewModel = new Matrix4f();
 		Matrix4f invViewModel = new Matrix4f();
 
-		Matrix4f invProjection = new Matrix4f();
-		Matrix4f.invert(camera.getProjectionMatrix(), invProjection);
+		Matrix4f invProjection = new Matrix4f(camera.getProjectionMatrix());
+		invProjection.invert();
 		shader.projection.loadMatrix(camera.getProjectionMatrix());
 		shader.invProj.loadMatrix(invProjection);
 		
@@ -40,8 +40,8 @@ public class DynamicDecalRender {
 		CUBE.bind(0);
 		for(DynamicDecal decal : dynamicDecals) {
 
-			Matrix4f.mul(camera.getViewMatrix(), decal.getModelMatrix(), viewModel);
-			Matrix4f.invert(viewModel, invViewModel);
+			new Matrix4f(camera.getViewMatrix()).mul(decal.getModelMatrix(), viewModel);
+			viewModel.invert(invViewModel);
 			shader.viewModel.loadMatrix(viewModel);
 			shader.invViewModel.loadMatrix(invViewModel);
 			

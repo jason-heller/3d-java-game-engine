@@ -11,6 +11,7 @@ import map.architecture.vis.Bsp;
 import scene.PlayableScene;
 import scene.entity.object.NonSolidPhysProp;
 import scene.entity.object.SolidPhysProp;
+import util.Vectors;
 
 public enum SpawnHandler {
 	PROP_SOLID(SolidPhysProp.class),
@@ -41,7 +42,7 @@ public enum SpawnHandler {
 			return;
 		}
 		
-		Vector3f pos = Vector3f.add(camera.getPosition(), Vector3f.mul(camera.getDirectionVector(), ray - 2f));
+		Vector3f pos = Vectors.add(camera.getPosition(), Vectors.mul(camera.getDirectionVector(), ray - 2f));
 		spawn(pos, rot, args);
 	}
 	
@@ -61,7 +62,7 @@ public enum SpawnHandler {
 						//entity.setLeaf(bsp.walk(pos));
 						EntityHandler.addEntity(entity);
 						
-						Console.log(((Entity)s).pos);
+						Console.log(((Entity)s).position);
 					} else {
 						Console.log("Failed to spawn " + name + ", bad arguments.");
 					}

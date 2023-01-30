@@ -21,7 +21,7 @@ public class SpawnPoint extends ArcFunction {
 	public void trigger(String[] args) {
 		SkatePhysicsEntity entity = ((PlayableScene)App.scene).getPlayer();
 		Camera camera = App.scene.getCamera();
-		entity.pos.set(pos);
+		entity.position.set(pos);
 		Console.log(pos, rot);
 		entity.vel.y = 0;
 		camera.setPitch(rot.x);

@@ -7,6 +7,7 @@ import geom.Plane;
 import scene.entity.Entity;
 import scene.entity.util.PhysicsEntity;
 import scene.entity.util.PlayerEntity;
+import util.Vectors;
 
 public class ArcClip {
 	public AxisAlignedBBox bbox;
@@ -31,7 +32,7 @@ public class ArcClip {
 		Vector3f r2 = n3.cross(n1).mul(p2.dist);
 		Vector3f r3 = n1.cross(n2).mul(p3.dist);
 
-		return Vector3f.div(r1.add(r2).add(r3), denom);
+		return Vectors.div(r1.add(r2).add(r3), denom);
 	}
 
 	public boolean interact(Entity entity, boolean isEntering) {

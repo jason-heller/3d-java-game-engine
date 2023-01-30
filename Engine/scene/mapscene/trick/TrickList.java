@@ -9,6 +9,8 @@ import java.util.Map;
 public class TrickList {
 	private static Map<TrickType, Map<Integer, Trick>> tricks = new HashMap<>();
 	
+	private static int numTricks;
+	
 	public static void init() {
 		for(TrickType type : TrickType.values()) {
 			tricks.put(type, new HashMap<>());
@@ -17,14 +19,19 @@ public class TrickList {
 		// TODO: Load this from file
 		addTrick(KICK_TRICK, "ollie", "ollie", 50, 0, "ollie");
 		addTrick(KICK_TRICK, "kickflip", "kickflip", 250, 0, "flip");
+		addTrick(KICK_TRICK, "heelflip", "heelflip", 250, 0, "flip+right");
 		addTrick(KICK_TRICK, "pop shuvit", "popshuv", 300, 0, "flip+down").landBackwardsFlag();
+		addTrick(KICK_TRICK, "varialflip", "varialflip", 250, 0, "flip+right+up").landBackwardsFlag();
+		addTrick(KICK_TRICK, "fs 180", "180", 300, 0, "ollie+up").landBackwardsFlag().landSwitchFlag();
+		addTrick(KICK_TRICK, "bs 180", "bs_180", 300, 0, "ollie+down").landBackwardsFlag().landSwitchFlag();
 		addTrick(GRIND_TRICK, "50-50", "5050", 300, 0, "grind");
 		addTrick(GRIND_TRICK, "tailslide", "tailslide", 400, 0, "grind+down");
+		addTrick(GRIND_TRICK, "boardslide", "boardslide", 400, 0, "grind+left");
 	}
 
 	private static Trick addTrick(TrickType type, String name, String animation, int points, int safeFrame, String controls) {
 		int flags = getControlFlags(controls);
-		Trick trick = new Trick(type, name, animation, points, safeFrame);
+		Trick trick = new Trick(type, name, animation, points, safeFrame, numTricks++);
 		tricks.get(type).put(flags, trick);
 		
 		return trick;

@@ -16,6 +16,7 @@ import map.architecture.components.ArcHeightmapVertex;
 import map.architecture.components.ArcObjects;
 import map.architecture.components.ArcRoom;
 import map.architecture.components.ArcTextureMapping;
+import util.Vectors;
 
 public class Bsp {
 	private static final float EPSILON = 0.0001f;
@@ -99,8 +100,8 @@ public class Bsp {
 		List<BspLeaf> allLeaves = new ArrayList<>();
 		
 		Vector3f padding = new Vector3f(1f,1f,1f);		// Map editor generates bounds a little weirdly
-		Vector3f max = Vector3f.add(boxMax, padding);
-		Vector3f min = Vector3f.sub(boxMin, padding);
+		Vector3f max = Vectors.add(boxMax, padding);
+		Vector3f min = Vectors.sub(boxMin, padding);
 		
 		int child0 = node.childrenId[0];
 		int child1 = node.childrenId[1];
@@ -110,9 +111,9 @@ public class Bsp {
 				allLeaves.add(leaves[-1-child0]);
 				
 				if (Debug.showLeafs) {
-					Vector3f center = Vector3f.add(leaves[-1-child0].min, leaves[-1-child0].max).div(2f);
-					Vector3f bounds = Vector3f.sub(leaves[-1-child0].max, leaves[-1-child0].min).div(2f);
-					LineRender.drawBox(center, bounds, Vector3f.X_AXIS);
+					Vector3f center = Vectors.add(leaves[-1-child0].min, leaves[-1-child0].max).div(2f);
+					Vector3f bounds = Vectors.sub(leaves[-1-child0].max, leaves[-1-child0].min).div(2f);
+					LineRender.drawBox(center, bounds, Vectors.POSITIVE_X);
 				}
 			}
 		} else if (nodes[child0].intersects(max, min)) {
@@ -124,9 +125,9 @@ public class Bsp {
 				allLeaves.add(leaves[-1-child1]);
 				
 				if (Debug.showLeafs) {
-					Vector3f center = Vector3f.add(leaves[-1-child1].min, leaves[-1-child1].max).div(2f);
-					Vector3f bounds = Vector3f.sub(leaves[-1-child1].max, leaves[-1-child1].min).div(2f);
-					LineRender.drawBox(center, bounds, Vector3f.X_AXIS);
+					Vector3f center = Vectors.add(leaves[-1-child1].min, leaves[-1-child1].max).div(2f);
+					Vector3f bounds = Vectors.sub(leaves[-1-child1].max, leaves[-1-child1].min).div(2f);
+					LineRender.drawBox(center, bounds, Vectors.POSITIVE_X);
 				}
 			}
 		} else if (nodes[child1].intersects(max, min)) {

@@ -4,17 +4,13 @@ import java.util.Stack;
 
 import org.joml.Vector3f;
 
-import core.App;
 import dev.Debug;
 import gl.line.LineRender;
-import map.architecture.components.ArcEdge;
-import map.architecture.components.ArcFace;
 import map.architecture.components.ArcNavNode;
 import map.architecture.components.ArcNavigation;
-import map.architecture.util.ArcUtil;
-import map.architecture.vis.Bsp;
 import scene.PlayableScene;
 import util.Colors;
+import util.Vectors;
 
 public abstract class NavigableEntity extends PhysicsEntity {
 
@@ -73,19 +69,19 @@ public abstract class NavigableEntity extends PhysicsEntity {
 				}
 				
 				if (neighborId == -1) return;
-				
-				Bsp bsp = ((PlayableScene)App.scene).getArchitecture().bsp;
-				
-				//int nextNodeId = currentNode.getNeighbors()[neighborId];
-				//ArcFace face = bsp.faces[currentNode.getFaceId()];
-				//ArcEdge edge = bsp.edges[nextNodeId];
+
+				// Bsp bsp = ((PlayableScene)App.scene).getArchitecture().bsp;
+
+				// int nextNodeId = currentNode.getNeighbors()[neighborId];
+				// ArcFace face = bsp.faces[currentNode.getFaceId()];
+				// ArcEdge edge = bsp.edges[nextNodeId];
 				
 				navStep = navigation.getNode(nextNodeId).getPosition();
 			}
 		}
 	
 		if (navStep != null) {
-			Vector3f newDir = Vector3f.sub(navStep, pos);
+			Vector3f newDir = Vectors.sub(navStep, position);
 			newDir.y = 0;
 			float len = newDir.length();
 			if (len >= 1f) {
@@ -95,37 +91,37 @@ public abstract class NavigableEntity extends PhysicsEntity {
 		}
 		
 		if (Debug.viewNavPath && navStep != null) {
-			Bsp bsp = ((PlayableScene)App.scene).getArchitecture().bsp;
+			// Bsp bsp = ((PlayableScene)App.scene).getArchitecture().bsp;
 			Vector3f lastPt = navTarget;
 			
-			ArcNavNode node = navigation.getNode(currentNodeId);
+			// ArcNavNode node = navigation.getNode(currentNodeId);
 
-			//ArcFace face = bsp.faces[node.getFaceId()];
-			//ArcUtil.drawFaceHighlight(bsp, face, Colors.alertColor());
+			// ArcFace face = bsp.faces[node.getFaceId()];
+			// ArcUtil.drawFaceHighlight(bsp, face, Colors.alertColor());
 			
 			for(int i = 1; i < path.size(); i++) {
-				int nextNodeId = path.get(i-1);
+				// int nextNodeId = path.get(i-1);
 				ArcNavNode node1 = navigation.getNode(path.get(i));
 				// ArcNavNode node2 = navigation.getNode(nextNodeId);
 				
-				short[] neighbors = node1.getNeighbors();
+				// short[] neighbors = node1.getNeighbors();
 				
-				int neighborId = -1;
+				/* int neighborId = -1;
 				for(int j = 0; j < neighbors.length; j++) {
 					if (neighbors[j] == nextNodeId) {
 						neighborId = j;
 						break;
 					}
-				}
+				}*/
 				
 				
-				LineRender.drawLine(Vector3f.add(node1.getPosition(), new Vector3f(0,3,0)), Vector3f.add(lastPt, new Vector3f(0,3,0)), Colors.RED);
+				LineRender.drawLine(Vectors.add(node1.getPosition(), new Vector3f(0,3,0)), Vectors.add(lastPt, new Vector3f(0,3,0)), Colors.RED);
 				lastPt = node1.getPosition();
 			}
 			// 
-			Vector3f step = Vector3f.add(navStep, new Vector3f(0,3,0));
-			LineRender.drawLine(Vector3f.add(lastPt, new Vector3f(0,3,0)),step, Colors.RED);
-			//LineRender.drawLine(step,Vector3f.add(pos, new Vector3f(0,3-getBBox().getHeight(),0)), Colors.RED);
+			Vector3f step = Vectors.add(navStep, new Vector3f(0,3,0));
+			LineRender.drawLine(Vectors.add(lastPt, new Vector3f(0,3,0)),step, Colors.RED);
+			//LineRender.drawLine(step,Vectors.add(pos, new Vector3f(0,3-getBBox().getHeight(),0)), Colors.RED);
 		}
 	}
 

@@ -14,6 +14,7 @@ import scene.PlayableScene;
 import scene.entity.Entity;
 import scene.mapscene.MapScene;
 import util.MathUtil;
+import util.Vectors;
 
 public class DecalEntity extends Entity {
 	
@@ -24,7 +25,7 @@ public class DecalEntity extends Entity {
 	public DecalEntity(Vector3f pos, Mesh model, Texture tex) {
 		super("decal");
 		setModel(model, tex);
-		this.pos = pos;
+		this.position = pos;
 	}
 	
 	@Override
@@ -39,7 +40,7 @@ public class DecalEntity extends Entity {
 		for(int i = 0; i < leaf.numFaces; i++) {
 			int faceId = bsp.leafFaceIndices[leaf.firstFace + i];
 			Plane plane = bsp.planes[bsp.faces[faceId].planeId];
-			float dist = Math.abs(plane.signedDistanceTo(pos));
+			float dist = Math.abs(plane.signedDistanceTo(position));
 			
 			if (dist < closest) {
 				closest = dist;
@@ -52,8 +53,8 @@ public class DecalEntity extends Entity {
 			return;
 		}
 
-		rot.set(MathUtil.directionVectorToEuler(closestPlane.normal, Vector3f.Y_AXIS));
-		pos.add(Vector3f.mul(closestPlane.normal, .1f));
+		//rot.set(MathUtil.directionVectorToEuler(closestPlane.normal, Vectors.POSITIVE_Y));
+		position.add(Vectors.mul(closestPlane.normal, .1f));
 		super.update(scene);
 	}
 	

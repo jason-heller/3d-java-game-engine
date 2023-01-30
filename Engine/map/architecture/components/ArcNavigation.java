@@ -12,6 +12,7 @@ import geom.Plane;
 import map.architecture.vis.Bsp;
 import scene.PlayableScene;
 import scene.entity.util.NavigableEntity;
+import util.Vectors;
 
 public class ArcNavigation {
 	
@@ -41,7 +42,7 @@ public class ArcNavigation {
 			Plane plane = bsp.planes[planeId];
 			float signDistPlane = plane.raycast(pos, new Vector3f(0, -1, 0));
 			
-			if (signDistPlane == Float.POSITIVE_INFINITY)
+			if (Float.isNaN(signDistPlane))
 				continue;
 			
 			if (Math.abs(pos.x - node.getPosition().x) > node.getWidth())
@@ -50,7 +51,7 @@ public class ArcNavigation {
 			if (Math.abs(pos.z - node.getPosition().z) > node.getLength())
 				continue;
 			
-			//float dist = Vector3f.distanceSquared(pos, node.getPosition());
+			//float dist = Vectors.distanceSquared(pos, node.getPosition());
 			if (signDistPlane < nearestY) {
 				nearestY = signDistPlane;
 				id = i;
@@ -86,7 +87,7 @@ public class ArcNavigation {
 		Stack<Integer> path = entity.getPath();
 		path.clear();
 		
-		int currentNodeId = nodeIdAt(entity.pos, bsp);	// Get our starting Node
+		int currentNodeId = nodeIdAt(entity.position, bsp);	// Get our starting Node
 		if (currentNodeId == -1)
 			return false;
 		
@@ -121,7 +122,7 @@ public class ArcNavigation {
 					
 					// Calculate heuristic and distance
 					Vector3f thisNodesPos = successor.getPosition();
-					float hueristic = Vector3f.distanceSquared(thisNodesPos, target);
+					float hueristic = Vectors.distanceSquared(thisNodesPos, target);
 					
 					float score = hueristic + newWeight;
 					

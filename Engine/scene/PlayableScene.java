@@ -7,9 +7,6 @@ import dev.Debug;
 import gl.Camera;
 import gl.Window;
 import gl.anim.render.AnimationHandler;
-import gl.line.LineRender;
-import map.Rail;
-import map.RailList;
 import map.architecture.Architecture;
 import map.architecture.ArchitectureHandler;
 import scene.entity.EntityHandler;
@@ -92,7 +89,6 @@ public abstract class PlayableScene implements Scene {
 	public void render(Vector4f clipPlane) {
 
 		Architecture arc = arcHandler.getArchitecture();
-		//Vector3f[] targetLight = arc.getLightsAt(camera.getPosition());
 
 		arcHandler.debugRender(camera);
 		arcHandler.render(camera, clipPlane, true);

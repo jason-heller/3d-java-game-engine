@@ -25,6 +25,7 @@ import gl.res.Texture;
 import gl.res.Vbo;
 import map.architecture.ActiveLeaves;
 import map.architecture.Architecture;
+import map.architecture.Material;
 import map.architecture.components.ArcEdge;
 import map.architecture.components.ArcFace;
 import map.architecture.components.ArcRoom;
@@ -37,13 +38,14 @@ import scene.Scene;
 import scene.entity.util.PlayerEntity;
 import ui.UI;
 import util.Colors;
+import util.Vectors;
 
 public class Debug {
 	public static boolean debugMode;
 	public static boolean wireframeMode;
 	public static boolean fullbright;
 	public static boolean viewNavMesh, viewNavPath, viewNavNode, viewNavPois;
-	public static boolean viewCollide;
+	public static boolean showCollisions;
 	public static boolean showHitboxes;
 	public static boolean showLeafs;
 	public static boolean showClips;
@@ -92,18 +94,27 @@ public class Debug {
 		String vx = String.format("%.1f", player.vel.x);
 		String vy = String.format("%.1f", player.vel.y);
 		String vz = String.format("%.1f", player.vel.z);
-		String rotY = String.format("%.1f", player.rot.y);
+		String rotX = String.format("%.1f", player.rotation.x);
+		String rotY = String.format("%.1f", player.rotation.y);
+		String rotZ = String.format("%.1f", player.rotation.z);
 		String spd = String.format("%.1f", new Vector3f(player.vel.x, player.vel.z, 0f).length());
+		String trickName = player.getCurrentTrick() == null ? "N/A" : player.getCurrentTrick().getName();
+		Material m = player.getContactMaterial();
 
 		String debugData = "\n#wFPS: " + (int) Window.framerate + "/" + Window.maxFramerate
 				+ "\npos (#rX: " + cx + " #gY: " + cy + " #bZ: " + cz + "#w)"
 				+ "\nvel (#rX: " + vx + " #gY: " + vy + " #bZ: " + vz + "#w)"
+				+ "\ngrounded: " + player.isGrounded() + " / " + player.previouslyGrounded
+				+ "\nrt (#rX: " + rotX + " #gY: " + rotY + " #bZ: " + rotZ + "#w)"
+				+ "\ngrounded: " + player.isGrounded() + " / " + player.previouslyGrounded
 				+ "\n" + "roty: " + rotY
 				+ "\n" + "spd: " + spd
 				+ "\n" + "draw calls: " + Render.drawCalls
 				+ "\n" + "tex swaps: " + Render.textureSwaps
+				+ "\n" + "mat: " + m
+				+ "\n\n" + "trick: " + trickName
 				+ "\n" + "anim: " + player.getAnimator().getCurrentAnimation()
-				+ "\n" + "grind: " + ((player.getGrindLen())/11f);
+				+ "\n" + "switch: " + player.isSwitch();
 		
 		UI.drawString(debugData, 5, 5, .15f, false);
 		
@@ -142,7 +153,7 @@ public class Debug {
 				BspLeaf leaf = activeLeaves.next();
 				for (int i = 0; i < leaf.numFaces; i++) {
 					ArcFace face = bsp.faces[bsp.leafFaceIndices[leaf.firstFace + i]];
-					float dist = CollideUtils.convexPolygonRay(bsp, face, camPos, camDir);
+					float dist = CollideUtils.raycastMapGeometry(bsp, face, camPos, camDir);
 
 					if (!Float.isNaN(dist) && dist < nearest) {
 						dist = nearest;
@@ -222,19 +233,18 @@ public class Debug {
 						}
 					}
 					
-					Vector3f center1 = Vector3f.add(A, B).mul(.5f);
-					Vector3f bounds1 = Vector3f.sub(B, A).mul(.5f);
+					Vector3f bounds = Vectors.sub(B, A).mul(.5f);
 					
 					
 					final float R = 2f;//MapFileBuilder.HMR_ARC_SCALE_DIFF*3f;
 					final float dR = R*2f;
-					if (bounds1.x <= dR) bounds1.x = Math.max(Math.abs(bounds1.x), dR);
-					if (bounds1.y <= dR) bounds1.y = Math.max(Math.abs(bounds1.y), dR);
-					if (bounds1.z <= dR) bounds1.z = Math.max(Math.abs(bounds1.z), dR);
+					if (bounds.x <= dR) bounds.x = Math.max(Math.abs(bounds.x), dR);
+					if (bounds.y <= dR) bounds.y = Math.max(Math.abs(bounds.y), dR);
+					if (bounds.z <= dR) bounds.z = Math.max(Math.abs(bounds.z), dR);
 					
 					Vector3f trim = new Vector3f(R,R,R);
-					bounds1 = bounds1.sub(trim);
-					LineRender.drawLine(Vector3f.add(A, N), Vector3f.add(B, N), (i % 2 == 0) ? Colors.PINK : Colors.PURPLE);
+					bounds = bounds.sub(trim);
+					LineRender.drawLine(Vectors.add(A, N), Vectors.add(B, N), (i % 2 == 0) ? Colors.PINK : Colors.PURPLE);
 				}
 			}
 		}

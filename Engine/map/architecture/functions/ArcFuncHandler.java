@@ -9,6 +9,7 @@ import org.joml.Vector3f;
 
 import dev.cmd.Console;
 import util.StrUtils;
+import util.Vectors;
 
 public class ArcFuncHandler {
 	Map<Class<? extends ArcFunction>, ArrayList<ArcFunction>> functions;
@@ -96,7 +97,7 @@ public class ArcFuncHandler {
 			ArcFunction closestFunc = null;	
 			range = Float.POSITIVE_INFINITY;
 			for(ArcFunction func : funcList) {
-				float newRange = Vector3f.distanceSquared(callerPosition, func.getPosition());
+				float newRange = Vectors.distanceSquared(callerPosition, func.getPosition());
 				if (newRange < range) {
 					closestFunc = func;
 					range = newRange;
@@ -107,7 +108,7 @@ public class ArcFuncHandler {
 		case BY_PROXIMITY:
 			range = Float.POSITIVE_INFINITY;
 			for(ArcFunction func : funcList) {
-				float newRange = Vector3f.distanceSquared(callerPosition, func.getPosition());
+				float newRange = Vectors.distanceSquared(callerPosition, func.getPosition());
 				if (newRange < range) {
 					func.trigger(args);
 					range = newRange;
@@ -118,7 +119,7 @@ public class ArcFuncHandler {
 			List<ArcFunction> validFuncs = new ArrayList<>();
 			float compRange = range * range;
 			for(ArcFunction func : funcList) {
-				float newRange = Vector3f.distanceSquared(callerPosition, func.getPosition());
+				float newRange = Vectors.distanceSquared(callerPosition, func.getPosition());
 				if (newRange < compRange) {
 					validFuncs.add(func);
 				}

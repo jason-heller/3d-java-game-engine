@@ -3,14 +3,15 @@ package map.architecture.components;
 import org.joml.Vector3f;
 
 import map.architecture.vis.BspLeaf;
+import util.Vectors;
 
 public class ArcLightCube {
 
-	public static final Vector3f[] NO_LIGHT = new Vector3f[] { Vector3f.ZERO, Vector3f.ZERO, Vector3f.ZERO,
-			Vector3f.ZERO, Vector3f.ZERO, Vector3f.ZERO };
+	public static final Vector3f[] NO_LIGHT = new Vector3f[] { Vectors.ZERO, Vectors.ZERO, Vectors.ZERO,
+			Vectors.ZERO, Vectors.ZERO, Vectors.ZERO };
 	
-	public static final Vector3f[] FULLBRIGHT = new Vector3f[] { Vector3f.ALL, Vector3f.ALL, Vector3f.ALL,
-			Vector3f.ALL, Vector3f.ALL, Vector3f.ALL };
+	public static final Vector3f[] FULLBRIGHT = new Vector3f[] { Vectors.ALL, Vectors.ALL, Vectors.ALL,
+			Vectors.ALL, Vectors.ALL, Vectors.ALL };
 
 	public float x, y, z;
 	public int[] colors;
@@ -48,9 +49,9 @@ public class ArcLightCube {
 	}
 
 	public Vector3f getPosition(BspLeaf leaf) {
-		final Vector3f bounds = Vector3f.sub(leaf.max, leaf.min);
+		final Vector3f bounds = Vectors.sub(leaf.max, leaf.min);
 		final Vector3f ratio = new Vector3f(x, y, z);
-		final Vector3f lightPosition = Vector3f.add(leaf.min, Vector3f.mul(ratio, bounds));
+		final Vector3f lightPosition = Vectors.add(leaf.min, Vectors.mul(ratio, bounds));
 		return lightPosition;
 	}
 

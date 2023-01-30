@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import core.Resources;
 import gl.res.Texture;
 import gl.res.TextureUtils;
 import gr.zdimensions.jsquish.Squish;

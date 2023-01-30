@@ -8,6 +8,7 @@ import map.architecture.components.ArcEdge;
 import map.architecture.components.ArcFace;
 import map.architecture.components.ArcTextureMapping;
 import map.architecture.vis.Bsp;
+import util.Vectors;
 
 public class ArcUtil {
 	
@@ -30,14 +31,14 @@ public class ArcUtil {
 		};
 
 		float r = (dTex1[0] * dTex2[1] - dTex1[1] * dTex2[0]);
-		Vector3f A = Vector3f.mul(dPos1, dTex2[1]);
-		Vector3f B = Vector3f.mul(dPos2, dTex1[1]);
-		Vector3f diff = Vector3f.sub(A, B);
-		Vector3f tangent = Vector3f.div(diff, r).normalize();
+		Vector3f A = Vectors.mul(dPos1, dTex2[1]);
+		Vector3f B = Vectors.mul(dPos2, dTex1[1]);
+		Vector3f diff = Vectors.sub(A, B);
+		Vector3f tangent = Vectors.div(diff, r).normalize();
 		
 		//Vector3f normal = planes[face.planeId].normal;
 		
-		// tangent = (Vector3f.sub(tangent, Vector3f.negate(normal).mul(normal.dot(tangent)))).normalize();
+		// tangent = (Vectors.sub(tangent, Vector3f.negate(normal).mul(normal.dot(tangent)))).normalize();
 		return tangent;
 	}
 	
@@ -52,8 +53,8 @@ public class ArcUtil {
 	public static Vector3f getEdgeVector(Vector3f[] vertices, ArcEdge[] edges, int[] surfEdges, int surfEdge) {
 		ArcEdge edge = edges[Math.abs(surfEdges[surfEdge])];
 		return (surfEdge < 0) ?
-				Vector3f.sub(vertices[edge.start], vertices[edge.end])
-				: Vector3f.sub(vertices[edge.end], vertices[edge.start]);
+				Vectors.sub(vertices[edge.start], vertices[edge.end])
+				: Vectors.sub(vertices[edge.end], vertices[edge.start]);
 	}
 
 	public static boolean faceContainsPoint(Bsp bsp, ArcFace face, Vector3f point) {
@@ -79,7 +80,7 @@ public class ArcUtil {
 			}
 			
 			// Same as below, not sure if this optimization does anything for us
-			// Plane p = new Plane(p1, Vector3f.cross(Vector3f.sub(p2, p1), faceNormal));
+			// Plane p = new Plane(p1, Vectors.cross(Vectors.sub(p2, p1), faceNormal));
 			// boolean right = p.signedDistanceTo(point) > 0f;
 			
 			edgeNormal.set(p2).sub(p1);
@@ -107,7 +108,7 @@ public class ArcUtil {
 			int surfEdge = Math.abs(bsp.surfEdges[i]);
 			Vector3f p1 = bsp.vertices[bsp.edges[surfEdge].start];
 			Vector3f p2 = bsp.vertices[bsp.edges[surfEdge].end];
-			LineRender.drawLine(Vector3f.add(p1, Vector3f.Y_AXIS), Vector3f.add(p2, Vector3f.Y_AXIS), color);
+			LineRender.drawLine(Vectors.add(p1, Vectors.POSITIVE_Y), Vectors.add(p2, Vectors.POSITIVE_Y), color);
 		}
 	}
 

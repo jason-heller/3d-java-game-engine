@@ -11,7 +11,7 @@ public class DummyEntity extends Entity implements Spawnable {
 
 	@Override
 	public boolean spawn(Vector3f pos, Vector3f rot, String... args) {
-		this.pos.set(pos);
+		this.position.set(pos);
 		return true;
 	}
 

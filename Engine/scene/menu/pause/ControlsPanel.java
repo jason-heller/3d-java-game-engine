@@ -2,17 +2,14 @@ package scene.menu.pause;
 
 import java.util.Iterator;
 
-import gl.Camera;
 import io.Controls;
 import ui.menu.GuiButton;
 import ui.menu.GuiElement;
 import ui.menu.GuiKeybind;
 import ui.menu.GuiLabel;
 import ui.menu.GuiPanel;
-import ui.menu.GuiSlider;
 import ui.menu.layout.GuiFlowLayout;
 import ui.menu.listener.MenuListener;
-import ui.menu.listener.SliderListener;
 
 public class ControlsPanel extends GuiPanel {
 

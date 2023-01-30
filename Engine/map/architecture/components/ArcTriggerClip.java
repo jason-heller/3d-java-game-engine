@@ -1,6 +1,5 @@
 package map.architecture.components;
 
-import dev.cmd.Console;
 import map.architecture.Architecture;
 import scene.entity.Entity;
 

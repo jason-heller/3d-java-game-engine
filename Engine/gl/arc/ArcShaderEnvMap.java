@@ -6,6 +6,7 @@ import geom.AxisAlignedBBox;
 import map.architecture.components.ArcClip;
 import shader.UniformSampler;
 import shader.UniformVec3;
+import util.Vectors;
 
 public class ArcShaderEnvMap extends ArcShaderBase {
 
@@ -27,8 +28,8 @@ public class ArcShaderEnvMap extends ArcShaderBase {
 	public void loadBoundingBox(ArcClip clip) {
 		AxisAlignedBBox box = clip.bbox;
 		
-		Vector3f max = Vector3f.add(box.getCenter(), box.getBounds());
-		Vector3f min = Vector3f.sub(box.getCenter(), box.getBounds());
+		Vector3f max = Vectors.add(box.getCenter(), box.getBounds());
+		Vector3f min = Vectors.sub(box.getCenter(), box.getBounds());
 
 		cubemapMax.loadVec3(max);
 		cubemapMin.loadVec3(min);

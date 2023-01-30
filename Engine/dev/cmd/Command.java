@@ -245,7 +245,7 @@ class Command {
 				}
 				if (field.getType().isAssignableFrom(Boolean.TYPE)) {
 					if (value.equals("")) {
-						final Boolean v = (Boolean) field.get(new Boolean(false));
+						final Boolean v = (Boolean) field.get(Boolean.FALSE);
 						field.set(null, !v.booleanValue());
 					} else if (value.equals("1")) {
 						field.set(null, invertInput ? false : true);

@@ -88,7 +88,7 @@ public class ArcObjects {
 			final Vector3f dir = light.getViewDirection();
 			
 			Matrix4f lightSpaceMatrix = new Matrix4f();
-			Matrix4f.mul(lightProjMatrix	, light.getLightViewMatrix(), lightSpaceMatrix);
+			lightProjMatrix.mul(light.getLightViewMatrix(), lightSpaceMatrix);
 			
 			shader.lightPos.loadVec3(i, pos.x, pos.y, pos.z);
 			shader.lightDir.loadVec3(i, dir.x, dir.y, dir.z);
@@ -116,7 +116,7 @@ public class ArcObjects {
 
 				Matrix4f matrix = new Matrix4f();
 				matrix.translate(object.pos);
-				matrix.rotate(object.rot);
+				matrix.rotateXYZ(object.rot);
 				shader.modelMatrix.loadMatrix(matrix);
 				
 				model.bind(0, 1, 2);

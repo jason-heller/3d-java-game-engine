@@ -4,9 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.joml.Matrix4f;
-import org.joml.Quaternion;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 import core.Resources;
 import dev.cmd.Console;
@@ -19,9 +18,9 @@ import gl.anim.render.AnimationHandler;
 import gl.line.LineRender;
 import gl.res.Mesh;
 import scene.entity.Entity;
-import ui.UI;
 import util.Colors;
 import util.MathUtil;
+import util.Vectors;
 
 public class Animator {
 
@@ -39,6 +38,8 @@ public class Animator {
 	private int lastFrameID = -1;
 	
 	private Matrix4f[] pose;
+	private JointTransform[] currentJointTransform;		// Same info as above, just cached, not necesarily 1-1
+	
 	private float speedMultiplier = 1f;
 	
 	private String currentAnim;
@@ -55,8 +56,15 @@ public class Animator {
 			entity.setAnimator(this);
 			
 			pose = new Matrix4f[numJoints];
-			for(int i = 0; i < pose.length; i++)		// HACK : Prevents a bad .DOOM load crash, find better solution
-				pose[i] = new Matrix4f();
+			currentJointTransform = new JointTransform[numJoints];
+			
+			Matrix4f m = new Matrix4f();
+			JointTransform jt = new JointTransform(new Vector3f(), new Quaternionf());
+			
+			for(int i = 0; i < pose.length; i++) {		// HACK : Prevents a bad .DOOM load crash, find better solution
+				pose[i] = m;
+				currentJointTransform[i] = jt;
+			}
 			
 		} else {
 			root = null;
@@ -143,7 +151,7 @@ public class Animator {
 	}
 	
 
-	public static final Quaternion CORRECTION = Quaternion.fromMatrix(new Matrix4f().rotateY(90f));
+	public static final Quaternionf CORRECTION = new Quaternionf().setFromNormalized(new Matrix4f().rotateX(-MathUtil.HALFPI));
 	
 	public void update() {
 		
@@ -192,46 +200,55 @@ public class Animator {
 		jointMatrix.identity();
 		jointMatrix.translate(rootTransform.getPosition());
 		jointMatrix.rotate(rootTransform.getRotation());
-		
-		Quaternion q = new Quaternion();
-		Quaternion.mul(rootTransform.getRotation(), CORRECTION, q);
-		
-		root.animPos.set(rootTransform.getPosition());
-		//root.animRot.set(rootTransform.getRotation());
-		root.animRot.set(q);
-		
 
-		applyAnimation(0f, root);
+		Quaternionf rootJointQuat = new Quaternionf();
+		CORRECTION.mul(rootTransform.getRotation(), rootJointQuat);
+
+		root.animPos.set(rootTransform.getPosition());
+		root.animRot.set(rootJointQuat);
+		
+		currentJointTransform[0] = rootTransform;
+
+		applyAnimation(root);
 		
 		if (drawBones) {
 			drawBones(root);
 		}
 	}
-
+	
 	// ParentTranform * LocalTransform * InvBindM
-	private void applyAnimation(float time, Joint parent) {
+	private void applyAnimation(Joint parent) {
 		for(Joint child : parent.children) {
 			
 			JointTransform transform = getJointTransform((byte)child.index);
 
-			Vector3f rotPos = parent.animRot.rotate(transform.getPosition()); // get parents position, after rotation
-			Vector3f newPos = Vector3f.add(parent.animPos, rotPos); // add the parents position to this joints position
-			
-			Quaternion newRot = new Quaternion(); 
-			Quaternion.mul(parent.animRot, transform.getRotation(), newRot);
+			Vector3f rotPos = rotate(parent.animRot, transform.getPosition()); // get parents position, after rotation
+			Vector3f newPos = Vectors.add(parent.animPos, rotPos); // add the parents position to this joints position
+
+			Quaternionf newRot = new Quaternionf(parent.animRot); 
+			newRot.mul(transform.getRotation());
 			
 			Matrix4f jointMatrix = pose[child.index];
 			jointMatrix.identity();
 			jointMatrix.translate(newPos);
 			jointMatrix.rotate(newRot);
 			
+			currentJointTransform[child.index] = transform;
+			
 			child.animPos.set(newPos);
 			child.animRot.set(newRot);
 			
-			applyAnimation(time, child);
+			applyAnimation(child);
 		}
 		
 		pose[parent.index].mul(parent.getInverseBindMatrix());
+	}
+	
+	private Vector3f rotate(Quaternionf q, Vector3f v) {
+		Vector3f quatVector = new Vector3f(q.x, q.y, q.z);
+		Vector3f uv = Vectors.cross(quatVector, v);
+		Vector3f uuv = Vectors.cross(quatVector, uv);
+		return Vectors.add(v, Vectors.add(Vectors.mul(uv, q.w), uuv).mul(2f));
 	}
 	
 	private Keyframe getPoseAsKeyframe() {
@@ -240,12 +257,7 @@ public class Animator {
 		
 		for (int i = 0; i < numJoints; i++) {
 			byte index = (byte)i;
-			transforms.put(index, this.getJointTransform(index));
-			/*Matrix4f m = this.getJointTransforms()[i];
-			Quaternion q = Quaternion.fromMatrix(m);
-			Vector3f p = m.getTranslation();
-			
-			transforms.put(index, new JointTransform(p, q));*/
+			transforms.put(index, currentJointTransform[i]);
 		}
 		
 		return new Keyframe(0f, transforms);
@@ -266,24 +278,25 @@ public class Animator {
 			*/
 			
 			Matrix4f mat = entity.getMatrix();
-			Vector3f parentPos = new Vector3f();
-			Vector3f childPos = new Vector3f();
+			Vector3f parentPos = new Vector3f(parent.animPos);
+			Vector3f childPos = new Vector3f(child.animPos);
 			
-			Vector3f.mul(parent.animPos, mat, parentPos);
-			Vector3f.mul(child.animPos, mat, childPos);
+			mat.transformPosition(parentPos);
+			mat.transformPosition(childPos);
 			
-			parentPos.add(mat.getTranslation());
-			childPos.add(mat.getTranslation());
+			Vector3f translation = new Vector3f();
+			mat.getTranslation(translation);
+			
+			parentPos.add(translation);
+			childPos.add(translation);
 			
 			LineRender.drawLine(parentPos, childPos, Colors.WHITE);
+		
+			parentPos = new Vector3f(parent.animPos);
+			childPos = new Vector3f(child.animPos);
 			
-			
-			
-			parentPos = new Vector3f();
-			childPos = new Vector3f();
-			
-			Vector3f.mul(parent.animPos, pose[parent.index], parentPos);
-			Vector3f.mul(child.animPos, pose[child.index], childPos);
+			pose[parent.index].transformPosition(parentPos);
+			pose[child.index].transformPosition(childPos);
 			
 			//parentPos.add(mat.getTranslation());
 			//childPos.add(mat.getTranslation());
@@ -298,11 +311,11 @@ public class Animator {
 		JointTransform B = nextFrame.getTransforms().get(index);
 		
 		float interp = (animationTime - priorFrame.getTime()) / (nextFrame.getTime() - priorFrame.getTime());
-		
+
 		return JointTransform.lerp(A, B, interp);
 	}
 
-	public Matrix4f[] getJointTransforms() {
+	public Matrix4f[] getPose() {
 		return pose;
 	}
 	
@@ -328,5 +341,9 @@ public class Animator {
 
 	public void setSpeedMultiplier(float speedMultiplier) {
 		this.speedMultiplier = speedMultiplier;
+	}
+
+	public JointTransform[] getCurrentJointTransforms() {
+		return this.currentJointTransform;
 	}
 }

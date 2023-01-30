@@ -25,6 +25,7 @@ import map.architecture.vis.Bsp;
 import scene.Scene;
 import util.Colors;
 import util.MathUtil;
+import util.Vectors;
 
 public class ArchitectureHandler {
 	
@@ -90,10 +91,10 @@ public class ArchitectureHandler {
 				float dx = node.getWidth();
 				float dz = node.getLength();
 				
-				Vector3f tl = plane.raycastPoint(new Vector3f(p.x-dx, -99999, p.z+dz), Vector3f.Y_AXIS);
-				Vector3f tr = plane.raycastPoint(new Vector3f(p.x+dx, -99999, p.z+dz), Vector3f.Y_AXIS);
-				Vector3f bl = plane.raycastPoint(new Vector3f(p.x-dx, -99999, p.z-dz), Vector3f.Y_AXIS);
-				Vector3f br = plane.raycastPoint(new Vector3f(p.x+dx, -99999, p.z-dz), Vector3f.Y_AXIS);
+				Vector3f tl = plane.raycastPoint(new Vector3f(p.x-dx, -99999, p.z+dz), Vectors.POSITIVE_Y);
+				Vector3f tr = plane.raycastPoint(new Vector3f(p.x+dx, -99999, p.z+dz), Vectors.POSITIVE_Y);
+				Vector3f bl = plane.raycastPoint(new Vector3f(p.x-dx, -99999, p.z-dz), Vectors.POSITIVE_Y);
+				Vector3f br = plane.raycastPoint(new Vector3f(p.x+dx, -99999, p.z-dz), Vectors.POSITIVE_Y);
 				
 				tl.add(plane.normal);
 				tr.add(plane.normal);
@@ -117,9 +118,9 @@ public class ArchitectureHandler {
 			for(int i = 1; i < bsp.rooms.length; i++) {
 				ArcRoom room = bsp.rooms[i];
 				for(GhostPoi poi : room.getGhostPois()) {
-					Vector3f pos = Vector3f.add(poi.getPosition(), Vector3f.Y_AXIS);
+					Vector3f pos = Vectors.add(poi.getPosition(), Vectors.POSITIVE_Y);
 					LineRender.drawPoint(poi.getPosition());
-					LineRender.drawLine(pos, Vector3f.add(pos, MathUtil.eulerToVectorDeg(poi.getRotation().x, poi.getRotation().y)));
+					LineRender.drawLine(pos, Vectors.add(pos, MathUtil.eulerToVectorDeg(poi.getRotation().x, poi.getRotation().y)));
 				}
 			}
 		}
@@ -133,10 +134,10 @@ public class ArchitectureHandler {
 				float dx = node.getWidth();
 				float dz = node.getLength();
 				
-				Vector3f tl = plane.raycastPoint(new Vector3f(p.x-dx, -99999, p.z+dz), Vector3f.Y_AXIS);
-				Vector3f tr = plane.raycastPoint(new Vector3f(p.x+dx, -99999, p.z+dz), Vector3f.Y_AXIS);
-				Vector3f bl = plane.raycastPoint(new Vector3f(p.x-dx, -99999, p.z-dz), Vector3f.Y_AXIS);
-				Vector3f br = plane.raycastPoint(new Vector3f(p.x+dx, -99999, p.z-dz), Vector3f.Y_AXIS);
+				Vector3f tl = plane.raycastPoint(new Vector3f(p.x-dx, -99999, p.z+dz), Vectors.POSITIVE_Y);
+				Vector3f tr = plane.raycastPoint(new Vector3f(p.x+dx, -99999, p.z+dz), Vectors.POSITIVE_Y);
+				Vector3f bl = plane.raycastPoint(new Vector3f(p.x-dx, -99999, p.z-dz), Vectors.POSITIVE_Y);
+				Vector3f br = plane.raycastPoint(new Vector3f(p.x+dx, -99999, p.z-dz), Vectors.POSITIVE_Y);
 				
 				tl.add(plane.normal);
 				tr.add(plane.normal);

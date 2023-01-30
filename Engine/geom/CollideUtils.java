@@ -5,11 +5,15 @@ import java.util.List;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
+import dev.cmd.Console;
+import gl.line.LineRender;
 import map.architecture.ActiveLeaves;
 import map.architecture.components.ArcEdge;
 import map.architecture.components.ArcFace;
 import map.architecture.vis.Bsp;
 import map.architecture.vis.BspLeaf;
+import util.Colors;
+import util.Vectors;
 
 /**
  * @author Jason Basically just a class to handle collisions with geometry that
@@ -19,7 +23,30 @@ import map.architecture.vis.BspLeaf;
  */
 public class CollideUtils {
 
-	final static Vector3f[] axisPtrs = new Vector3f[] { Vector3f.X_AXIS, Vector3f.Y_AXIS, Vector3f.Z_AXIS};
+	final static Vector3f[] axisPtrs = new Vector3f[] { Vectors.POSITIVE_X, Vectors.POSITIVE_Y, Vectors.POSITIVE_Z};
+
+	public static MTV faceCollide(Vector3f[] vertices, ArcEdge[] edges, int[] surfEdges, ArcFace face,
+			Vector3f normal, BoundingBox box) {
+
+		MTV mtv = new MTV();
+
+		final Vector3f[] facePoints = new Vector3f[face.numEdges * 2];
+		for (int i = 0; i < face.numEdges; i++) {
+			int id = face.firstEdge + i;
+			int surfId = surfEdges[id];
+			facePoints[i*2] = vertices[surfId > 0 ? edges[surfId].end : edges[-surfId].start];
+			facePoints[i*2 + 1] = vertices[surfId > 0 ? edges[surfId].start : edges[-surfId].end];
+			
+		}
+		
+		if (box.intersects(facePoints, normal)) {
+			mtv.setDepth(box.getIntersectionDepth());
+			mtv.setAxis(box.getIntersectionAxis());
+			mtv.finish(facePoints[0], face);
+			return mtv;
+		}
+		return null;
+	}
 
 	/**
 	 * Gets the MTV between an axis aligned bounding box and a face defined within a
@@ -35,10 +62,10 @@ public class CollideUtils {
 	 *         collision occured
 	 */
 	public static MTV bspFaceBoxCollide(Vector3f[] vertices, ArcEdge[] edges, int[] surfEdges, ArcFace face,
-			Vector3f normal, AxisAlignedBBox box) {
+			Vector3f normal, BoundingBox box) {
 
-		final Vector3f tl = Vector3f.sub(box.getCenter(), box.getBounds());
-		final Vector3f br = Vector3f.add(box.getCenter(), box.getBounds());
+		final Vector3f tl = Vectors.sub(box.getCenter(), box.getHalfSize());
+		final Vector3f br = Vectors.add(box.getCenter(), box.getHalfSize());
 		MTV mtv = new MTV();
 
 		final Vector3f[] facePoints = new Vector3f[face.numEdges];
@@ -78,9 +105,9 @@ public class CollideUtils {
 
 			int surf = surfEdges[id];
 			if (surf >= 0) {
-				faceEdges[i] = Vector3f.sub(vertices[edges[surf].end], vertices[edges[surf].start]);
+				faceEdges[i] = Vectors.sub(vertices[edges[surf].end], vertices[edges[surf].start]);
 			} else {
-				faceEdges[i] = Vector3f.sub(vertices[edges[-surf].start], vertices[edges[-surf].end]);
+				faceEdges[i] = Vectors.sub(vertices[edges[-surf].start], vertices[edges[-surf].end]);
 			}
 
 		}
@@ -89,7 +116,7 @@ public class CollideUtils {
 			for (int j = 0; j < 3; j++) {
 				Vector3f axis = faceEdges[i].cross(axisPtrs[j]);
 				
-				if (axis.isZero())
+				if (Vectors.isZero(axis))
 					continue;
 				
 				boxBounds = project(boxPoints, axis);
@@ -107,12 +134,12 @@ public class CollideUtils {
 	/**
 	 * @return
 	 */
-	public static MTV convexHullBoxCollide(Plane[] planes, AxisAlignedBBox box) {
+	public static MTV convexHullBoxCollide(Plane[] planes, BoundingBox box) {
 		MTV mtv = new MTV();
 		
 		for (Plane plane : planes) {
 			float dist = plane.signedDistanceTo(box.getCenter());
-			Vector3f bounds = Vector3f.mul(box.getBounds(), plane.normal).abs();
+			Vector3f bounds = Vectors.mul(box.getHalfSize(), plane.normal).absolute();
 			float boundsLen = bounds.x + bounds.y + bounds.z;
 			if (dist > boundsLen) {
 				return null;
@@ -128,44 +155,22 @@ public class CollideUtils {
 		
 		return mtv;
 	}
-
-	public static float convexPolygonRay(Bsp bsp, ArcFace face, Vector3f rayOrigin, Vector3f rayDir) {
-		
+	
+	public static float raycastMapGeometry(Bsp bsp, ArcFace face, Vector3f rayOrigin, Vector3f rayDir) {
 		Vector3f[] vertices = bsp.vertices;
 		ArcEdge[] edges = bsp.edges;
 		int[] surfEdges = bsp.surfEdges;
-		//Plane[] planes = bsp.planes;
 
 		Plane plane = bsp.planes[face.planeId];
-		Vector3f normal = plane.normal;
-		float dist = plane.dist;
-
-		float a = dist - normal.dot(rayOrigin);
-		float b = normal.dot(rayDir);
-
-		if (Math.abs(b) < .0001f)
+		float planeRay = plane.raycast(rayOrigin, rayDir);
+		
+		if (Float.isNaN(planeRay))
 			return Float.NaN;
-
-		float t = a / b;
-		if (t < 0.0)
-			return Float.NaN;
-
-		Vector3f pt = new Vector3f(rayOrigin);
-		pt.add(Vector3f.mul(rayDir, t));
-  
-		int projAxis = 0;
-		Vector3f nAbs = Vector3f.abs(normal);
-		if (nAbs.y > nAbs.x && nAbs.y > nAbs.z) {
-			projAxis = 1;
-		} else if (nAbs.z > nAbs.x && nAbs.z > nAbs.y) {
-			projAxis = 2;
-		}
-
+		
 		int e1, e2;
 		Vector3f v1, v2;
-		Vector2f edge = new Vector2f(), affinePt = new Vector2f();
-		int lastSide = 0;
-
+		Vector3f hit = new Vector3f(rayDir).mul(planeRay).add(rayOrigin);
+		
 		for (int i = 0; i < face.numEdges; i++) {
 			int edgeId = face.firstEdge + i;
 			if (surfEdges[edgeId] >= 0) {
@@ -175,34 +180,18 @@ public class CollideUtils {
 				e1 = edges[-surfEdges[edgeId]].end;
 				e2 = edges[-surfEdges[edgeId]].start;
 			}
+			
 			v1 = vertices[e1];
 			v2 = vertices[e2];
-
-			switch (projAxis) {
-			case 0:
-				edge.set(v2.y - v1.y, v2.z - v1.z);
-				affinePt.set(pt.y - v1.y, pt.z - v1.z);
-				break;
-			case 1:
-				edge.set(v2.x - v1.x, v2.z - v1.z);
-				affinePt.set(pt.x - v1.x, pt.z - v1.z);
-				break;
-			default:
-				edge.set(v2.x - v1.x, v2.y - v1.y);
-				affinePt.set(pt.x - v1.x, pt.y - v1.y);
+			
+			Vector3f axis = Vectors.sub(v2, v1).cross(plane.normal);
+			float dp = hit.dot(axis);
+			
+			if (dp > axis.dot(v1)) {
+				return Float.NaN;
 			}
-
-			int side = (int) Math.signum(edge.x * affinePt.y - edge.y * affinePt.x);
-
-			if (side == 0)
-				return Float.NaN;
-			else if (lastSide == 0)
-				lastSide = side;
-			else if (lastSide != side)
-				return Float.NaN;
 		}
-		
-		return t;
+		return planeRay;
 	}
 
 	private static Bounds project(Vector3f[] points, Vector3f axis) {
@@ -246,7 +235,7 @@ public class CollideUtils {
 		int len = leaf.firstFace + leaf.numFaces;
 		for(int i = leaf.firstFace; i < len; i++) {
 			ArcFace face = bsp.faces[bsp.leafFaceIndices[i]];
-			float dist = convexPolygonRay(bsp, face, orig, dir);
+			float dist = raycastMapGeometry(bsp, face, orig, dir);
 			if (dist < rayLen) {
 				rayLen = dist;
 			}

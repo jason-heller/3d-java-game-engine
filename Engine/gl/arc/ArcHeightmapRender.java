@@ -55,9 +55,10 @@ public class ArcHeightmapRender {
 			final Vector3f dir = light.getViewDirection();
 
 			Matrix4f lightSpaceMatrix = new Matrix4f();
-			Matrix4f.mul(lightProjMatrix, light.getLightViewMatrix(), lightSpaceMatrix);
-			lightPosMatrix.setRow(new float[] { pos.x, pos.y, pos.z, light.getCutoff() }, i);
-			lightDirMatrix.setRow(new float[] { dir.x, dir.y, dir.z, light.getOuterCutoff() }, i);
+			lightProjMatrix.mul(light.getLightViewMatrix(), lightSpaceMatrix);
+			lightPosMatrix.setRow(i, new Vector4f(pos.x, pos.y, pos.z, light.getCutoff()));
+			lightDirMatrix.setRow(i, new Vector4f(dir.x, dir.y, dir.z, light.getOuterCutoff()));
+
 			heightmapShader.lightSpaceMatrix.loadMatrix(i, lightSpaceMatrix);
 
 			Resources.getTexture("shadow" + i).bind(3 + i);

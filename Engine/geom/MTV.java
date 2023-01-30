@@ -3,6 +3,7 @@ package geom;
 import org.joml.Vector3f;
 
 import map.architecture.components.ArcFace;
+import util.Vectors;
 
 /** Minimum Translation Vector
  * @author Jason
@@ -26,7 +27,7 @@ public class MTV implements Comparable<MTV> {
 	}
 
 	public boolean testAxis(float max1, float min1, float max2, float min2, Vector3f axis) {
-		float axisLengthSquared = Vector3f.dot(axis, axis);
+		float axisLengthSquared = axis.dot(axis);
 		if (axisLengthSquared < 1.0e-8f)
 	        return true;
 		
@@ -40,8 +41,8 @@ public class MTV implements Comparable<MTV> {
 		
 		float overlap = o1 < o2 ? o1 : -o2;
 
-		Vector3f sep = Vector3f.mul(axis, overlap / axisLengthSquared);
-		float sepLengthSquared = Vector3f.dot(sep, sep);
+		Vector3f sep = Vectors.mul(axis, overlap / axisLengthSquared);
+		float sepLengthSquared = sep.dot(sep);
 		
 		if (sepLengthSquared < depth) {
 			depth = sepLengthSquared + .000001f;
@@ -58,7 +59,7 @@ public class MTV implements Comparable<MTV> {
 	}
 	
 	public Vector3f getMTV() {
-		return Vector3f.mul(axis, depth);
+		return Vectors.mul(axis, depth);
 	}
 	
 	public float getDepth() {

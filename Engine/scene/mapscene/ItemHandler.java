@@ -3,8 +3,6 @@ package scene.mapscene;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.lwjgl.input.Keyboard;
-
 import audio.AudioHandler;
 import audio.Source;
 import core.App;

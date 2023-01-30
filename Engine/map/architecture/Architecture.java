@@ -56,6 +56,7 @@ import scene.entity.util.PhysicsEntity;
 import scene.mapscene.MapScene;
 import util.Colors;
 import util.GeomUtil;
+import util.Vectors;
 
 public class Architecture {
 
@@ -169,7 +170,6 @@ public class Architecture {
 	}
 	
 	public void render(Camera camera, Vector4f clipPlane, boolean hasLighting, boolean withShaders) {
-		
 		if (withShaders)
 			ArcRenderMaster.render((MapScene) scene, clipPlane, this, hasLighting, dynamicLightHandler.getLights(), activeLeaves);
 		else 
@@ -184,7 +184,7 @@ public class Architecture {
 		}
 		
 		if (Debug.showAmbient) {
-			BspLeaf leaf = bsp.walk(((PlayableScene)App.scene).getPlayer().pos);
+			BspLeaf leaf = bsp.walk(((PlayableScene)App.scene).getPlayer().position);
 			int len = leaf.firstAmbientSample + leaf.numAmbientSamples;
 			for(int i = leaf.firstAmbientSample; i < len; i++) {
 				ArcLightCube lightCube = ambientLightCubes[i];
@@ -216,7 +216,7 @@ public class Architecture {
 					iter.remove();
 				}
 			} else {
-				if (!trigger.bbox.collide(entity.pos)) {
+				if (!trigger.bbox.collide(entity.position)) {
 					trigger.interact(entity, false);
 					iter.remove();
 				}
@@ -236,12 +236,12 @@ public class Architecture {
 	
 	private Vector3f[] getLightsAt(Vector3f position, BspLeaf leaf) {
 		ArcLightCube nearestCube = null;//ambientLightCubes[leaf.firstAmbientSample];
-		float nearest = Float.POSITIVE_INFINITY;//Vector3f.distanceSquared(ambientLightCubes[leaf.firstAmbientSample].getPosition(leaf), position);
+		float nearest = Float.POSITIVE_INFINITY;//Vectors.distanceSquared(ambientLightCubes[leaf.firstAmbientSample].getPosition(leaf), position);
 		
 		for(int i = 0; i < leaf.numAmbientSamples; i++) {
 			int sampleId = leaf.firstAmbientSample + i;
 			ArcLightCube lightCube = ambientLightCubes[sampleId];
-			float dist = Vector3f.distanceSquared(lightCube.getPosition(leaf), position);
+			float dist = Vectors.distanceSquared(lightCube.getPosition(leaf), position);
 			
 			if (dist < nearest) {
 				nearest = dist;
@@ -313,11 +313,11 @@ public class Architecture {
 	}
 	
 	public void callCommand(Entity caller, String cmd) {
-		funcHandler.callCommand(caller.pos, cmd);
+		funcHandler.callCommand(caller.position, cmd);
 	}
 	
 	public void callCommand(String cmd) {
-		funcHandler.callCommand(Vector3f.ZERO, cmd);
+		funcHandler.callCommand(Vectors.ZERO, cmd);
 	}
 
 	public void createLightmap(byte[] rgb, ArcFace[] faces) {
@@ -370,7 +370,7 @@ public class Architecture {
 	}
 
 	/** Raycasts against the visible geometry
-	 * @param pos the ray's origin
+	 * @param position the ray's origin
 	 * @param dir the ray's direction
 	 * @return the distance the ray traveled and face, or null if nothing was hit
 	 */
@@ -382,8 +382,8 @@ public class Architecture {
 		while(activeLeaves.hasNext()) {
 			BspLeaf leaf = activeLeaves.next();
 			
-			Vector3f bounds = Vector3f.sub(leaf.max, leaf.min).div(2f);
-			Vector3f center = Vector3f.add(leaf.min, bounds);
+			Vector3f bounds = Vectors.sub(leaf.max, leaf.min).div(2f);
+			Vector3f center = Vectors.add(leaf.min, bounds);
 			
 			float distLeaf = new AxisAlignedBBox(center, bounds).collide(org, dir);
 			
@@ -399,8 +399,8 @@ public class Architecture {
 					//ArcTextureMapping texData = bsp.getTextureMappings()[face.texMapping];
 					//if (texData.textureId == -1) continue;
 					
-					float dist = CollideUtils.convexPolygonRay(bsp, face, org, dir);
-					if (dist < shortestDist) {
+					float dist = CollideUtils.raycastMapGeometry(bsp, face, org, dir);
+					if (!Float.isNaN(dist) && dist < shortestDist) {
 						shortestDist = dist;
 						collidedFace = face;
 					}
@@ -431,8 +431,8 @@ public class Architecture {
 	}
 
 	public List<BspLeaf> getVisibleLeavesIntersecting(AxisAlignedBBox box) {
-		Vector3f max = Vector3f.add(box.getCenter(), box.getBounds());
-		Vector3f min = Vector3f.sub(box.getCenter(), box.getBounds());
+		Vector3f max = Vectors.add(box.getCenter(), box.getBounds());
+		Vector3f min = Vectors.sub(box.getCenter(), box.getBounds());
 		activeLeaves.beginIteration();
 		List<BspLeaf> leaves = new ArrayList<>();
 		while(activeLeaves.hasNext()) {
@@ -460,7 +460,7 @@ public class Architecture {
 			ArcClip clip = bsp.clips[index];
 			Vector3f center = clip.bbox.getCenter();
 			
-			float dist = Vector3f.distanceSquared(center, position);
+			float dist = Vectors.distanceSquared(center, position);
 			
 			if (dist < closest) {
 				closest = dist;
@@ -483,38 +483,28 @@ public class Architecture {
 		this.railList = railList;
 	}
 	
-	public void drawRails(Vector3f pos, float gravitation) {
+	private void addBlockId(List<Integer> blockIds, float x, float z) {
+		int dx = (int)(x - bsp.min.x) / RailList.BLOCK_SIZE;
+		int dz = (int)(z - bsp.min.z) / RailList.BLOCK_SIZE;
 		
-		List<Integer> blockIds = new ArrayList<>();
+		//Vector3f xxx = new Vector3f((bsp.min.x+32) + (float)Math.floor((x - bsp.min.x)/64f)*64f,0,(bsp.min.z+32) + (float)Math.floor((z - bsp.min.z)/64f)*64f);
+		//Vector3f yyy = new Vector3f(32,600,32);
+		//LineRender.drawBox(xxx, yyy, Colors.PINK);
 		
-		addBlockId(blockIds, pos.x - gravitation, pos.z - gravitation);
-		addBlockId(blockIds, pos.x + gravitation, pos.z - gravitation);
-		addBlockId(blockIds, pos.x - gravitation, pos.z + gravitation);
-		addBlockId(blockIds, pos.x + gravitation, pos.z + gravitation);
+		int blockId = dx + (dz * RailList.numBlocksX);
 		
-		Rail bestRail = null;
-		float shorestLen = gravitation;
-		
-		for(int blockId : blockIds) {
-			if (blockId == -1 || railList[blockId] == null)
-				continue;
-			
-			List<Rail> rails = railList[blockId].getRails();
-			
-			for(Rail rail : rails) {
-				LineRender.drawLine(rail.start, rail.end, Colors.BLUE);
-			}
-		}
+		if (blockId >= 0 && blockId < RailList.numBlocks && !blockIds.contains(blockId))
+			blockIds.add(blockId);
 	}
 
-	public Rail getNearestRail(Vector3f pos, Vector3f dir, Rail exception, float gravitation) {
+	public Rail getNearestRail(Vector3f pos, Vector3f dir, Rail exception, float bounds, float gravitation) {
 		
 		List<Integer> blockIds = new ArrayList<>();
 		
-		addBlockId(blockIds, pos.x - gravitation, pos.z - gravitation);
-		addBlockId(blockIds, pos.x + gravitation, pos.z - gravitation);
-		addBlockId(blockIds, pos.x - gravitation, pos.z + gravitation);
-		addBlockId(blockIds, pos.x + gravitation, pos.z + gravitation);
+		addBlockId(blockIds, pos.x - bounds, pos.z - bounds);
+		addBlockId(blockIds, pos.x + bounds, pos.z - bounds);
+		addBlockId(blockIds, pos.x - bounds, pos.z + bounds);
+		addBlockId(blockIds, pos.x + bounds, pos.z + bounds);
 		
 		Vector3f dirNorm = new Vector3f(dir).normalize();
 		
@@ -534,19 +524,19 @@ public class Architecture {
 				if (rail == exception)
 					continue;
 				
-				float dist = GeomUtil.pointDistanceToEdge(pos, rail.start, rail.end);
+				float dist = GeomUtil.pointDistanceToEdge(pos, rail.getStart(), rail.getEnd());
 
 				// Handle endpoints
 				if (Float.isNaN(dist)) {
-					float distToStart = Math.min(Vector3f.distanceSquared(pos, rail.start),
-							Vector3f.distanceSquared(pos, rail.end));
+					float distToStart = Math.min(Vectors.distanceSquared(pos, rail.getStart()),
+							Vectors.distanceSquared(pos, rail.getEnd()));
 
 					if (distToStart < gravitation * gravitation)
 						dist = (float)Math.sqrt(distToStart);
 				}
 				
 				// Weigh towards rails matching our dir
-				Vector3f railNormal = Vector3f.sub(rail.end, rail.start).normalize();
+				Vector3f railNormal = Vectors.sub(rail.getEnd(), rail.getStart()).normalize();
 				
 				dist += (1f - Math.abs(dirNorm.dot(railNormal)));
 	
@@ -560,40 +550,63 @@ public class Architecture {
 		return bestRail;
 	}
 
-	private void addBlockId(List<Integer> blockIds, float x, float z) {
-		int dx = (int)(x - bsp.min.x) / RailList.BLOCK_SIZE;
-		int dz = (int)(z - bsp.min.z) / RailList.BLOCK_SIZE;
+	public Rail findLinkingRail(Rail target, Vector3f pos, float bounds) {
 		
-		int blockId = dx + (dz * RailList.numBlocksX);
-		
-		if (!blockIds.contains(blockId))
-			blockIds.add(blockId);
-	}
-
-	public Rail findLinkingRail(Rail target, Vector3f linkPos, Vector3f pos, float gravitation) {
 		List<Integer> blockIds = new ArrayList<>();
 		
-		addBlockId(blockIds, pos.x - gravitation, pos.z - gravitation);
-		addBlockId(blockIds, pos.x + gravitation, pos.z - gravitation);
-		addBlockId(blockIds, pos.x - gravitation, pos.z + gravitation);
-		addBlockId(blockIds, pos.x + gravitation, pos.z + gravitation);
+		addBlockId(blockIds, pos.x - bounds, pos.z - bounds);
+		addBlockId(blockIds, pos.x + bounds, pos.z - bounds);
+		addBlockId(blockIds, pos.x - bounds, pos.z + bounds);
+		addBlockId(blockIds, pos.x + bounds, pos.z + bounds);
+		
+		float nearestRail = 1f;
+		Rail targetRail = null;
 		
 		for(int blockId : blockIds) {
-			List<Rail> rails = railList[blockId].getRails();
+			RailList list = railList[blockId];
 			
-			if (rails == null)
-				return null;
-			
+			if (list == null)
+				continue;
+			List<Rail> rails = list.getRails();
+
 			for(Rail rail : rails) {
 				if (rail == target)
 					continue;
 				
-				if (rail.start.equals(linkPos) || rail.end.equals(linkPos)) {
-					return rail;
+				float d1 = Vectors.distanceSquared(pos, rail.getStart());
+				float d2 = Vectors.distanceSquared(pos, rail.getEnd());
+				
+				float dist = Math.min(d1, d2);
+				
+				if (dist <= nearestRail) {
+					nearestRail = dist;
+					targetRail = rail;
 				}
 			}
 		}
-		
-		return null;
+		return targetRail;
+	}
+
+	public void drawRails(Vector3f pos, Rail exception, float bounds) {
+
+		List<Integer> blockIds = new ArrayList<>();
+
+		addBlockId(blockIds, pos.x - bounds, pos.z - bounds);
+		addBlockId(blockIds, pos.x + bounds, pos.z - bounds);
+		addBlockId(blockIds, pos.x - bounds, pos.z + bounds);
+		addBlockId(blockIds, pos.x + bounds, pos.z + bounds);
+
+		for (int blockId : blockIds) {
+			RailList list = railList[blockId];
+			
+			if (list == null)
+				continue;
+			
+			List<Rail> rails = list.getRails();
+
+			for (Rail rail : rails) {
+				LineRender.drawLine(rail.getStart(), rail.getEnd(), (rail == exception) ? Colors.RED : Colors.BLUE);
+			}
+		}
 	}
 }

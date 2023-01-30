@@ -1,6 +1,5 @@
 package dev.cmd;
 
-import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,15 +43,11 @@ public class Console {
 	private static final float FONT_SIZE = .14f;
 	private static final int FONT_HEIGHT = (int) (22 * (FONT_SIZE / .3f));
 
-	private static boolean playerWasAlreadyDisabled = false;
-
 	private static final Vector3f BACKGROUND_COLOR = Colors.BLACK;
 	private static final Vector3f BORDER_COLOR = Colors.GUI_BORDER_COLOR;
 	private static final int MAX_PREDICTIONS = 12;
 
 	private static int lineViewInd = 0;
-
-	private static PrintStream outStream;
 	
 	private static DecimalFormat df = new DecimalFormat("0.0000");
 
@@ -66,24 +61,6 @@ public class Console {
 			App.scene.update();
 			visible = true;
 		}
-	}
-
-	public static void init() {
-		outStream = new PrintStream(System.out) {
-			@Override
-			public void print(String x) {
-				log(x);
-			}
-
-			@Override
-			public void println(String x) {
-				log(x);
-			}
-
-		};
-
-		// System.setOut(outStream);
-		// System.setErr(errStream);
 	}
 
 	public static boolean isVisible() {
@@ -245,13 +222,9 @@ public class Console {
 		input = "";
 		predictions.clear();
 
-		playerWasAlreadyDisabled = false;
-
 		if (visible) {
 			Input.requestMouseRelease();
 		} else {
-			if (!playerWasAlreadyDisabled) {
-			}
 			Input.requestMouseGrab();
 		}
 	}

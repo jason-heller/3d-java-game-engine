@@ -47,6 +47,7 @@ public class RailFileLoader {
 			
 			RailList.numBlocksX = numBlocksX;
 			RailList.numBlocksZ = numBlocksZ;
+			RailList.numBlocks = numBlocksX * numBlocksZ;
 			
 			Rail[] rails = new Rail[numRails];
 			railList = new RailList[numBlocksX * numBlocksZ];
@@ -56,7 +57,7 @@ public class RailFileLoader {
 				Vector3f end = readVec3(is);
 				byte type = is.readByte();
 				
-				rails[i] = new Rail(start, end, "");
+				rails[i] = new Rail(start, end, type);
 				
 				while(true) {
 					int data = is.readShort();

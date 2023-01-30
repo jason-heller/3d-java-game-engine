@@ -208,7 +208,7 @@ public class ModelBuilder {
 		final Vector3f p2 = new Vector3f(v[i - 6], v[i - 5], v[i - 4]);
 		final Vector3f p3 = new Vector3f(v[i - 3], v[i - 2], v[i - 1]);
 
-		return Vector3f.cross(Vector3f.sub(p2, p1), Vector3f.sub(p3, p1)).normalize();
+		return Vectors.cross(Vectors.sub(p2, p1), Vectors.sub(p3, p1)).normalize();
 	}
 
 	public void addIndices(int... inds) {

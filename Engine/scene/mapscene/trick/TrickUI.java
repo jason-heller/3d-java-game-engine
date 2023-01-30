@@ -1,6 +1,7 @@
 package scene.mapscene.trick;
 
 import gl.Window;
+import scene.entity.util.PlayerEntity;
 import ui.UI;
 
 public class TrickUI {
@@ -36,22 +37,36 @@ public class TrickUI {
 		this.displayTimer = time;
 	}
 	
-	public void addToTrickString(Trick trick, int trickPoints, int comboScore, float multiplier) {
+	public void addToTrickString(PlayerEntity player, Trick trick, int trickPoints, int comboScore, float multiplier) {
 		String color = "";
+		String trickName;
+		
 
+		boolean isFrontside = (trick.getType() == TrickType.GRIND_TRICK) ? player.getFrontside() : false;
+		boolean isSwitch = player.isSwitch();
+		
+			if (trick.getType() == TrickType.GRIND_TRICK)
+				trickName = ((isFrontside) ? "fs " : "bs ") + trick.getName();
+			else
+				trickName = ((isSwitch) ? "switch " : "") + trick.getName();
+		
 		if (trickPoints != trick.getPoints())
 			color = (trickPoints == 0) ? "#r" : "#y";
 		
 		if (trickString.isEmpty()) {
-			trickString = color + trick.getName();
+			trickString = color + trickName;
 		} else {
-			trickString += " #wto " + color + trick.getName();
+			trickString += " #wto " + color + trickName;
 		}
 		
-		color = multiplier > 3.0f ? "#g" : "#w";
+		updateTrickSubtring(comboScore, multiplier);
+		achievementString = "";
+	}
+	
+	public void updateTrickSubtring(int comboScore, float multiplier) {
+		String color = multiplier > 3.0f ? "#g" : "#w";
 		
 		trickSubstring = (comboScore) + " X " + color + (multiplier);
-		achievementString = "";
 	}
 
 	public void clearTrickString() {

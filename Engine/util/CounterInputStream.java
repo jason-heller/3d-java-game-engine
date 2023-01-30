@@ -6,7 +6,6 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
-import java.io.UTFDataFormatException;
 import java.util.Objects;
 
 public class CounterInputStream extends FilterInputStream implements DataInput {

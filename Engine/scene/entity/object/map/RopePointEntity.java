@@ -7,6 +7,7 @@ import gl.line.LineRender;
 import scene.PlayableScene;
 import scene.entity.Entity;
 import scene.entity.EntityHandler;
+import util.Vectors;
 
 public class RopePointEntity extends Entity {
 	
@@ -21,7 +22,7 @@ public class RopePointEntity extends Entity {
 
 	public RopePointEntity(Vector3f pos, String name, String nextName, float give, int precision, Vector3f color, float swaySpeed) {
 		super(name);
-		this.pos = pos;
+		this.position = pos;
 		this.give = give;
 		this.color = color;
 		this.segments = 8 * precision;		// Maybe determine this on linear distance between nodes?
@@ -42,10 +43,10 @@ public class RopePointEntity extends Entity {
 			sway += Window.deltaTime * swaySpeed;
 			float swayVal = (float)Math.sin(sway) * swayScale;
 			
-			Vector3f point = new Vector3f(pos);
-			Vector3f posInc = Vector3f.sub(next.pos, pos).div(segments);
-			Vector3f swayNormal = Vector3f.cross(posInc, Vector3f.Y_AXIS);
-			Vector3f swayOffset = Vector3f.mul(swayNormal, swayVal);
+			Vector3f point = new Vector3f(position);
+			Vector3f posInc = Vectors.sub(next.position, position).div(segments);
+			Vector3f swayNormal = Vectors.cross(posInc, Vectors.POSITIVE_Y);
+			Vector3f swayOffset = Vectors.mul(swayNormal, swayVal);
 			Vector3f sway = new Vector3f();
 
 			final float parabInc = 1f / segments;
@@ -61,7 +62,7 @@ public class RopePointEntity extends Entity {
 				float x = (2f * (i * parabInc)) - 1f;
 				float parabX = (x * x) - 1f;
 				drop = parabX * give;
-				sway.set(Vector3f.mul(swayOffset, parabX));
+				sway.set(Vectors.mul(swayOffset, parabX));
 
 				Vector3f nextPointWithSlack = new Vector3f(point);
 				nextPointWithSlack.y += drop;
@@ -73,7 +74,7 @@ public class RopePointEntity extends Entity {
 		} else if (!nextName.equals("")) {
 			this.next = (RopePointEntity) EntityHandler.getEntity(nextName);
 			if (this.next != null)
-				this.swayScale = 1f / (Vector3f.distance(pos, this.next.pos) / 8f);
+				this.swayScale = 1f / (position.distance(this.next.position) / 8f);
 			// Assumes the parent is a RopePointEntity, probably will crash if it's not so don't fuck this up
 			nextName = null;
 		}

@@ -2,6 +2,8 @@ package geom;
 
 import org.joml.Vector3f;
 
+import util.Vectors;
+
 public class AxisAlignedBBox {
 	private Vector3f center;
 	private Vector3f bounds;
@@ -152,8 +154,8 @@ public class AxisAlignedBBox {
 	}
 
 	public MTV collide(Polygon tri) {
-		final Vector3f tl = Vector3f.sub(center, bounds);
-		final Vector3f br = Vector3f.add(center, bounds);
+		final Vector3f tl = Vectors.sub(center, bounds);
+		final Vector3f br = Vectors.add(center, bounds);
 		MTV mtv = new MTV();
 
 		final Vector3f[] facePoints = new Vector3f[] {tri.p1, tri.p2, tri.p3};
@@ -184,16 +186,16 @@ public class AxisAlignedBBox {
 
 		// Get all edges of face
 		Vector3f[] faceEdges = new Vector3f[] {
-				Vector3f.sub(tri.p2, tri.p1),
-				Vector3f.sub(tri.p3, tri.p2),
-				Vector3f.sub(tri.p1, tri.p3)
+				Vectors.sub(tri.p2, tri.p1),
+				Vectors.sub(tri.p3, tri.p2),
+				Vectors.sub(tri.p1, tri.p3)
 		};
 
 		for (int i = 0; i < faceEdges.length; i++) {
 			for (int j = 0; j < 3; j++) {
 				Vector3f axis = faceEdges[i].cross(CollideUtils.axisPtrs[j]);
 				
-				if (axis.isZero())
+				if (Vectors.isZero(axis))
 					continue;
 				
 				boxBounds = project(boxPoints, axis);

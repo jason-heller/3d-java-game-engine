@@ -1,12 +1,8 @@
 package gl.generic;
 
 import shader.ShaderProgram;
-import shader.UniformFloatArray;
-import shader.UniformMat4Array;
 import shader.UniformMat4;
 import shader.UniformSampler;
-import shader.UniformSamplerArray;
-import shader.UniformVec2Array;
 import shader.UniformVec3Array;
 import shader.UniformVec4;
 

@@ -2,14 +2,11 @@ package gl.anim.render;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.joml.Matrix3f;
-import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
 import gl.Camera;
 import gl.Render;
 import gl.anim.Animator;
-import gl.line.LineRender;
 import gl.res.Mesh;
 import gl.res.Model;
 import gl.res.Texture;
@@ -52,14 +49,16 @@ public class AnimationHandler {
 			
 			int numMeshes = model.getMeshes().length;
 			
-			Matrix3f invTransRotMatrix = new Matrix3f();
+			/*Matrix3f invTransRotMatrix = new Matrix3f();
 			invTransRotMatrix.rotateX(entity.rot.x);
 			invTransRotMatrix.rotateY(entity.rot.y);
-			invTransRotMatrix.rotateZ(entity.rot.z);
+			invTransRotMatrix.rotateZ(entity.rot.z);*/
 			
 			//if (Debug.showNormals) {
 				// TODO
 			//}
+			
+			GL11.glDisable(GL11.GL_CULL_FACE);
 			
 			for(int i = 0; i < numMeshes; i++) {
 				Mesh mesh = model.getMeshes()[i];
@@ -74,14 +73,15 @@ public class AnimationHandler {
 
 				mesh.bind(0, 1, 2, 3, 4);
 				shader.modelMatrix.loadMatrix(entity.getMatrix());
-				shader.normalMatrix.loadMatrix(entity.getMatrix().toMatrix3f()); //  camera.getViewMatrix()
-				shader.invTransRotMatrix.loadMatrix(invTransRotMatrix);
-				shader.jointTransforms.loadMatrixArray(animator.getJointTransforms());
+				//shader.invTransRotMatrix.loadMatrix(invTransRotMatrix);
+				shader.jointTransforms.loadMatrixArray(animator.getPose());
 				
 				GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
 				Render.drawCalls++;
 				mesh.unbind(0, 1, 2, 3, 4);
 			}
+			
+			GL11.glEnable(GL11.GL_CULL_FACE);
 		}
 		shader.stop();
 	}

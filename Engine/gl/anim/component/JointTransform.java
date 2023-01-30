@@ -1,21 +1,23 @@
 package gl.anim.component;
 
-import org.joml.Quaternion;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class JointTransform {
 
 	private Vector3f position;
-	private Quaternion rotation;
+	private Quaternionf rotation;
 
-	public JointTransform(Vector3f position, Quaternion rotation) {
+	public JointTransform(Vector3f position, Quaternionf rotation) {
 		this.position = position;
 		this.rotation = rotation;
 	}
 	
 	public static JointTransform lerp(JointTransform frameA, JointTransform frameB, float progression) {
 		final Vector3f pos = interpolate(frameA.position, frameB.position, progression);
-		final Quaternion rot = Quaternion.interpolate(frameA.rotation, frameB.rotation, progression);
+		final Quaternionf rot = new Quaternionf(frameA.rotation);
+		rot.nlerp(frameB.rotation, progression);
+
 		return new JointTransform(pos, rot);
 	}
 	
@@ -30,7 +32,7 @@ public class JointTransform {
 		return position;
 	}
 	
-	public Quaternion getRotation() {
+	public Quaternionf getRotation() {
 		return rotation;
 	}
 
@@ -38,7 +40,7 @@ public class JointTransform {
 		this.position = position;
 	}
 	
-	public void setRotation(Quaternion rotation) {
+	public void setRotation(Quaternionf rotation) {
 		this.rotation = rotation;
 	}
 }

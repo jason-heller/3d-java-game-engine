@@ -18,7 +18,6 @@ import map.architecture.components.ArcClip;
 import map.architecture.vis.Bsp;
 import map.architecture.vis.BspLeaf;
 import map.architecture.vis.Cluster;
-import scene.Scene;
 import scene.mapscene.MapScene;
 
 public class ArcRenderMaster {

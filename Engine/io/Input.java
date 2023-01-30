@@ -3,6 +3,7 @@ package io;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.lwjgl.input.Controllers;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -444,6 +445,10 @@ public enum Input {
 				}
 			}
 		}
+		
+		//for(Component c : INPUT.controller.getComponents()) {
+		//	Console.log(c.getName(), c.getPollData());
+		//}
 	}
 
 	public static void requestMouseGrab() {
@@ -467,7 +472,6 @@ public enum Input {
 	private int[] keys;
 
 	private int[] states;
-	// private int[] mouse;
 
 	public final int NOT_PRESSED = 0;
 
@@ -495,5 +499,9 @@ public enum Input {
 	
 	public int[] getStates() {
 		return states;
+	}
+	
+	public static void cleanUp() {
+		Controllers.destroy();
 	}
 }

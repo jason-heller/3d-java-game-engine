@@ -5,7 +5,6 @@ import java.util.Map;
 
 import gl.Window;
 import gl.anim.Animation;
-import gl.anim.component.Joint;
 import io.Input;
 import scene.entity.util.PlayerEntity;
 import scene.mapscene.MapScene;
@@ -28,14 +27,21 @@ public class TrickManager {
 	
 	private float hangtime = 0f;
 	
-	private Map<Trick, Integer> trickDegregation;
+	private Map<Integer, Integer> trickDegregation;
+	private float currentDeg = 0f;
 	
 	private TrickUI trickUI;
 	
-	private int comboScore = 0;
-	private float multiplier = .5f;
+	private static final float TRICK_STRING_MULTIPLIER = .25f;
+	
+	private float comboScore = 0;
+	private float multiplier = 1f - TRICK_STRING_MULTIPLIER;
 	
 	private static final float MIN_GRIND_LEN = 10f * 11f;
+	private static final float MAX_GRIND_POINTS_PER_SECOND = 50;
+	private static final float MAX_GRIND_POINTS_PENALTY = 40;
+	
+	private boolean hasFlippedStance = true;
 	
 	public TrickManager(MapScene scene, PlayerEntity player) {
 		this.scene = scene;
@@ -51,18 +57,25 @@ public class TrickManager {
 		
 		if (!grounded)
 			hangtime += Window.deltaTime;
+		
+		if (currentTrick == null && player.isGrounded() && !player.isGrinding()) {
+			comboScore = 0;
+			multiplier = 1f - TRICK_STRING_MULTIPLIER;
+		}
 
 		if (grinding) {
+			trickUI.updateTrickSubtring((int)comboScore, multiplier);
+			comboScore += Window.deltaTime * (MAX_GRIND_POINTS_PER_SECOND - Math.min(currentDeg * 5f, MAX_GRIND_POINTS_PENALTY));
 			trickUI.setTimer(3f);
 		} else {
 			grindCooldownTimer = Math.max(grindCooldownTimer - Window.deltaTime, 0f);
 		}
 		
+		trickUI.update();
+		
 		if (trickTimer > 0f) {
 			trickTimer = Math.max(trickTimer - Window.deltaTime, 0f);
 		}
-		
-		trickUI.update();
 
 		final boolean TR_OLLIE = Input.isDown("tr_ollie"),
 				TR_FLIP = Input.isDown("tr_flip"),
@@ -93,6 +106,9 @@ public class TrickManager {
 			}
 			
 			if (TR_FLIP || TR_OLLIE) {
+				if (TR_OLLIE)
+					trickFlags &= (Integer.MAX_VALUE - 12);
+				
 				if (grounded) {
 					newTrick = TrickList.getTrick(TrickType.KICK_TRICK, trickFlags);
 				}
@@ -103,6 +119,10 @@ public class TrickManager {
 				
 				if (!grinding && trick != null) {
 					player.startGrind();
+					
+					// Reset the trick string if not comboing
+					if (player.isGrounded())
+						trickUI.clearTrickString();
 					
 					if (player.isGrinding()) {
 						bufferedTrick = trick;
@@ -140,52 +160,65 @@ public class TrickManager {
 	}
 
 	private void degradeTrick(Trick trick) {
-		Integer value = trickDegregation.get(trick);
+		int trickId = player.isSwitch() ? -trick.id : trick.id;
+		Integer value = trickDegregation.get(trickId);
 		
 		if (value == null) {
-			trickDegregation.put(trick, 1);
+			trickDegregation.put(trickId, 1);
+			currentDeg = 1;
 		} else {
 			int multiplier = value.intValue() + 1;
-			trickDegregation.put(trick, multiplier);
+			trickDegregation.put(trickId, multiplier);
+			currentDeg = multiplier;
 		}
 	}
 
-	public void handleOnTrickEnd() {
+	public void handleOnComboEnd() {
 		if (currentTrick == null)
 			return;
 
-		int points = getPoints(currentTrick);
-		
-		comboScore += points;
-		
-		int finalScore = (int) (comboScore * multiplier);
-		scene.addScore(finalScore);
+		float bonus;
 		
 		// Handle achievements
 		if (multiplier > 3) 
 			trickUI.addAchievement("\n#gBIG LINK!");
 		
-		if (hangtime > 1f)
+		if (hangtime > 1f) {
 			trickUI.addAchievement("\n#gBIG AIR!");
+		
+			bonus = 1f + (hangtime / 1.5f);
+			multiplier *= bonus;
+			trickUI.addAchievement("\n  #b+" + String.format("%.1f", bonus) + "x bonus");
+		}
 		
 		if (player.getGrindLen() > MIN_GRIND_LEN) {
 			float len = (float)(player.getGrindLen()) / 11f;
 			
-			trickUI.addAchievement("\n#gGRIND LENGTH: " + String.format("%.2f", len) + "m");
+			trickUI.addAchievement("\n#gGRIND LENGTH: " + String.format("%.1f", len) + "m");
+
+			if (len >= 12f) {
+				bonus = ((len - 12f) / 8f) + 1.1f;
+				multiplier *= bonus;
+				trickUI.addAchievement("\n  #b+" + String.format("%.1f", bonus) + "x bonus");
+			}
 		}
+		
+		int finalScore = (int) (comboScore * multiplier);
+		scene.addScore(finalScore);
 		
 		trickUI.setTrickSubstring("" + finalScore);
 		
 		currentTrick = null;
-		comboScore = 0;
-		multiplier = .5f;
+		comboScore = 0f;
+		multiplier = 1f - TRICK_STRING_MULTIPLIER;
 	}
 
 	private int getPoints(Trick trick) {
 		int points = trick.getPoints();
+		int trickId = player.isSwitch() ? -trick.id : trick.id;
 		
-		if (trickDegregation.containsKey(trick))
-			points /= trickDegregation.get(trick);
+		if (trickDegregation.containsKey(trickId))
+			points /= trickDegregation.get(trickId);
 
 		if (points < 10)
 			points = 0;
@@ -194,30 +227,32 @@ public class TrickManager {
 	}
 
 	private void startTrick() {
-		
-		if (currentTrick != null && currentTrick.isLandBackwards()) {
-			Joint joint = player.getModel().getSkeleton().getJoint("board");
-			player.getAnimator().getJointTransform(joint.index).getPosition().add(19, 100, 100);
-		}
+		if (!hasFlippedStance)
+			flipStance();
 		
 		trickUI.setTimer(3f);
 		
+		// Reset the trick string if not comboing
+		if (!player.isGrinding())
+			trickUI.clearTrickString();
 
 		hangtime = 0f;
 		
 		comboScore += getPoints(bufferedTrick);
-		multiplier += .5f;
+		multiplier += TRICK_STRING_MULTIPLIER;
 		degradeTrick(bufferedTrick);
 		
-		if (player.isGrounded() && !player.isGrinding())
-			trickUI.clearTrickString();
-		
-		trickUI.addToTrickString(bufferedTrick, getPoints(bufferedTrick), comboScore, multiplier);
+		trickUI.addToTrickString(player, bufferedTrick, getPoints(bufferedTrick), (int)comboScore, multiplier);
 		
 		if (bufferedTrick.getType() == TrickType.KICK_TRICK)
 			player.jump();
 		
+		if (bufferedTrick.isLandSwitch())
+			hasFlippedStance = false;
+		
 		Animation anim = bufferedTrick.getAnimation();
+		
+		player.trickEndFlagHandler();
 		player.getAnimator().start(anim);
 		
 		currentTrick = bufferedTrick;
@@ -225,9 +260,20 @@ public class TrickManager {
 		bufferedTrick = null;
 	}
 
-	
-
 	public boolean getPlayerIsBuffering() {
 		return isBuffering;
+	}
+
+	public Trick getCurrentTrick() {
+		return currentTrick;
+	}
+
+	public boolean hasFlippedStance() {
+		return this.hasFlippedStance;
+	}
+
+	public void flipStance() {
+		player.setSwitch(!player.isSwitch());
+		hasFlippedStance = true;
 	}
 }
