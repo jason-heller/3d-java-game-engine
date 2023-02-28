@@ -2,7 +2,7 @@ package map.architecture.components;
 
 import org.joml.Vector3f;
 
-import geom.AxisAlignedBBox;
+import geom.AABB;
 import geom.Plane;
 import scene.entity.Entity;
 import scene.entity.util.PhysicsEntity;
@@ -10,10 +10,10 @@ import scene.entity.util.PlayerEntity;
 import util.Vectors;
 
 public class ArcClip {
-	public AxisAlignedBBox bbox;
+	public Vector3f center;
+	public Vector3f halfSize;
 	public ClipType id;
-	// public int faceId;
-	public int firstPlane, numPlanes;
+	public int[] planes;
 
 	public Vector3f getPlaneIntersectionPoint(Plane p1, Plane p2, Plane p3) {
 		Vector3f n1 = p1.normal;

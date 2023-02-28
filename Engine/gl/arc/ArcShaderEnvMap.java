@@ -2,7 +2,8 @@ package gl.arc;
 
 import org.joml.Vector3f;
 
-import geom.AxisAlignedBBox;
+import dev.cmd.Console;
+import geom.AABB;
 import map.architecture.components.ArcClip;
 import shader.UniformSampler;
 import shader.UniformVec3;
@@ -26,10 +27,8 @@ public class ArcShaderEnvMap extends ArcShaderBase {
 	}
 
 	public void loadBoundingBox(ArcClip clip) {
-		AxisAlignedBBox box = clip.bbox;
-		
-		Vector3f max = Vectors.add(box.getCenter(), box.getBounds());
-		Vector3f min = Vectors.sub(box.getCenter(), box.getBounds());
+		Vector3f max = Vectors.add(clip.center, clip.halfSize);
+		Vector3f min = Vectors.sub(clip.center, clip.halfSize);
 
 		cubemapMax.loadVec3(max);
 		cubemapMin.loadVec3(min);

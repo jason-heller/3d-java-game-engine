@@ -75,7 +75,7 @@ public class Image implements Component {
 		return opacity;
 	}
 
-	public float getRotation() {
+	float getRotation() {
 		return rotation;
 	}
 

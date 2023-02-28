@@ -24,8 +24,8 @@ import ui.UI;
 
 public class App {
 	
-	public static final String TITLE = "Engine";
-	public static final String VERSION = "Version 0.4.0"; // Alpha Version, Minor, revision/patch
+	public static final String TITLE = "OpenSkate";
+	public static final String VERSION = "Version 0.1.0-engtest"; // Alpha Version, Minor, revision/patch
 	
 	public static Scene scene;
 	private static Class<?> nextScene;

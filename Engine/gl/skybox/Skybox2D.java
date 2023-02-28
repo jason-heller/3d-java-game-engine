@@ -58,8 +58,6 @@ public class Skybox2D implements Skybox {
 		Render.drawCalls++;
 		box.unbind(0);
 		shader.stop();
-		
-		
 	}
 	
 	public void cleanUp() {

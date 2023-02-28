@@ -61,7 +61,7 @@ public class BoundingBox {
 
 	}
 	
-	public boolean intersects(AxisAlignedBBox box) {
+	public boolean intersects(AABB box) {
 		return intersects(new BoundingBox(box.getCenter(), box.getBounds()));
 	}
 	

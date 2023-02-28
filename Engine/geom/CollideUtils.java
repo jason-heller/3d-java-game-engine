@@ -191,6 +191,7 @@ public class CollideUtils {
 				return Float.NaN;
 			}
 		}
+		
 		return planeRay;
 	}
 

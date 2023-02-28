@@ -6,6 +6,7 @@ import ui.menu.GuiPanel;
 import ui.menu.GuiSlider;
 import ui.menu.layout.GuiFlowLayout;
 import ui.menu.listener.SliderListener;
+import util.ThirdPersonCameraController;
 
 public class GameplayPanel extends GuiPanel {
 	
@@ -33,7 +34,7 @@ public class GameplayPanel extends GuiPanel {
 		addSeparator();
 		
 		add(new GuiLabel(x, y, "#SCamera"));
-		cameraSway = new GuiSlider(x, y, "Camera Sway", 0f, 1f, Camera.swayFactor, .01f);
+		cameraSway = new GuiSlider(x, y, "Camera Follow Distance", 5f, 35f, ThirdPersonCameraController.followDistance, .01f);
 		cameraSway.addListener(new SliderListener() {
 
 			@Override
@@ -42,7 +43,7 @@ public class GameplayPanel extends GuiPanel {
 
 			@Override
 			public void onRelease(float value) {
-				Camera.swayFactor = value;
+				ThirdPersonCameraController.followDistance = value;
 			}
 
 		});

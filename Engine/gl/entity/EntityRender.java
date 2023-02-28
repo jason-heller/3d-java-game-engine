@@ -12,12 +12,14 @@ import org.lwjgl.opengl.GL30;
 
 import core.Resources;
 import dev.Debug;
+import geom.AABB;
 import gl.Camera;
 import gl.Render;
 import gl.arc.ArcRenderMaster;
 import gl.generic.LightGenericShader;
 import gl.light.DynamicLight;
 import gl.light.DynamicLightHandler;
+import gl.line.LineRender;
 import gl.res.Mesh;
 import gl.res.Model;
 import gl.res.Texture;
@@ -25,6 +27,7 @@ import map.architecture.ActiveLeaves;
 import map.architecture.Architecture;
 import map.architecture.vis.BspLeaf;
 import scene.entity.Entity;
+import util.Colors;
 
 public class EntityRender {
 
@@ -101,12 +104,41 @@ public class EntityRender {
 		shader.stop();
 	}
 	
+	public static void render(Camera camera, Matrix4f matrix, Vector4f color, Model model) {
+		LightGenericShader shader = Render.getLightShader();
+		shader.start();
+		shader.projectionViewMatrix.loadMatrix(camera.getProjectionViewMatrix());
+		int numMeshes = model.getMeshes().length;
+
+		for(int j = 0; j < 6; j++)
+			shader.lights.loadVec3(j, 1, 1, 1);
+		
+		for(int i = 0; i < numMeshes; i++) {
+			Mesh mesh = model.getMeshes()[i];
+			Texture texture = model.getTextures()[i];
+
+			texture.bind(0);
+
+			shader.color.loadVec4(color.x, color.y, color.z, color.w);	
+			shader.modelMatrix.loadMatrix(matrix);
+
+			mesh.bind(0, 1, 2);
+			GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getIndexCount(), GL11.GL_UNSIGNED_INT, 0);
+		}
+		shader.stop();
+	}
+	
 	private void render(Architecture arc, Camera camera, Entity entity, LightGenericShader shader) {
 		Model model = entity.getModel();
 		
 		if (model == null || !entity.visible || entity.getAnimator() != null) 
 			return;
 
+		if (Debug.showModelBounds) {
+			AABB aabb = model.getBoundingBox();
+			LineRender.drawBox(new Vector3f(aabb.getCenter()).add(entity.position), aabb.getBounds(), Colors.DK_VIOLET);
+		}
+		
 		int numMeshes = model.getMeshes().length;
 		for(int i = 0; i < numMeshes; i++) {
 			Mesh mesh = model.getMeshes()[i];

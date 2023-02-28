@@ -19,13 +19,14 @@ import util.Vectors;
 public class DecalEntity extends Entity {
 	
 	public DecalEntity(Vector3f pos, String tex) {
-		this(pos, Resources.getMesh("cube"), Resources.getTexture(tex));
+		this(pos, Resources.getMesh("quad"), Resources.getTexture(tex));
 	}
 	
 	public DecalEntity(Vector3f pos, Mesh model, Texture tex) {
 		super("decal");
 		setModel(model, tex);
 		this.position = pos;
+	
 	}
 	
 	@Override

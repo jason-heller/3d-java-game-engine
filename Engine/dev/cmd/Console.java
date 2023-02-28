@@ -50,6 +50,7 @@ public class Console {
 	private static int lineViewInd = 0;
 	
 	private static DecimalFormat df = new DecimalFormat("0.0000");
+	public static boolean isBlocking = true;
 
 	public static void clear() {
 		log.clear();
@@ -76,7 +77,7 @@ public class Console {
 	public static void severe(Object... objects) {
 		for (Object obj : objects) {
 			log("#rSevere: " + obj);
-			System.err.println(objects);
+			System.err.println(obj.toString());
 		}
 	}
 
@@ -107,7 +108,7 @@ public class Console {
 	}
 
 	public static void log(String text) {
-		final String[] lines = StrUtils.splitByWidth(Font.consoleFont, text, WIDTH, FONT_SIZE);
+		final String[] lines = StrUtils.splitByWidth(Font.defaultFont, text, WIDTH, FONT_SIZE);
 		
 		for (final String line : lines) {
 			log.add(line);
@@ -344,12 +345,12 @@ public class Console {
 			UI.drawImage(border);
 			UI.drawImage(backdrop);
 
-			UI.drawString(Font.consoleFont, "Console", x + 3, y + 3, .16f, UI.width, false).setDepth(-Integer.MAX_VALUE);
+			UI.drawString(Font.defaultFont, "Console", x + 3, y + 3, .16f, UI.width, false).setDepth(-Integer.MAX_VALUE);
 
 			final int lineBottomViewInd = lineViewInd + VISIBLE_LINES - 1;
 			for (int i = lineViewInd; i < log.size() && i < lineBottomViewInd; i++) {
 				final int lineY = y + HEADER_HEIGHT + BORDER_WIDTH + (i - lineViewInd) * FONT_HEIGHT;
-				UI.drawString(Font.consoleFont, log.get(i), x + BORDER_WIDTH * 2, lineY, FONT_SIZE, UI.width, false)
+				UI.drawString(Font.defaultFont, log.get(i), x + BORDER_WIDTH * 2, lineY, FONT_SIZE, UI.width, false)
 						.setDepth(-Integer.MAX_VALUE);
 			}
 
@@ -365,16 +366,16 @@ public class Console {
 
 				final String color = lineCopyInd == i ? "#w" : "#6";
 
-				UI.drawString(Font.consoleFont, color + predictions.get(i), x + BORDER_WIDTH * 2, lineY, FONT_SIZE,
+				UI.drawString(Font.defaultFont, color + predictions.get(i), x + BORDER_WIDTH * 2, lineY, FONT_SIZE,
 						UI.width, false).setDepth(-Integer.MAX_VALUE);
 			}
 
 			final String blinker = System.currentTimeMillis() % 750 > 375 ? "|" : "";
 			
-			String[] inputTrunc = StrUtils.splitByWidth(Font.consoleFont, ">" + input, WIDTH-12, FONT_SIZE);
+			String[] inputTrunc = StrUtils.splitByWidth(Font.defaultFont, ">" + input, WIDTH-12, FONT_SIZE);
 			String cont = (inputTrunc.length > 1) ? "..." : blinker;
 			
-			UI.drawString(Font.consoleFont, inputTrunc[0] + cont, x + BORDER_WIDTH * 2,
+			UI.drawString(Font.defaultFont, inputTrunc[0] + cont, x + BORDER_WIDTH * 2,
 					y + BORDER_WIDTH + (VISIBLE_LINES + 1) * FONT_HEIGHT, FONT_SIZE, UI.width, false).setDepth(-Integer.MAX_VALUE);
 		}
 
@@ -442,7 +443,7 @@ public class Console {
 		for (int i = 0; i < preds.size(); i++) {
 			final int lineY = boxY + (i) * FONT_HEIGHT;
 
-			UI.drawString(Font.consoleFont, "#s" + preds.get(i), x + 28 + BORDER_WIDTH * 2, lineY, FONT_SIZE,
+			UI.drawString(Font.defaultFont, "#s" + preds.get(i), x + 28 + BORDER_WIDTH * 2, lineY, FONT_SIZE,
 					UI.width, false).setDepth(-Integer.MAX_VALUE);
 		}
 	}

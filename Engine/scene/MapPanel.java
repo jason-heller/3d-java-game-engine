@@ -1,6 +1,7 @@
 package scene;
 
 import scene.menu.MainMenuUI;
+import ui.Font;
 import ui.UI;
 import ui.menu.GuiMenu;
 import ui.menu.GuiPanel;
@@ -17,8 +18,8 @@ public class MapPanel extends GuiPanel {
 		GuiRowLayout rowLayout = new GuiRowLayout(192, 24);
 		setLayout(rowLayout, x, y, UI.width, UI.height);
 	
-		menu = new GuiMenu(300, 300, "Map 01", "Map 02", "light_test", "Back");
-		menu.setBordered(true);
+		menu = new GuiMenu(300, 300, "Railyard", "Blue Hill Plaza", "Test Room", "Back");
+		menu.setFont(Font.vhsFont);
 		add(menu);
 		
 		menu.addListener(new MenuListener() {
@@ -33,7 +34,7 @@ public class MapPanel extends GuiPanel {
 					ui.changeMap("map02");
 					break;
 				case 2:
-					ui.changeMap("test");
+					ui.changeMap("light_test");
 					break;
 				case 3:
 					setFocus(false);

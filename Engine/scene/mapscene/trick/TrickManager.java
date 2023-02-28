@@ -1,8 +1,11 @@
 package scene.mapscene.trick;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import dev.cmd.Console;
 import gl.Window;
 import gl.anim.Animation;
 import io.Input;
@@ -22,8 +25,9 @@ public class TrickManager {
 	
 	private float holdBufferTimer = 0f;
 	private float trickTimer = 0f;
-	private float grindCooldownTimer = 0f;
+	private float trickCooldownTimer = 0f;
 	private int lastControlBuffer = -1;
+	private float trickDelay = 0f;
 	
 	private float hangtime = 0f;
 	
@@ -31,6 +35,8 @@ public class TrickManager {
 	private float currentDeg = 0f;
 	
 	private TrickUI trickUI;
+	
+	private List<Trick> comboList;
 	
 	private static final float TRICK_STRING_MULTIPLIER = .25f;
 	
@@ -42,6 +48,7 @@ public class TrickManager {
 	private static final float MAX_GRIND_POINTS_PENALTY = 40;
 	
 	private boolean hasFlippedStance = true;
+	private int highestCombo;
 	
 	public TrickManager(MapScene scene, PlayerEntity player) {
 		this.scene = scene;
@@ -49,18 +56,46 @@ public class TrickManager {
 		trickDegregation = new HashMap<>();
 		
 		trickUI = new TrickUI();
+		comboList = new ArrayList<>();
 	}
 
 	public void update() {
 		final boolean grounded = player.isGrounded();
 		final boolean grinding = player.isGrinding();
 		
-		if (!grounded)
+		final boolean TR_OLLIE = Input.isDown("tr_ollie"),
+				TR_FLIP = Input.isDown("tr_flip"),
+				TR_AIR = Input.isDown("tr_air"),
+				TR_MODIFIER_LEFT = Input.isDown("tr_modifier_l"),
+				TR_MODIFIER_RIGHT = Input.isDown("tr_modifier_r"),
+				TR_GRIND = Input.isDown("tr_grind");
+		
+		if (!grounded) {
 			hangtime += Window.deltaTime;
+			
+			if (currentTrick != null) {
+				if (currentTrick.getType() == TrickType.GRAB_TRICK && !player.getAnimator().getCurrentAnimation().equals("fall")) {
+					trickUI.updateTrickSubtring((int)comboScore, multiplier);
+					comboScore += hangtime * 2f;
+					trickUI.setTimer(3f);
+					
+					if (!TR_AIR && this.trickTimer == 0f)
+						player.getAnimator().start("fall");
+					
+				} else if (currentTrick.getType() == TrickType.KICK_TRICK) {
+					trickUI.setTimer(3f);
+				}
+			}
+		}
+		
+		if (player.isInVert() && bufferedTrick != null) {
+			startTrick();
+		}
 		
 		if (currentTrick == null && player.isGrounded() && !player.isGrinding()) {
 			comboScore = 0;
 			multiplier = 1f - TRICK_STRING_MULTIPLIER;
+			comboList.clear();
 		}
 
 		if (grinding) {
@@ -68,7 +103,7 @@ public class TrickManager {
 			comboScore += Window.deltaTime * (MAX_GRIND_POINTS_PER_SECOND - Math.min(currentDeg * 5f, MAX_GRIND_POINTS_PENALTY));
 			trickUI.setTimer(3f);
 		} else {
-			grindCooldownTimer = Math.max(grindCooldownTimer - Window.deltaTime, 0f);
+			trickCooldownTimer = Math.max(trickCooldownTimer - Window.deltaTime, 0f);
 		}
 		
 		trickUI.update();
@@ -76,13 +111,6 @@ public class TrickManager {
 		if (trickTimer > 0f) {
 			trickTimer = Math.max(trickTimer - Window.deltaTime, 0f);
 		}
-
-		final boolean TR_OLLIE = Input.isDown("tr_ollie"),
-				TR_FLIP = Input.isDown("tr_flip"),
-				TR_AIR = Input.isDown("tr_air"),
-				TR_MODIFIER_LEFT = Input.isDown("tr_modifier_l"),
-				TR_MODIFIER_RIGHT = Input.isDown("tr_modifier_r"),
-				TR_GRIND = Input.isDown("tr_grind");
 		
 		int trickFlags = 0;
 		Trick newTrick = null;
@@ -101,7 +129,7 @@ public class TrickManager {
 					+ (TR_MODIFIER_LEFT ? 256 : 0)
 					+ (TR_MODIFIER_RIGHT ? 512 : 0);
 			
-			if (!isBuffering && !grinding && grounded && trickFlags != 0) {
+			if (!isBuffering && !grinding && grounded && trickFlags >= 16) {
 				player.getAnimator().start("charge");
 			}
 			
@@ -114,7 +142,22 @@ public class TrickManager {
 				}
 			}
 			
-			if (TR_GRIND && !grinding && grindCooldownTimer == 0f) {
+			if (TR_AIR && !grounded) {
+				if (currentTrick == null || player.getAnimator().getCurrentAnimation().equals("fall")) {
+					trickDelay += Window.deltaTime;
+					
+					if (trickDelay > .13) {
+						bufferedTrick = TrickList.getTrick(TrickType.GRAB_TRICK, trickFlags);
+						trickDelay = 0f;
+						
+						if (bufferedTrick != null)
+							startTrick();
+					}
+					
+				}
+			}
+			
+			if (TR_GRIND && !grinding && trickCooldownTimer == 0f) {
 				Trick trick = TrickList.getTrick(TrickType.GRIND_TRICK, trickFlags);
 				
 				if (!grinding && trick != null) {
@@ -122,25 +165,22 @@ public class TrickManager {
 					
 					// Reset the trick string if not comboing
 					if (player.isGrounded())
-						trickUI.clearTrickString();
+						endCombo();
 					
 					if (player.isGrinding()) {
 						bufferedTrick = trick;
 						startTrick();
-						grindCooldownTimer = .2f;
+						trickCooldownTimer = .2f;
 					}
 					
 				}
 			}
 			
-			/*if ((grounded || grinding || hasInfiniteJumps) && trickFlags == TRICK_OLLIE) {
-				bufferedTrick = TrickList.getTrick(TrickType.KICK_TRICK, TRICK_OLLIE);
-			}*/
-			isBuffering = grounded && (TR_FLIP || TR_OLLIE || TR_AIR);
+			isBuffering = grounded && (TR_FLIP || TR_OLLIE);
 			
 			if (lastBuffered != newTrick) {
 				if (trickFlags < lastControlBuffer) {
-					holdBufferTimer = .1f;
+					holdBufferTimer = .065f;
 				} else {
 					lastBuffered = bufferedTrick;
 					bufferedTrick = newTrick;
@@ -183,7 +223,7 @@ public class TrickManager {
 		if (multiplier > 3) 
 			trickUI.addAchievement("\n#gBIG LINK!");
 		
-		if (hangtime > 1f) {
+		if (hangtime > 2f) {
 			trickUI.addAchievement("\n#gBIG AIR!");
 		
 			bonus = 1f + (hangtime / 1.5f);
@@ -192,7 +232,7 @@ public class TrickManager {
 		}
 		
 		if (player.getGrindLen() > MIN_GRIND_LEN) {
-			float len = (float)(player.getGrindLen()) / 11f;
+			float len = (float)(player.getGrindLen()) / 12f;
 			
 			trickUI.addAchievement("\n#gGRIND LENGTH: " + String.format("%.1f", len) + "m");
 
@@ -204,7 +244,11 @@ public class TrickManager {
 		}
 		
 		int finalScore = (int) (comboScore * multiplier);
-		scene.addScore(finalScore);
+		
+		if (!MapScene.preRound) {
+			scene.addScore(finalScore);
+			highestCombo = (int) Math.max(highestCombo, comboScore * multiplier);
+		}
 		
 		trickUI.setTrickSubstring("" + finalScore);
 		
@@ -233,18 +277,20 @@ public class TrickManager {
 		trickUI.setTimer(3f);
 		
 		// Reset the trick string if not comboing
-		if (!player.isGrinding())
-			trickUI.clearTrickString();
+		if (!player.isGrinding() && !player.getAnimator().getCurrentAnimation().equals("fall"))
+			endCombo();
 
 		hangtime = 0f;
 		
 		comboScore += getPoints(bufferedTrick);
 		multiplier += TRICK_STRING_MULTIPLIER;
-		degradeTrick(bufferedTrick);
+		
+		if (!MapScene.preRound)
+			degradeTrick(bufferedTrick);
 		
 		trickUI.addToTrickString(player, bufferedTrick, getPoints(bufferedTrick), (int)comboScore, multiplier);
 		
-		if (bufferedTrick.getType() == TrickType.KICK_TRICK)
+		if (bufferedTrick.getType() == TrickType.KICK_TRICK && player.isGrounded())
 			player.jump();
 		
 		if (bufferedTrick.isLandSwitch())
@@ -258,6 +304,13 @@ public class TrickManager {
 		currentTrick = bufferedTrick;
 		trickTimer = anim.getDuration();
 		bufferedTrick = null;
+		
+		comboList.add(currentTrick);
+	}
+
+	private void endCombo() {
+		trickUI.clearTrickString();
+		comboList.clear();
 	}
 
 	public boolean getPlayerIsBuffering() {
@@ -275,5 +328,82 @@ public class TrickManager {
 	public void flipStance() {
 		player.setSwitch(!player.isSwitch());
 		hasFlippedStance = true;
+	}
+
+	public int getHighestCombo() {
+		return highestCombo;
+	}
+
+	public List<Trick> getComboList() {
+		return comboList;
+	}
+
+	public void addTrick(String trickName, int points, float addedMultiplier) {
+		trickUI.addToTrickString(trickName, points, (int)comboScore, addedMultiplier);
+		
+		multiplier += addedMultiplier;
+		comboScore += points;
+	}
+
+	public boolean comboContains(TrickType targetType) {
+		for(int i = 0; i < comboList.size(); i++) {
+			if (comboList.get(i).getType() == targetType)
+				return true;
+		}
+		
+		return false;
+	}
+	
+	public boolean comboContains(Trick targetTrick) {
+		for(int i = 0; i < comboList.size(); i++) {
+			if (comboList.get(i) == targetTrick)
+				return true;
+		}
+		
+		return false;
+	}
+	
+	public boolean comboContainsGap(String gap) {
+		return this.trickUI.getTrickString().contains("#b" + gap);
+	}
+
+	public boolean comboContains(Trick[] requiredTricks) {
+		boolean[] fulfilled = new boolean[requiredTricks.length];
+		
+		for(int i = 0; i < requiredTricks.length; i++) {
+			Trick trick = requiredTricks[i];
+			for(int j = 0; j < comboList.size(); j++) {
+				if (comboList.get(j) == trick) {
+					fulfilled[j] = true;
+					break;
+				}
+			}
+		}
+		
+		for(int i = 0; i < fulfilled.length; i++) {
+			if (!fulfilled[i])
+				return false;
+		}
+		
+		return true;
+	}
+	
+	public boolean comboContainsOrdered(Trick[] requiredTricks) {
+		int fulfilled = 0;
+		
+		for(int i = 0; i < comboList.size(); i++) {
+			if (comboList.get(i) == requiredTricks[0]) {
+				for(int j = 1; j < requiredTricks.length && i + j < comboList.size(); j++) {
+					if (comboList.get(i + j) != requiredTricks[j])
+						return false;
+					
+					fulfilled++;
+				}
+				
+				return fulfilled == requiredTricks.length - 1;
+			}
+		}
+		
+		return false;
 	}
 }

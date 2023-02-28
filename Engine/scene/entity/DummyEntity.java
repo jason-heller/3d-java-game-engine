@@ -6,7 +6,6 @@ public class DummyEntity extends Entity implements Spawnable {
 
 	public DummyEntity() {
 		super("dummy");
-		setModel(new String[] {"cube"}, new String[] {"default"});
 	}
 
 	@Override

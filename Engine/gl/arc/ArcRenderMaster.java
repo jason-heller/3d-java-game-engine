@@ -6,6 +6,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
 import dev.Debug;
+import dev.cmd.Console;
 import gl.Camera;
 import gl.Render;
 import gl.light.DynamicLight;
@@ -58,7 +59,8 @@ public class ArcRenderMaster {
 			if (Debug.showClips) {
 				for(short id : leaf.clips ) {
 					ArcClip clip = bsp.clips[id];
-					LineRender.drawBox(clip.bbox.getCenter(), clip.bbox.getBounds(), clip.id.getColor());
+					LineRender.drawBox(clip.center, clip.halfSize, clip.id.getColor());
+					// TODO: FOR EACH PLANE, FIND THE INTERSECTIONS AND RENDER THE LINES
 				}
 			}
 			

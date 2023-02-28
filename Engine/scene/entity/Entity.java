@@ -32,7 +32,7 @@ public abstract class Entity {
 	protected String name;
 	
 	public boolean deactivated;
-	private Vector3f[] lighting = new Vector3f[6];
+	protected Vector3f[] lighting = new Vector3f[6];
 	
 	protected BspLeaf leaf;
 
@@ -70,7 +70,6 @@ public abstract class Entity {
 		for(int i = 0; i < numMeshes; i++) {
 			meshes[i] = Resources.getMesh(meshRefs[i]);
 			textures[i] = Resources.getTexture(textureRefs[i]);	
-			
 			if (meshes[i] == Resources.ERROR.getMeshes()[0]) {
 				loadFailed = true;
 				break;
@@ -81,7 +80,10 @@ public abstract class Entity {
 	}
 	
 	public void setModel(Mesh mesh, Texture texture) {
-		model = new Model(new Mesh[] {mesh}, new Texture[] {texture});
+		if (mesh == Resources.ERROR.getMeshes()[0])
+			model = Resources.ERROR;
+		else
+			model = new Model(new Mesh[] {mesh}, new Texture[] {texture});
 	}
 	
 	public String getName() {

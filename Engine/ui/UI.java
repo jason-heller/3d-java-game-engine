@@ -73,6 +73,10 @@ public class UI {
 
 		components.add(component);
 	}
+	
+	public static void addComponent(Component component, Matrix4f matrix) {
+		worldSpaceComponents.put(matrix, component);
+	}
 
 	public static void cleanUp() {
 		shader.cleanUp();
@@ -135,13 +139,14 @@ public class UI {
 		float len = (float)Math.sqrt(dx*dx + dy*dy);
 		float dir = MathUtil.pointDirection(x1, y1, x2, y2);
 		
-		final Image img = new Image("none", (x1+x2)/2f, (y1+y2)/2f);
+		final Image img = new Image("none", x1, y1);
 		img.w = len;
 		img.h = width;
 		img.setColor(color);
 		img.setOpacity(opacity);
 		img.setRotation(dir);
 		img.markAsTemporary();
+		img.setCentered(false);
 		addComponent(img);
 		return img;
 	}
@@ -194,7 +199,7 @@ public class UI {
 		addComponent(txt);
 		return txt;
 	}
-
+	
 	public static Text drawString(String text, float x, float y, float fontSize, float lineWidth, boolean centered) {
 		final Text txt = new Text(Font.defaultFont, text, x, y, fontSize, lineWidth, centered);
 		txt.setOpacity(opacity);
@@ -257,7 +262,9 @@ public class UI {
 	public static void render(Scene scene) {
 		if (hideUI) 
 			return;
-		
+
+
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
 		renderWorldSpace(scene);
 
 		prepare();
@@ -299,12 +306,11 @@ public class UI {
 					GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
 				} // GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 			}
-
-			
 		}
 
 		quad.unbind(0, 1);
 
+		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		shader.stop();
 		finish();
 	}
@@ -322,7 +328,7 @@ public class UI {
 			worldSpaceShader.worldMatrix.loadMatrix(matrix);
 			
 			if (component instanceof Image) {
-				GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+				//GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 				final Image image = (Image) component;
 				image.gfx.bind(0);
 				GL11.glDisable(GL11.GL_CULL_FACE);	// HACK: Since FBOs render upside down
@@ -362,19 +368,16 @@ public class UI {
 
 		worldSpaceShader.stop();
 		finish();
-		GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 	}
 	
 	private static void prepare() {
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-		GL11.glDisable(GL11.GL_DEPTH_TEST);
 		GL13.glActiveTexture(GL13.GL_TEXTURE0);
 	}
 	
 	private static void finish() {
 		GL11.glDisable(GL11.GL_BLEND);
-		GL11.glEnable(GL11.GL_DEPTH_TEST);
 	}
 
 	public static void setOpacity(float newOpacity) {

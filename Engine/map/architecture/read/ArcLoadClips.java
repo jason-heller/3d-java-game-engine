@@ -4,7 +4,8 @@ import java.io.IOException;
 
 import org.joml.Vector3f;
 
-import geom.AxisAlignedBBox;
+import dev.cmd.Console;
+import geom.AABB;
 import io.FileUtils;
 import map.architecture.Architecture;
 import map.architecture.components.ArcClip;
@@ -17,45 +18,28 @@ public class ArcLoadClips {
 	static void readClips(Architecture arc, CounterInputStream in) throws IOException {
 		Bsp bsp = arc.bsp;
 		
-		int[] clipEdges = new int[in.readShort()];
-		for (int i = 0; i < clipEdges.length; i++) {
-			clipEdges[i] = in.readShort();		// ptr to edge
-		}
-		bsp.clipPlaneIndices = clipEdges;
 		int numClips = in.readShort();
-		/*int numTriggerEvents = */in.readShort();	// Unused
-		// int triggerIndex = 0;
 		ArcClip[] clips = new ArcClip[numClips];
 		
 		for (int i = 0; i < clips.length; i++) {
-			ClipType clipType = ClipType.values()[in.readByte()];
-			Vector3f center, bounds;
 			
-			if (clipType == ClipType.TRIGGER) {
-				ArcTriggerClip trigger = new ArcTriggerClip(arc);
-				trigger.firstPlane = in.readShort(); // ptr to clipedges
-				trigger.numPlanes = in.readShort();
-				center = new Vector3f(in.readShort(), in.readShort(), in.readShort());
-				bounds = new Vector3f(in.readShort(), in.readShort(), in.readShort());
-				
-				trigger.commandEnter = FileUtils.readString(in);
-				trigger.commandExit = FileUtils.readString(in);
-				trigger.style = in.readByte();
-				trigger.whitelist = FileUtils.readString(in).split(",");
-				
-				clips[i] = trigger;
-			} else {
-				clips[i] = new ArcClip();
-				clips[i].firstPlane = in.readShort(); // ptr to clipedges
-				clips[i].numPlanes = in.readShort();
-				
-				center = new Vector3f(in.readShort(), in.readShort(), in.readShort());
-				bounds = new Vector3f(in.readShort(), in.readShort(), in.readShort());
-			}
+			final int clipId = in.readByte() & 0xFF;
+			final int numPlanes = in.readByte() & 0xFF;
 			
-			clips[i].id = clipType;
-			clips[i].bbox = new AxisAlignedBBox(center, bounds);
+			final ClipType clipType = ClipType.values()[clipId];
+			int[] planes = new int[numPlanes];
+			
+			for(int j = 0; j < numPlanes; j++)
+				planes[j] = in.readInt();
+			
+			ArcClip clip = new ArcClip();
+			clip.planes = planes;
+			clip.id = clipType;
+			clip.center = new Vector3f(in.readFloat(), in.readFloat(), in.readFloat());
+			clip.halfSize = new Vector3f(in.readFloat(), in.readFloat(), in.readFloat());
+			clips[i] = clip;
 		}
+		
 		bsp.clips = clips;
 	}
 }

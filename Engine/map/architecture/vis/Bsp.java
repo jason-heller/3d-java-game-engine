@@ -32,7 +32,6 @@ public class Bsp {
 	public short[] leafFaceIndices;
 
 	public ArcClip[] clips;
-	public int[] clipPlaneIndices;
 
 	public ArcObjects objects;
 
@@ -73,9 +72,9 @@ public class Bsp {
 				nextNode = node.childrenId[0];
 			}
 		}
-		
-		id = -1-nextNode;
-		
+
+		id = -1 - nextNode;
+
 		return leaves[id];
 	}
 	

@@ -19,7 +19,7 @@ import core.Resources;
 import dev.Debug;
 import dev.RailBuilder;
 import dev.cmd.Console;
-import geom.AxisAlignedBBox;
+import geom.AABB;
 import geom.CollideUtils;
 import geom.MTV;
 import geom.Plane;
@@ -76,7 +76,6 @@ public class Architecture {
 	private ActiveLeaves activeLeaves = new ActiveLeaves();
 	private BspLeaf currentLeaf = null;
 	
-	public Vector3f[] vertices;
 	private List<ParticleEmitter> emitters = new ArrayList<ParticleEmitter>();
 	
 	private ArcTextureData textureData;
@@ -203,23 +202,14 @@ public class Architecture {
 			Entity entity = iter.next();
 			ArcTriggerClip trigger = activeTriggers.get(entity);
 			
-			if (entity instanceof PhysicsEntity) {
-				PhysicsEntity physEnt = (PhysicsEntity)entity;
-				
-				Plane[] planes = new Plane[trigger.numPlanes];
-				for(int i = 0; i < trigger.numPlanes; i++) 
-					planes[i] = bsp.planes[bsp.clipPlaneIndices[trigger.firstPlane + i]];
-				
-				MTV mtv = CollideUtils.convexHullBoxCollide(planes, physEnt.getBBox());
-				if (mtv == null) {
-					trigger.interact(entity, false);
-					iter.remove();
-				}
-			} else {
-				if (!trigger.bbox.collide(entity.position)) {
-					trigger.interact(entity, false);
-					iter.remove();
-				}
+			Plane[] planes = new Plane[trigger.planes.length];
+			for(int i = 0; i < planes.length; i++) 
+				planes[i] = bsp.planes[trigger.planes[i]];
+			
+			MTV mtv = CollideUtils.convexHullBoxCollide(planes, entity.getBBox());
+			if (mtv == null) {
+				trigger.interact(entity, false);
+				iter.remove();
 			}
 		}
 	}
@@ -261,7 +251,7 @@ public class Architecture {
 	}
 	
 	public void cleanUp() {
-		if (bsp == null)
+		if (bsp == null || bsp.leaves == null)
 			return;
 		
 		bsp.cleanUp();
@@ -385,7 +375,7 @@ public class Architecture {
 			Vector3f bounds = Vectors.sub(leaf.max, leaf.min).div(2f);
 			Vector3f center = Vectors.add(leaf.min, bounds);
 			
-			float distLeaf = new AxisAlignedBBox(center, bounds).collide(org, dir);
+			float distLeaf = new AABB(center, bounds).collide(org, dir);
 			
 			if (Float.isInfinite(distLeaf))
 				continue;
@@ -396,8 +386,6 @@ public class Architecture {
 				for(ArcFace face : faces) {
 					
 					if (face.texMapping == -1) continue;
-					//ArcTextureMapping texData = bsp.getTextureMappings()[face.texMapping];
-					//if (texData.textureId == -1) continue;
 					
 					float dist = CollideUtils.raycastMapGeometry(bsp, face, org, dir);
 					if (!Float.isNaN(dist) && dist < shortestDist) {
@@ -430,7 +418,7 @@ public class Architecture {
 		this.textureData = textureData;
 	}
 
-	public List<BspLeaf> getVisibleLeavesIntersecting(AxisAlignedBBox box) {
+	public List<BspLeaf> getVisibleLeavesIntersecting(AABB box) {
 		Vector3f max = Vectors.add(box.getCenter(), box.getBounds());
 		Vector3f min = Vectors.sub(box.getCenter(), box.getBounds());
 		activeLeaves.beginIteration();
@@ -458,9 +446,8 @@ public class Architecture {
 		
 		for(int index : environmentMaps.keySet()) {
 			ArcClip clip = bsp.clips[index];
-			Vector3f center = clip.bbox.getCenter();
 			
-			float dist = Vectors.distanceSquared(center, position);
+			float dist = Vectors.distanceSquared(clip.center, position);
 			
 			if (dist < closest) {
 				closest = dist;

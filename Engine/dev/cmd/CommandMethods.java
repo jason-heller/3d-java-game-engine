@@ -119,7 +119,7 @@ public class CommandMethods {
 		Entity entity = null;
 		
 		if (a.startsWith("@")) {
-			entity = EntityHandler.getEntity(a.substring(1));
+			entity = EntityHandler.getEntityByName(a.substring(1));
 			
 			if (entity == null) {
 				Console.log("No such entity: \"" + a.substring(1) + "\"");
@@ -151,7 +151,7 @@ public class CommandMethods {
 		Entity entity = null;
 		
 		if (a.startsWith("@")) {
-			entity = EntityHandler.getEntity(a.substring(1));
+			entity = EntityHandler.getEntityByName(a.substring(1));
 			
 			if (entity == null) {
 				Console.log("No such entity: \"" + a.substring(1) + "\"");

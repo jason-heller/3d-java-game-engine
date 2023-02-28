@@ -6,13 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 import core.App;
-import geom.AxisAlignedBBox;
 import gl.Camera;
 import gl.Render;
 import gl.Window;
@@ -30,12 +28,20 @@ public class EnvMapBuilder {
 	private static final int WIDTH = 64, HEIGHT = 64;
 	
 	// Yaw, Pitch
+	private static final float HALFPI = (float)Math.PI / 2f;
 	
-	private static final int[] DIRECTIONS = new int[] {
+	private static final float[] DIRECTIONS = new float[] {
 			// +X,-X,+Y,-Y,+Z,-Z
 			//180,0, 0,0, 0,90, 0,-90, 90,0, 270,0
 			// +Z -Z -Y +Y +X -X
-			90,0, 270,0, 0,-90, 0,90, 0,0, 180,0
+			HALFPI*3f, 0,
+			HALFPI, 0,
+			
+			0, -HALFPI,
+			0, HALFPI,
+			
+			HALFPI*2f, 0,
+			0, 0
 	};
 	
 	public static void build_environment_maps() {
@@ -77,11 +83,9 @@ public class EnvMapBuilder {
 	}
 
 	private static void buildEnvironmentMap(ArcClip clip, int clipIndex, DataOutputStream outputStream) throws IOException {
-		AxisAlignedBBox bbox = clip.bbox;
-		Vector3f center = bbox.getCenter();
 		Camera camera = App.scene.getCamera();
 		
-		camera.getPosition().set(center);
+		camera.getPosition().set(clip.center);
 		camera.clearEffectRotations();
 		
 		final int windowWidth = Window.getWidth();

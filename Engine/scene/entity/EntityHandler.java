@@ -8,6 +8,7 @@ import java.util.Map;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import dev.cmd.Console;
 import gl.Camera;
 import gl.entity.EntityRender;
 import map.architecture.ActiveLeaves;
@@ -38,15 +39,7 @@ public class EntityHandler {
 	public static void addEntity(Entity entity) {
 		Integer leafId = Integer.valueOf(-1);
 		BspLeaf leaf = arc.bsp.walk(entity.position, leafId);
-		/*List<Entity> batch = entities.get(leaf);
-		
-		if (batch == null) {
-			batch = new ArrayList<Entity>();
-			entities.put(leaf, batch);
-		}
-		
-		batch.add(entity);*/
-		
+
 		if (entity.deactivationRange == 0f) {
 			// Static
 			List<Entity> batch = staticEntities.get(leaf);
@@ -55,9 +48,6 @@ public class EntityHandler {
 				staticEntities.put(leaf, batch);
 			}
 			batch.add(entity);
-			//if (ArcHandler.) {
-			//	activeLeafs.put(leaf, leafId);
-			//}
 		} else {
 			// Dynamic
 			dynamicEntities.add(entity);
@@ -145,7 +135,7 @@ public class EntityHandler {
 		dynamicEntities.clear();
 	}
 
-	public static Entity getEntity(String name) {
+	public static Entity getEntityByName(String name) {
 		for(List<Entity> batch : staticEntities.values()) {
 			for(Entity entity : batch) {
 				
@@ -162,6 +152,28 @@ public class EntityHandler {
 		}
 		
 		return null;
+	}
+	
+	public static List<Entity> getEntitiesByName(String name) {
+		
+		List<Entity> entities = new ArrayList<>();
+		
+		for(List<Entity> batch : staticEntities.values()) {
+			for(Entity entity : batch) {
+				
+				if (entity.name.equals(name)) {
+					entities.add(entity);
+				}
+			}
+		}
+		
+		for(Entity entity : dynamicEntities) {
+			if (entity.name.equals(name)) {
+				entities.add(entity);
+			}
+		}
+		
+		return entities;
 	}
 	
 	public static List<Entity> getEntities(BspLeaf leaf) {

@@ -2,14 +2,8 @@ package scene.menu;
 
 import org.lwjgl.input.Keyboard;
 
-import audio.AudioHandler;
-import audio.SoundEffects;
-import audio.SoundFilters;
-import audio.Source;
 import core.App;
-import core.Resources;
 import dev.cmd.Console;
-import gl.res.Texture;
 import io.Input;
 import io.Settings;
 import map.architecture.ArchitectureHandler;
@@ -19,7 +13,7 @@ import scene.Scene;
 import scene.mapscene.MapScene;
 import scene.menu.pause.AboutPanel;
 import scene.menu.pause.OptionsPanel;
-import ui.Image;
+import ui.Font;
 import ui.Text;
 import ui.UI;
 import ui.menu.GuiMenu;
@@ -28,38 +22,35 @@ import ui.menu.listener.MenuListener;
 public class MainMenuUI {
 
 	private final Text title;
-	private final Image background;
+	//private final Image background;
 	private final GuiMenu mainMenu;
 	private final OptionsPanel options;
 	private final AboutPanel about;
 	private final MapPanel maps;
 
-	private final Texture mainMenuBg;
+	//private final Texture mainMenuBg;
 	
 	private final Scene scene;
-	private final Source musicSource;
 	
 	public static boolean onIntroSplash = true;
 	public static boolean disableIntroSplash = false;
 	
 	public MainMenuUI(Scene scene) {
 		this.scene = scene;
-		musicSource = AudioHandler.playMusic("mus01_intro");
 		
-		mainMenuBg = Resources.addTexture("main_menu_bg", "gui/menu.png");
+		//mainMenuBg = Resources.addTexture("main_menu_bg", "gui/menu.png");
 
-		mainMenu = new GuiMenu(50, 300, "play game", "---", "options", "about", "quit");
+		mainMenu = new GuiMenu(50, 300, "play game", "options", "about", "quit");
 		mainMenu.setFocus(true);
-		mainMenu.setBordered(true);
+		mainMenu.setFont(Font.vhsFont);
+		
 		options = new OptionsPanel(null);
 		about = new AboutPanel(null);
 		maps = new MapPanel(null, this);
 
-		title = new Text(App.TITLE, 50, 125, .75f, false);
+		title = new Text(Font.vhsFont, App.TITLE, 50, 125, .75f, Integer.MAX_VALUE, false);
 		
-		background = new Image(mainMenuBg, 0, 0, (int) UI.width, (int) UI.height);
-
-		
+		//background = new Image(mainMenuBg, 0, 0, (int) UI.width, (int) UI.height);
 		
 		mainMenu.addListener(new MenuListener() {
 
@@ -78,25 +69,25 @@ public class MainMenuUI {
 						options.setFocus(false);
 					}
 					break;
-				case 1:
+				/*case 1:
 					about.setFocus(false);
 					maps.setFocus(false);
 					if (options.isFocused()) {
 						Settings.save();
 						options.setFocus(false);
 					}
-					break;
-				case 2:
+					break;*/
+				case 1:
 					options.setFocus(!options.isFocused());
 					about.setFocus(false);
 					maps.setFocus(false);
 					break;
-				case 3:
+				case 2:
 					options.setFocus(false);
 					about.setFocus(true);
 					maps.setFocus(false);
 					break;
-				case 4:
+				case 3:
 					Console.send("quit");
 					break;
 				}
@@ -110,7 +101,7 @@ public class MainMenuUI {
 	}
 	
 	public void cleanUp() {
-		mainMenuBg.cleanUp();
+		//mainMenuBg.cleanUp();
 	}
 	
 	public void update() {
@@ -147,10 +138,8 @@ public class MainMenuUI {
 
 	private void closeSplashScreen() {
 		onIntroSplash = false;
-		UI.addComponent(background);
+		//UI.addComponent(background, bgMatrix);
 		UI.addComponent(title);
-		musicSource.applyEffect(SoundEffects.REVERB);
-		musicSource.applyFilter(SoundFilters.LOW_PASS_FILTER);
 	}
 
 	private void drawIntroSplash() {
@@ -165,11 +154,8 @@ public class MainMenuUI {
 			return;
 		}
 		
-		musicSource.removeEffect();
-		musicSource.removeFilter();
-		
 		PlayableScene.currentMap = map;
+		scene.cleanUp();
 		App.changeScene(MapScene.class);
-		musicSource.stop();
 	}
 }

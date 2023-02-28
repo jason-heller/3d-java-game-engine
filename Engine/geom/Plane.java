@@ -95,7 +95,7 @@ public class Plane {
 		dist = normal.x * newPt.x + normal.y * newPt.y + normal.z * newPt.z;
 	}
 
-	public boolean intersects(AxisAlignedBBox aabb) {
+	public boolean intersects(AABB aabb) {
 		final Vector3f center = aabb.getCenter();
 		final Vector3f bounds = aabb.getBounds();
 		final Vector3f tl = Vectors.sub(center, bounds);

@@ -2,13 +2,16 @@ package scene.entity.util;
 
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.lwjgl.input.Keyboard;
 
+import core.Resources;
 import dev.cmd.Console;
 import geom.Plane;
 import gl.Camera;
 import gl.CameraFollowable;
 import gl.Window;
 import gl.anim.Animator;
+import gl.anim.Ragdoll;
 import gl.anim.component.Joint;
 import gl.anim.component.Skeleton;
 import io.Input;
@@ -44,7 +47,11 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 	private static int hp = 15;
 	private static int maxHp = 15;
 	
-	public static boolean isEnabled = false;
+	private float turnSpeed = 0f;
+	private float acceleration;
+	private float pushTimer = 0f;
+	
+	public static boolean enabled = false;
 	
 	private Vector3f viewAngle = new Vector3f();
 	
@@ -53,6 +60,8 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 	//private boolean boardIsFacingBack = false;
 	private final boolean stance = REGULAR_STANCE;
 	private boolean ridingSwitch = false;
+
+	private Ragdoll ragdoll;
 	
 	public PlayerEntity(MapScene scene) {
 		super("player", new Vector3f(BBOX_WIDTH, BBOX_HEIGHT, BBOX_WIDTH));
@@ -66,43 +75,44 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 	
 	@Override
 	public void update(PlayableScene scene) {
-		if (getAnimator().getCurrentAnimation().equals("fall")) {
-			this.setColor(Vectors.POSITIVE_X);
-		}
-		
-		rotation.identity();
-		
-		if (!isEnabled)
+		if (!enabled)
 			return;
 		
 		boolean isNotBuffering = !trickManager.getPlayerIsBuffering();
 
 		boolean LEFT = Input.isDown("left"),
 				RIGHT = Input.isDown("right"),
-				DOWN = Input.isDown("down");
+				DOWN = Input.isDown("down"),
+				UP = Input.isDown("up");
 		
 		final boolean LEFT_RELEASED = Input.isReleased("left"),
 				RIGHT_RELEASED = Input.isReleased("right");
 		
-		if (camera.getControlStyle() == Camera.SPECTATOR || Console.isVisible()) {
+		if ((Console.isVisible() && Console.isBlocking)) {
 			LEFT = RIGHT = false;
 			DOWN = true;
 		}
 		
-		// Architecture arc = ((PlayableScene)scene).getArchitecture();
+		/*if (Input.isPressed(Keyboard.KEY_K)) {
+			if (ragdoll == null) {
+				ragdoll = new Ragdoll(boardPos, localVelocity, getModel().getSkeleton(), this);
+			} else {
+				ragdoll = null;
+			}
+			
+			getAnimator().setRagdoll(ragdoll);
+		}*/
 		
-		float speed = accelSpeed;
-
-		if (DOWN && isNotBuffering)
-			speed = 0f;
+		if (DOWN && isNotBuffering && grounded && !isComboing())
+			acceleration = Math.max(acceleration - Window.deltaTime * 400f, 0f);
 
 		// Handle game logic per tick, such as movement etc
-		float turnSpeed = isNotBuffering ? 4.1f : 0;
+		float targetTurnSpeed = 0f;
 	
 		if (grindRail == null) {
-			if (!previouslyGrounded && grounded && vel.y <= 0f) {
+			if (!previouslyGrounded && grounded && baseVelocity.y <= 0f) {
 				trickEndFlagHandler();
-				getAnimator().start("land");
+				animator.start("land");
 				rideSfxSource.play("ride");
 				trickManager.handleOnComboEnd();
 				grindLen = 0f;
@@ -110,32 +120,72 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 			
 			if (grounded) {
 				
-				if (this.vel.lengthSquared() < 1000) {
-					turnSpeed /= 2f;
+				if (isNotBuffering) {
+					if (LEFT && RIGHT) {
+						if (pushTimer == 0f)
+							animator.start("idle");
+					} else if (LEFT) {
+						targetTurnSpeed = -3f;
+						if (pushTimer == 0f)
+							animator.start(ridingSwitch ? "turn_l" : "turn_r");
+					} else if (RIGHT) {
+						targetTurnSpeed = 3f;
+						if (pushTimer == 0f)
+							animator.start(ridingSwitch ? "turn_r" : "turn_l");
+					}
+					
+					if ((LEFT_RELEASED || RIGHT_RELEASED) && pushTimer == 0f) {
+						animator.start("idle");
+					}
 				}
 				
-				if (LEFT && RIGHT && isNotBuffering) {
-					getAnimator().start("idle");
-				} else if (LEFT) {
-					direction -= Window.deltaTime * turnSpeed;
-					
-					if (isNotBuffering)
-						getAnimator().start("turn_l");
-				} else if (RIGHT) {
-					direction += Window.deltaTime * turnSpeed;
-					
-					if (isNotBuffering)
-						getAnimator().start("turn_r");
+				if (UP && pushTimer == 0f) {
+					this.animator.start("push");
+					pushTimer = Window.deltaTime;
 				}
 				
-				if ((LEFT_RELEASED || RIGHT_RELEASED) && isNotBuffering) {
-					getAnimator().start("idle");
+				if (pushTimer != 0f) {
+					
+					pushTimer += Window.deltaTime;
+				
+					if (pushTimer > Resources.getAnimation("push").getDuration()) {
+						acceleration += 50;
+						pushTimer = 0f;
+					} 
 				}
+				
+				if (targetTurnSpeed == 0f) {
+					turnSpeed = Math.max(Math.abs(turnSpeed) - Window.deltaTime * 30f, 0f) * Math.signum(turnSpeed);
+				} else {
+					if (Math.signum(targetTurnSpeed) != Math.signum(turnSpeed))
+						turnSpeed = 0f;
+					
+					turnSpeed += Window.deltaTime * ((targetTurnSpeed > turnSpeed) ? 12f : -12f);
+				}
+				
+				direction += Window.deltaTime * turnSpeed;
 			}
+		}
+		
+		if (ragdoll != null)
+			ragdoll.update(arc.bsp);
+
+		float accelSlope = Window.deltaTime * accelSlopeFactor;
+		if (bbox.Z.y > .3f) {
+			acceleration -= accelSlope;
+			
+			if (acceleration <= 0f) {
+				direction += MathUtil.PI;
+				acceleration = 0f;
+				// this.animator.start("kickturn_r");
+			}
+		} else if (bbox.Z.y < -.3f) {
+			acceleration += accelSlope;
 		} else {
-			float newRotation = MathUtil.pointDirection(0, 0, grindNormal.x, grindNormal.z) + MathUtil.HALFPI;
-			rotation.rotateY(newRotation);
-			direction = -newRotation;
+			float factor = (acceleration > baseAccelSpeed) ? -decelSlopeFactor : accelSlopeFactor;
+			float deltaAccel = Window.deltaTime * factor;
+			// acceleration = Math.max(Math.abs(acceleration) + deltaAccel, baseAccelSpeed) * Math.signum(acceleration);
+			acceleration += deltaAccel;
 		}
 		
 		if (camera.getControlStyle() == Camera.FIRST_PERSON) {
@@ -146,28 +196,29 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 		
 		if (!deactivated && grindRail == null) {
 			Camera.animSpeed = 4.5f;
+			
+			float accel = acceleration;
+			
 			if (!grounded) {
 				Camera.animSpeed = 0f;
-				speed = airAccel;
+				accel = airAccel;
 			}
 			
-			rotation.setAngleAxis(-direction, 0, 1, 0);
-			accelerate(new Vector3f(-(float) Math.sin(direction), 0, (float) Math.cos(direction)), speed);
+			accelerate(bbox.Z, accel);
 		}
 		
-		viewAngle.set(0f, -direction, 0f);
+		if (vertAxis == null) {
+			viewAngle.set(-direction,bbox.Z.y * MathUtil.HALFPI, 0f);
+		} else {
+			viewAngle.set(0f, 1f, 0f);
+		}
 		
 		scale.x = stance ^ ridingSwitch ? -1f : 1f;
 
-		if (ridingSwitch) {
-			UI.drawString("(Switch)", 80, 540);
-		}
-		
 		Camera.animSpeed = 0f;
 		super.update(scene);
 
 		trickManager.update();
-		// Trick currentTrick = getCurrentTrick();
 
 		if (!trickManager.hasFlippedStance() && animator.getCurrentAnimation().equals("fall")) {
 			trickManager.flipStance();
@@ -249,10 +300,10 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 	public void jump() {
 		// Jump off rail
 		if (grindRail != null) {
-			float exitDir = (float)Math.toRadians((Math.abs(grindBalance) < 20) ? 0f : this.grindBalance / 2f);
+			float exitDir = (float)Math.toRadians((Math.abs(grindBalance) < 20) ? 0f : this.grindBalance / 1.8f);
 			direction += exitDir;
 	
-			vel.rotateY(-exitDir);
+			localVelocity.rotateY(-exitDir);
 		}
 		
 		jump(jumpVel);
@@ -285,16 +336,12 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 	}
 
 	public boolean getFrontside() {
-		Vector3f euler = new Vector3f();
-		rotation.getEulerAnglesXYZ(euler);
-		float dirRad = euler.y;
+		float dx = bbox.X.x;
+		float dz = bbox.X.z;
 
-		float dx = (float) -Math.cos(dirRad);
-		float dz = (float) Math.sin(dirRad);
-
-		Vector3f orig = new Vector3f((position.x + dx) + (dz * 2f), position.y, (position.z + dz) - (dx * 2f));
-		BspRaycast ray = arc.raycast(orig, new Vector3f(0, -1, 0));
-
+		Vector3f orig = new Vector3f((position.x - dx * .25f), position.y, (position.z - dz * .25f));
+		BspRaycast ray = arc.raycast(orig, Vectors.NEGATIVE_Y);
+	
 		return (ray == null || ray.getDistance() >= bbox.getHeight() + 1) ^ ridingSwitch ^ stance;
 	}
 
@@ -304,5 +351,17 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 	
 	public boolean isRegularStance() {
 		return stance;
+	}
+
+	public boolean isInVert() {
+		return this.vertAxis != null;
+	}
+
+	public TrickManager getTrickManager() {
+		return trickManager;
+	}
+
+	public boolean isComboing() {
+		return !trickManager.getComboList().isEmpty();
 	}
 }

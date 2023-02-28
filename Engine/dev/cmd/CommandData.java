@@ -18,6 +18,7 @@ import scene.entity.util.PlayerEntity;
 import scene.entity.util.SkatePhysicsEntity;
 import scene.mapscene.trick.TrickManager;
 import ui.UI;
+import util.ThirdPersonCameraController;
 
 enum CommandData {
 	// Methods
@@ -74,15 +75,16 @@ enum CommandData {
 	show_clips("showClips", Debug.class, SETTER, true),
 	show_ambient("showAmbient", Debug.class, SETTER, true),
 	show_bones("drawBones", Animator.class, SETTER, true),
+	show_model_bounds("showModelBounds", Debug.class, SETTER, true),
 	room_name("showCurrentRoom", Debug.class, SETTER, true),
 	wireframe("wireframeMode", Debug.class, SETTER, true),
 	fullbright("fullbright", Debug.class, SETTER, true),
 	cam_speed("cameraSpeed", Camera.class, SETTER, true),
-	cam_sway("swayFactor", Camera.class, SETTER, false),
+	cam_dist("followDistance", ThirdPersonCameraController.class, SETTER, false),
 	phys_player_jump("jumpVel", SkatePhysicsEntity.class, SETTER, true),
 	phys_player_speed_max("maxSpeed", SkatePhysicsEntity.class, SETTER, true),
 	phys_player_speed_air_max("maxAirSpeed", SkatePhysicsEntity.class, SETTER, true),
-	phys_player_accel("accelSpeed", SkatePhysicsEntity.class, SETTER, true),
+	phys_player_accel("baseAccelSpeed", SkatePhysicsEntity.class, SETTER, true),
 	phys_player_accel_air("airAccel", SkatePhysicsEntity.class, SETTER, true),
 	phys_gravity("gravity", PhysicsEntity.class, SETTER, true),
 	phys_gravity_max("maxGravity", PhysicsEntity.class, SETTER, true),
@@ -91,7 +93,7 @@ enum CommandData {
 	god("god", Debug.class, SETTER, true),
 	fullrender("fullRender", ArcFaceRender.class, SETTER, false),
 	velocity_vectors("velocityVectors", Debug.class, SETTER, true),
-	c_infinite_jump("hasInfiniteJumps", TrickManager.class, SETTER, true),
+	console_blocking("isBlocking", Console.class, SETTER, true),
 	c_perfect_grind_balance("perfectGrind", SkatePhysicsEntity.class, SETTER, true);
 
 	Command command;

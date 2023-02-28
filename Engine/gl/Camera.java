@@ -31,8 +31,6 @@ public class Camera {
 	public static final byte NO_CONTROL = 0, SPECTATOR = 1, FIRST_PERSON = 2, THIRD_PERSON = 3;
 	
 	private static double movementCounter = 0f;
-	
-	public static float swayFactor = 1f;
 
 	private Matrix4f projectionMatrix;
 	private final Matrix4f projectionViewMatrix = new Matrix4f();
@@ -236,7 +234,7 @@ public class Camera {
 	}
 	
 	public void sway(float time, float intensity, float speed) {
-		this.swayIntensity = intensity * swayFactor;
+		this.swayIntensity = intensity;
 		this.swayTime = time;
 		this.swaySpeed = speed;
 	}

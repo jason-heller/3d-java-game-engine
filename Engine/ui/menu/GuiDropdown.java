@@ -27,9 +27,9 @@ public class GuiDropdown extends GuiElement {
 			longestStrLength = Math.max(longestStrLength, option.length());
 		}
 
-		lineHeight = Font.defaultFont.getPaddingHeight() + 12;
+		lineHeight = Font.defaultFont.getLineHeight(Font.defaultSize) + 12;
 		height = 24;
-		width = Font.defaultFont.getPaddingHeight() * (longestStrLength + 1);
+		width = Font.defaultFont.getLineHeight(Font.defaultSize) * (longestStrLength + 1);
 		width += 8;
 
 		backdrop = new Image("none", x, y + 24).setColor(Colors.GUI_BORDER_COLOR);

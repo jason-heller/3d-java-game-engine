@@ -8,6 +8,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
 import core.Resources;
+import dev.cmd.Console;
 import gl.res.Texture;
 import gl.res.TextureUtils;
 import gr.zdimensions.jsquish.Squish;
@@ -95,6 +96,7 @@ public class ArcLoadTextures {
 					textures[i++] = specTexName;
 					t = TextureUtils.createTexture(specMapData, GL30.GL_R8, material, width, height, true);
 					textureDatas.add(t);
+					System.err.println("SPECMAP "+textureName);
 				}
 			} else {
 				textures[i++] = textureName;

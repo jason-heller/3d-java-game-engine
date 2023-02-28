@@ -54,8 +54,9 @@ public class ArcLoadOverlays {
 			ArcTextureMapping mapping = bsp.getTextureMappings()[textureId];
 			Texture texture = texData.getTextures()[mapping.textureId];
 			texture = Resources.NO_TEXTURE;
-			Mesh model = createOverlayModel(numFaces, texCoords, points, origin, normal);
-			OverlayEntity overlay = new OverlayEntity(origin, model, texture, bsp.leaves[leafId]);
+			
+			Mesh mesh = createOverlayModel(numFaces, texCoords, points, origin, normal);
+			OverlayEntity overlay = new OverlayEntity(origin, mesh, texture, bsp.leaves[leafId]);
 			EntityHandler.addEntity(overlay);
 		}
 		
@@ -101,13 +102,13 @@ public class ArcLoadOverlays {
 			indices[i++] = z + 2;
 		}
 		
-		Mesh model = Mesh.create();
-		model.bind();
-		model.createAttribute(0, vertices, 3);
-		model.createAttribute(1, uvs, 2);
-		model.createAttribute(2, normals, 3);
-		model.createIndexBuffer(indices);
-		model.unbind();
-		return model;
+		Mesh mesh = Mesh.create();
+		mesh.bind();
+		mesh.createAttribute(0, vertices, 3);
+		mesh.createAttribute(1, uvs, 2);
+		mesh.createAttribute(2, normals, 3);
+		mesh.createIndexBuffer(indices);
+		mesh.unbind();
+		return mesh;
 	}
 }

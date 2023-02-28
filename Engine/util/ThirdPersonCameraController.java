@@ -11,56 +11,83 @@ import scene.PlayableScene;
 
 public class ThirdPersonCameraController implements CameraFollowable {
 	
-	private float followDistance = 37.5f;
-	private float trackingSpeed = 32f;
+	public static float followDistance = 21f;
 	
 	private CameraFollowable following;
 	
-	private Vector3f position, direction;
+	private Vector3f position, targetPos, lastPosition;
+	private Vector3f rotation, targetRot, lastRotation;
+	public static float interp;
+
+	private float cameraRaise = 0.25f;
 	
 	public ThirdPersonCameraController(CameraFollowable following) {
 		this.following = following;
 		
-		position = new Vector3f();
-		direction = new Vector3f();
+		targetPos = new Vector3f();
+		targetRot = new Vector3f();
+		lastPosition = new Vector3f();
+		lastRotation = new Vector3f();
 	}
 
 	@Override
 	public Vector3f getViewAngle() {
-		Vector3f diff = Vectors.sub(position, following.getPosition()).normalize();
-		direction = direction.lerp(diff, trackingSpeed * Window.deltaTime);
-		
-		return direction;
+		return rotation;
 	}
 
 	@Override
 	public Vector3f getPosition() {
-		Vector3f target = new Vector3f(following.getPosition());
-		float dirRad = following.getViewAngle().y;
-		Vector3f dir = new Vector3f((float)-Math.sin(dirRad) * .7f, .2f, (float)-Math.cos(dirRad) * .7f);
-		target.add(Vectors.mul(dir, followDistance));
+		float yawRad = following.getViewAngle().x;
+		float pitchRad = following.getViewAngle().y;
+		
+		Vector3f dir = new Vector3f();
+		dir.set((float)-Math.sin(yawRad), cameraRaise - (float)Math.sin(pitchRad / 2f) , -(float)Math.cos(yawRad));
+		dir.normalize();
+		
+		Vector3f newTargetPos = new Vector3f(dir);
+		newTargetPos.mul(followDistance);
 		
 		// Do collision
 		Architecture arc = ((PlayableScene)App.scene).getArchitecture();
 		if (arc != null) {
 			BspRaycast ray = arc.raycast(following.getPosition(), dir);
 			
-			if (ray != null && ray.getDistance() < followDistance - 2f) {
-				float raycastLength = ray.getDistance() - 2f;
-				target = Vectors.add(following.getPosition(), Vectors.mul(dir, raycastLength));
+			if (ray != null && ray.getDistance() < followDistance - 5f) {
+				float raycastLength = ray.getDistance() - 5f;
+				newTargetPos.set(dir).mul(raycastLength);
 			}
 		}
 		
-		position = target.lerp(position, 10f * Window.deltaTime);
+		float lookDiff = newTargetPos.distanceSquared(lastPosition);
+		if (lookDiff > 0f) {
+			if (position == null)
+				position = new Vector3f(newTargetPos).add(following.getPosition());
+
+			lastPosition.set(Vectors.sub(position, following.getPosition()));
+			targetPos.set(newTargetPos);
+			
+			interp = 0f;
+			
+			Vector3f newTargetRot = new Vector3f(newTargetPos).normalize();
+			if (rotation == null) {
+				rotation = new Vector3f(newTargetRot);
+				targetRot.set(newTargetRot);
+			}
+
+			lastRotation.set(rotation);
+			targetRot.set(newTargetRot);
+		}
+		
+		interp = Math.min(interp + Window.deltaTime * 7f, 1f);
+		
+		position.set(following.getPosition());
+		position.add(lastPosition.lerp(targetPos, interp));
+		rotation.set(lastRotation.lerp(targetRot, interp));
 		
 		return position;
 	}
 
 	public void setFollowing(CameraFollowable following) {
 		this.following = following;
-
-		position = getPosition();
-		Vector3f diff = Vectors.sub(position, following.getPosition());
-		direction = MathUtil.directionVectorToEuler(diff, Vectors.POSITIVE_Y);
 	}
 }

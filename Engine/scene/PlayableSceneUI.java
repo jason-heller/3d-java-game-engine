@@ -25,7 +25,6 @@ public class PlayableSceneUI {
 		this.scene = scene;
 		mainMenu = new GuiMenu(50, 300, "resume", "options", "quit");
 		mainMenu.setFocus(true);
-		mainMenu.setBordered(true);
 		options = new OptionsPanel(null);
 
 		mainMenu.addListener(new MenuListener() {
@@ -80,7 +79,7 @@ public class PlayableSceneUI {
 	}
 
 	public void pause() {
-		PlayerEntity.isEnabled = false;
+		PlayerEntity.enabled = false;
 		Input.requestMouseRelease();
 		paused = true;
 		AudioHandler.pause();
@@ -94,7 +93,7 @@ public class PlayableSceneUI {
 		} else {
 			paused = false;
 			AudioHandler.unpause();
-			PlayerEntity.isEnabled = true;
+			PlayerEntity.enabled = true;
 			//if (!Console.isVisible()) {
 				Input.requestMouseGrab();
 			//}

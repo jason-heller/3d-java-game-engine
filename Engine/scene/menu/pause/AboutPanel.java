@@ -21,16 +21,13 @@ public class AboutPanel extends GuiPanel {
 		super(parent, 264, 300, 762, 520);
 		GuiRowLayout rowLayout = new GuiRowLayout(192, 24);
 		setLayout(rowLayout, x, y, UI.width, UI.height);
-		
-		add(new GuiLabel(x, y, "Creative Design:   "));
-		add(new GuiLabel(x, y, "#bMoose Low"));
-		rowLayout.nextRow();
+
 		add(new GuiLabel(x, y, "Programming/Art:"));
 		add(new GuiLabel(x,y, " #pJason Heller"));
 		hyperlink("#c<Github>", "https://github.com/jheller9");
 		hyperlink("#c<Youtube>", "https://www.youtube.com/channel/UCebkCfxOlJHw4DolaLcSdmw");
 		rowLayout.nextRow();
-		add(new GuiLabel(x, y, "Music/Art:"));
+		add(new GuiLabel(x, y, "Special Thanks:"));
 		add(new GuiLabel(x, y, "#*DJ Bamberino & Ces"));
 		hyperlink("#c<Bandcamp>", "https://dj-bamberino.bandcamp.com");
 		hyperlink("#c<Youtube>", "https://www.youtube.com/user/minmax5");

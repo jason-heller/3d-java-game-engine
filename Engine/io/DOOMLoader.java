@@ -204,7 +204,7 @@ private static final String VERSION = "1";
 		String s = match.group();
 		
 		if (!s.equalsIgnoreCase(label))
-			throw new FileParseException(label + " not found. Result: " + s);
+			throw new FileParseException(label + " not found. Result: " + s + " at " + match.regionStart() + "/" + match.regionEnd());
 		
 		match.find();
 		return match.group();

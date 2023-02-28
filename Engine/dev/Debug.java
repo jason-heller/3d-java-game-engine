@@ -36,6 +36,7 @@ import map.architecture.vis.BspLeaf;
 import scene.PlayableScene;
 import scene.Scene;
 import scene.entity.util.PlayerEntity;
+import scene.mapscene.trick.Trick;
 import ui.UI;
 import util.Colors;
 import util.Vectors;
@@ -56,6 +57,7 @@ public class Debug {
 	public static boolean faceInfo;
 	public static boolean god;
 	public static boolean velocityVectors;
+	public static boolean showModelBounds;
 	
 	public static boolean railMode;
 	
@@ -91,14 +93,19 @@ public class Debug {
 		String cx = String.format("%.1f", camera.getPosition().x);
 		String cy = String.format("%.1f", camera.getPosition().y);
 		String cz = String.format("%.1f", camera.getPosition().z);
-		String vx = String.format("%.1f", player.vel.x);
-		String vy = String.format("%.1f", player.vel.y);
-		String vz = String.format("%.1f", player.vel.z);
+		String vx = String.format("%.1f", player.localVelocity.x);
+		String vy = String.format("%.1f", player.localVelocity.y);
+		String vz = String.format("%.1f", player.localVelocity.z);
 		String rotX = String.format("%.1f", player.rotation.x);
 		String rotY = String.format("%.1f", player.rotation.y);
 		String rotZ = String.format("%.1f", player.rotation.z);
-		String spd = String.format("%.1f", new Vector3f(player.vel.x, player.vel.z, 0f).length());
-		String trickName = player.getCurrentTrick() == null ? "N/A" : player.getCurrentTrick().getName();
+		String spd = String.format("%.1f", player.getSpeed());
+		String comboStr = "";
+		
+		for(Trick t : player.getTrickManager().getComboList()) {
+			comboStr += t.getName() + " ";
+		}
+		
 		Material m = player.getContactMaterial();
 
 		String debugData = "\n#wFPS: " + (int) Window.framerate + "/" + Window.maxFramerate
@@ -106,13 +113,13 @@ public class Debug {
 				+ "\nvel (#rX: " + vx + " #gY: " + vy + " #bZ: " + vz + "#w)"
 				+ "\ngrounded: " + player.isGrounded() + " / " + player.previouslyGrounded
 				+ "\nrt (#rX: " + rotX + " #gY: " + rotY + " #bZ: " + rotZ + "#w)"
-				+ "\ngrounded: " + player.isGrounded() + " / " + player.previouslyGrounded
-				+ "\n" + "roty: " + rotY
+				+ "\nbboxY: " + player.getBBox().Y.y
 				+ "\n" + "spd: " + spd
 				+ "\n" + "draw calls: " + Render.drawCalls
 				+ "\n" + "tex swaps: " + Render.textureSwaps
-				+ "\n" + "mat: " + m
-				+ "\n\n" + "trick: " + trickName
+				+ "\n" + "vert: " + player.isInVert()
+				+ "\n" + "tr: " + player.getTrickManager().getCurrentTrick()
+				+ "\n\n" + comboStr
 				+ "\n" + "anim: " + player.getAnimator().getCurrentAnimation()
 				+ "\n" + "switch: " + player.isSwitch();
 		

@@ -54,7 +54,7 @@ public class StrUtils {
 
 				if (dx > lineWidth && c == ' ') {
 					dx = 0;
-					dy += font.getCharacter('|').getyOffset() + font.getPaddingHeight();
+					dy += font.getCharacter('|').getyOffset() + font.getLineHeight(textSize);
 				}
 			}
 		}

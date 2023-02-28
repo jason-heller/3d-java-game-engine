@@ -4,6 +4,7 @@ import org.joml.Vector3f;
 
 import scene.entity.Spawnable;
 import scene.entity.util.PhysicsEntity;
+import util.Vectors;
 
 public class SolidPhysProp extends PhysicsEntity implements Spawnable {
 	
@@ -16,8 +17,8 @@ public class SolidPhysProp extends PhysicsEntity implements Spawnable {
 		super(name, new Vector3f());
 		this.position.set(pos);
 		this.rotation.rotateXYZ(rot.x, rot.y, rot.z);
-		setModel(new String[] {name}, new String[] {name});
-		bbox.getHalfSize().set(model.getMeshes()[0].bounds);
+		setModel(name);
+		bbox.getHalfSize().set(getModel().getBoundingBox().getBounds());
 
 		
 		solid = true;

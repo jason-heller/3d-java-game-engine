@@ -26,7 +26,7 @@ public class GuiSpinner extends GuiElement {
 		
 		float longestStrLength = 0;
 		for(int i = 0; i < options.length; i++) {
-			this.options[i] = new Text(Font.consoleFont, options[i], 0, -4, Font.defaultSize, true);
+			this.options[i] = new Text(Font.defaultFont, options[i], 0, -4, Font.defaultSize, true);
 			longestStrLength = Math.max(longestStrLength, this.options[i].getWidth());
 		}
 

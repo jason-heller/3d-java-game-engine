@@ -2,7 +2,7 @@ package map.architecture.components;
 
 import org.joml.Vector3f;
 
-import geom.AxisAlignedBBox;
+import geom.AABB;
 import geom.BoundingBox;
 import geom.Plane;
 import gl.res.Mesh;
@@ -16,7 +16,7 @@ import util.Vectors;
 public class ArcHeightmap {
 
 	public Vector3f origin;
-	private AxisAlignedBBox bounds;
+	private AABB bounds;
 	private int firstVertex;
 	private int numVertices;
 	private int subdivisions;
@@ -28,7 +28,7 @@ public class ArcHeightmap {
 	
 	private Mesh model;
 	
-	public ArcHeightmap(Vector3f origin, AxisAlignedBBox bounds, int firstVertex, int numVertices, int subdivisions, int faceId, int hmapLightId, short tex1, short tex2) {
+	public ArcHeightmap(Vector3f origin, AABB bounds, int firstVertex, int numVertices, int subdivisions, int faceId, int hmapLightId, short tex1, short tex2) {
 		this.origin = origin;
 		this.bounds = bounds;
 		this.firstVertex = firstVertex;

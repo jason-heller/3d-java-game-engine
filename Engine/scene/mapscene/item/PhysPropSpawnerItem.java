@@ -21,7 +21,7 @@ public class PhysPropSpawnerItem extends Item {
 	public void interact() {
 		Camera c = App.scene.getCamera();
 		Vector3f spawnpos = Vectors.add(c.getPosition(), Vectors.mul(c.getDirectionVector(), 7f));
-		EntityHandler.addEntity(new SolidPhysProp(spawnpos, c.getDirectionVector(), "default"));
+		EntityHandler.addEntity(new SolidPhysProp(spawnpos, new Vector3f(), "cube"));
 	}
 	
 	@Override

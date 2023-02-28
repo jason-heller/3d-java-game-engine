@@ -14,7 +14,8 @@ public class SpawnPoint extends ArcFunction {
 	
 	public SpawnPoint(Vector3f pos, Vector3f rot, String name) {
 		super(name, pos);
-		this.rot = rot;
+		rot.y += 90f;
+		this.rot = rot.mul((float)Math.PI / 180f);
 	}
 
 	@Override
@@ -22,8 +23,8 @@ public class SpawnPoint extends ArcFunction {
 		SkatePhysicsEntity entity = ((PlayableScene)App.scene).getPlayer();
 		Camera camera = App.scene.getCamera();
 		entity.position.set(pos);
-		Console.log(pos, rot);
-		entity.vel.y = 0;
+		entity.rotation.rotateXYZ(rot.x, rot.y, rot.z);
+		entity.localVelocity.y = 0;
 		camera.setPitch(rot.x);
 		camera.setYaw(rot.y);
 		camera.setRoll(rot.z);

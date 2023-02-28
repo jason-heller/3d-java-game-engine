@@ -42,7 +42,7 @@ import util.Vectors;
 public class ArcLoader {
 
 	private static final byte EXPECTED_GAME_ID = 1;
-	private static final byte EXPECTED_FILE_VERSION = 1;
+	private static final byte EXPECTED_FILE_VERSION = 2;
 	
 	public static boolean load(Scene scene, String mapFileName, Architecture arc) {
 		CounterInputStream in = null;
@@ -209,21 +209,6 @@ public class ArcLoader {
 					e.printStackTrace();
 				}
 			}
-			
-			/*if (successfulLoad) {
-
-				String assetLocation = "models/props/";
-				String[] modelFiles = bsp.objects.getModelReference();
-				for(String modelFile : modelFiles) {
-					String path = assetLocation + modelFile;
-					Resources.addModel(modelFile, path + ".mod");
-
-					Console.log(path + ".png");
-					Resources.addTexture(modelFile, path + ".png");
-				}
-				
-				bsp.objects.createBoundingBoxes(objects);
-			}*/
 		}
 		
 		return true;
@@ -240,7 +225,6 @@ public class ArcLoader {
 		UI.drawRect(cx - (width / 2), cy, width, 3, Colors.WHITE).setDepth(Integer.MIN_VALUE);
 		
 		String loadStatus = "#S" + string + " (" + complete + " / " + total +") " + (percent*100f) + "%";
-		System.err.println(loadStatus);
 		UI.drawString(loadStatus, cx, cy + 128, .2f, true).setDepth(Integer.MIN_VALUE);
 		
 		UI.render(App.scene);

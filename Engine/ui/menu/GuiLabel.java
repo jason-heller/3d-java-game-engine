@@ -13,7 +13,7 @@ public class GuiLabel extends GuiElement {
 		this.y = y;
 		this.text = new Text(Font.defaultFont, option, 0, 0, Font.defaultSize, false);
 
-		int lineHeight = Font.defaultFont.getPaddingHeight() + 20;
+		int lineHeight = Font.defaultFont.getLineHeight(Font.defaultSize) + 20;
 		height = lineHeight;
 		width = (int) (text.getWidth());
 	}

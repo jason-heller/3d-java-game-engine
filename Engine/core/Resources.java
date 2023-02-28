@@ -250,6 +250,7 @@ public class Resources {
 
 	public static Mesh getMesh(String key) {
 		Mesh mesh = meshMap.get(key);
+		Console.log(mesh == null, key);
 		return mesh == null ? ERROR.getMeshes()[0] : mesh;
 	}
 	
@@ -312,9 +313,11 @@ public class Resources {
 		NO_TEXTURE = addTexture("none", "flat.png");
 		
 		ERROR = createErrorModel();
+		//ERROR = addModel("error", "models/error.MF");
 
 		addTexture("noise", "noise.png");
-		addObjModel("cube", "cube.obj");
+		// addObjModel("cube", "cube.obj");
+		addModel("cube", "models/cube.MF");
 		addSound("click", "lighter_click.ogg");
 	}
 }

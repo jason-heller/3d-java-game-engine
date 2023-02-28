@@ -1,5 +1,6 @@
 package gl.res;
 
+import geom.AABB;
 import gl.anim.component.Skeleton;
 
 /*
@@ -11,6 +12,9 @@ public class Model {
 	private Texture[] textures;
 	
 	private Skeleton skeleton;
+	
+	private AABB boundingBox;
+
 	
 	public Model(Mesh[] meshes, Texture[] textures) {
 		this.meshes = meshes;
@@ -44,5 +48,13 @@ public class Model {
 
 	public void setTexture(int i, Texture texture) {
 		textures[i] = texture;
+	}
+
+	public void setBoundingBox(AABB boundingBox) {
+		this.boundingBox = boundingBox;
+	}
+	
+	public AABB getBoundingBox() {
+		return boundingBox;
 	}
 }

@@ -18,6 +18,7 @@ import gl.Render;
 import gl.Window;
 import gl.particle.ParticleHandler;
 import scene.menu.MainMenuUI;
+import util.ThirdPersonCameraController;
 
 public class Settings {
 	public static File configFile = new File(FileUtils.SETTINGS_FOLDER + "/config.ini");
@@ -59,7 +60,7 @@ public class Settings {
 		MainMenuUI.disableIntroSplash = getBool("no_splash");
 		MainMenuUI.onIntroSplash = MainMenuUI.disableIntroSplash;
 		Debug.allowConsole = getBool("dev_enable_console");
-		Camera.swayFactor = getFloat("camera_sway_factor");
+		ThirdPersonCameraController.followDistance = getFloat("follow_distance");
 
 		AudioHandler.changeMasterVolume();
 		// Window.setDisplayMode(Window.getWidth(), Window.getHeight(),
@@ -98,7 +99,7 @@ public class Settings {
 		addEntry("mipmap_bias", Render.defaultBias);
 		addEntry("no_splash", MainMenuUI.disableIntroSplash);
 		addEntry("dev_enable_console", Debug.allowConsole);
-		addEntry("camera_sway_factor", Camera.swayFactor);
+		addEntry("follow_distance", ThirdPersonCameraController.followDistance);
 	}
 
 	public static void init() {

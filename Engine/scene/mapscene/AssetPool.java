@@ -18,10 +18,12 @@ public class AssetPool {
 		Resources.addModel("untitled", "models/SKATER.MF");
 		DOOMLoader.load("src/res/models/SKATER.DOOM");
 		
+		addSound("gap", "gap.ogg");
 		addSound("ollie", "temp_ollie.ogg");
 		addSound("grind", "temp_grind_rock.ogg");
 		addSound("ride_rock", "temp_ride_rock.ogg");
 		addSound("ride_grass", "temp_ride_grass.ogg");
+		addSound("goal_completed", "goal_completed.ogg");
 	}
 
 	private static void addModel(String key, String val) {

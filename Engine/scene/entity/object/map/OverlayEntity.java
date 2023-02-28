@@ -9,15 +9,15 @@ import scene.entity.Entity;
 
 public class OverlayEntity extends Entity {
 	
-	public OverlayEntity(Vector3f pos, Mesh model, Texture tex, BspLeaf leaf) {
+	public OverlayEntity(Vector3f pos, Mesh mesh, Texture tex, BspLeaf leaf) {
 		super("overlay");
-		setModel(model, tex);
+		setModel(mesh, tex);
 		this.position = pos;
 		this.leaf = leaf;
 	}
 	
 	@Override
 	public void setLeaf(BspLeaf leaf) {
-		//this.leaf = leaf;
+		this.leaf = leaf;
 	}
 }

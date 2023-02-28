@@ -40,6 +40,8 @@ public class Animator {
 	private Matrix4f[] pose;
 	private JointTransform[] currentJointTransform;		// Same info as above, just cached, not necesarily 1-1
 	
+	private Ragdoll ragdoll;
+	
 	private float speedMultiplier = 1f;
 	
 	private String currentAnim;
@@ -155,12 +157,14 @@ public class Animator {
 	
 	public void update() {
 		
+		if (ragdoll != null) {
+			ragdoll.applyToPose(pose, root);
+			return;
+		}
+		
 		/*UI.drawRect(300, 199, 200, 2, Colors.YELLOW);
 		UI.drawRect((int) (300 + ((animationTime / animation.getDuration())*200)), 190, 3, 20, Colors.RED);
 		UI.drawString(animationTime + "\n" + animation.getDuration(), 200,150);*/
-		
-		if (animation == null || !isPlaying)
-			return;
 		
 		if (!isPaused)
 			animationTime += Window.deltaTime * speedMultiplier;
@@ -298,9 +302,6 @@ public class Animator {
 			pose[parent.index].transformPosition(parentPos);
 			pose[child.index].transformPosition(childPos);
 			
-			//parentPos.add(mat.getTranslation());
-			//childPos.add(mat.getTranslation());
-			
 			LineRender.drawLine(parentPos, childPos, Colors.RED);
 			
 		}
@@ -313,6 +314,10 @@ public class Animator {
 		float interp = (animationTime - priorFrame.getTime()) / (nextFrame.getTime() - priorFrame.getTime());
 
 		return JointTransform.lerp(A, B, interp);
+	}
+	
+	public void setRagdoll(Ragdoll ragdoll) {
+		this.ragdoll = ragdoll;
 	}
 
 	public Matrix4f[] getPose() {

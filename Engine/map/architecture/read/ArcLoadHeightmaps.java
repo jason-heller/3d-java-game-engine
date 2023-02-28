@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.joml.Vector3f;
 
-import geom.AxisAlignedBBox;
+import geom.AABB;
 import io.FileUtils;
 import map.architecture.components.ArcHeightmap;
 import map.architecture.components.ArcHeightmapVertex;
@@ -25,7 +25,7 @@ public class ArcLoadHeightmaps {
 		ArcHeightmap[] heightmaps = new ArcHeightmap[numHeightMaps];
 		for(int i = 0; i < numHeightMaps; i++) {
 			Vector3f origin = FileUtils.readVec3(in);
-			AxisAlignedBBox bbox = new AxisAlignedBBox(FileUtils.readVec3(in), FileUtils.readVec3(in));
+			AABB bbox = new AABB(FileUtils.readVec3(in), FileUtils.readVec3(in));
 			heightmaps[i] = new ArcHeightmap(origin, bbox, in.readInt(), in.readInt(), in.readInt(), in.readInt(),
 					in.readInt(), in.readShort(), in.readShort());
 		}

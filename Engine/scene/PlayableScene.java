@@ -50,7 +50,7 @@ public abstract class PlayableScene implements Scene {
 		Window.update();
 		
 		viewModelHandler = new ViewModelHandler();
-		PlayerEntity.isEnabled = true;
+		PlayerEntity.enabled = true;
 	}
 
 	@Override

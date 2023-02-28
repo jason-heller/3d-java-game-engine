@@ -26,13 +26,25 @@ public class ControlsPanel extends GuiPanel {
 		int i = 0;
 		Iterator<String> iter = Controls.controls.keySet().iterator();
 
-		for (i = 0; i < 4; i++) {
+		for (i = 0; i < 3; i++) {
 			addBind(iter.next());
 		}
 		
 		addSeparator();
 		add(new GuiLabel(x, y ,"#SMovement"));
-		for (i = 0; i < 5; i++) {
+		for (i = 0; i < 4; i++) {
+			addBind(iter.next());
+		}
+		
+		addSeparator();
+		add(new GuiLabel(x, y ,"#STricks"));
+		for (i = 0; i < 4; i++) {
+			addBind(iter.next());
+		}
+		
+		addSeparator();
+		add(new GuiLabel(x, y ,"#SModifiers"));
+		for (i = 0; i < 2; i++) {
 			addBind(iter.next());
 		}
 

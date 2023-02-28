@@ -16,7 +16,8 @@ public class GuiMenu extends GuiElement {
 	private int alignment = GuiComponent.VERTICAL;
 
 	private final Text[] texts;
-	private boolean bordered;
+	private Font font = Font.defaultFont;
+	private float fontSize =  Font.defaultSize;
 
 	public GuiMenu(float x, float y, String... options) {
 		this.x = x;
@@ -28,7 +29,7 @@ public class GuiMenu extends GuiElement {
 			maxWid = Math.max(maxWid, this.texts[i].getWidth());
 		}
 
-		lineHeight = Font.defaultFont.getPaddingHeight() + 20;
+		lineHeight = Font.defaultFont.getLineHeight(Font.defaultSize) + 20;
 		height = lineHeight * options.length;
 		width = (int)(maxWid) + 16;
 	}
@@ -39,10 +40,6 @@ public class GuiMenu extends GuiElement {
 
 	public int getLineHeight() {
 		return lineHeight;
-	}
-
-	public void setBordered(boolean bordered) {
-		this.bordered = bordered;
 	}
 
 	@Override
@@ -79,21 +76,22 @@ public class GuiMenu extends GuiElement {
 					AudioHandler.play("click");
 				}
 			}
-
-			if (bordered) {
-				UI.drawString("#0" + option, x + dx, y + dy - 2);
-				UI.drawString("#0" + option, x + dx, y + dy + 2);
-				UI.drawString("#0" + option, x + dx - 2, y + dy);
-				UI.drawString("#0" + option, x + dx + 2, y + dy);
-			}
 			
 			if (index == selectedOption) {
-				UI.drawString("#s" + option, x + dx, y + dy, centered);
+				UI.drawString(font, "#s" + option, x + dx, y + dy, fontSize, Integer.MAX_VALUE, false);
 			} else {
-				UI.drawString(option, x + dx, y + dy, centered);
+				UI.drawString(font, option, x + dx, y + dy, fontSize, Integer.MAX_VALUE, false);
 			}
 			index++;
 		}
+	}
+	
+	public void setFont(Font font) {
+		this.font = font;
+	}
+	
+	public void setFontSize(float size) {
+		this.fontSize = size;
 	}
 	
 	public void setOption(int index, String option) {

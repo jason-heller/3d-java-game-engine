@@ -28,7 +28,7 @@ public class PathNode extends ArcFunction {
 		int target = Integer.parseInt(args[1]);
 		
 		if (this.id == target) {
-			NavigableEntity entity = (NavigableEntity)EntityHandler.getEntity(args[0]);
+			NavigableEntity entity = (NavigableEntity)EntityHandler.getEntityByName(args[0]);
 			
 			if (args.length >= 3 && args[2].equals("next")) {
 				entity.navPathNode = this.prev;

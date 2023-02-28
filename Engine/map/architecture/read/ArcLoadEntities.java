@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.joml.Vector3f;
 
+import dev.cmd.Console;
 import gl.skybox._3d.SkyboxCamera;
 import io.FileUtils;
 import map.architecture.Architecture;
@@ -14,12 +15,18 @@ import map.architecture.functions.commands.PathNode;
 import map.architecture.functions.commands.SoundScape;
 import map.architecture.functions.commands.SpawnPoint;
 import scene.entity.EntityHandler;
+import scene.entity.goal.GapGoal;
+import scene.entity.goal.GrindDistGoal;
+import scene.entity.goal.ScoreGoal;
+import scene.entity.goal.TrickStringGoal;
 import scene.entity.object.SolidPhysProp;
 import scene.entity.object.map.AmbientSource;
 import scene.entity.object.map.DecalEntity;
 import scene.entity.object.map.LightPointEntity;
 import scene.entity.object.map.LightSpotEntity;
 import scene.entity.object.map.RopePointEntity;
+import scene.entity.util.GapEntity;
+import scene.entity.util.GapTrigger;
 import scene.entity.util.LightStyle;
 import util.CounterInputStream;
 
@@ -39,6 +46,7 @@ public class ArcLoadEntities {
 			}
 			
 			switch(name) {
+
 			case "spawn_player":
 				SpawnPoint spawn = new SpawnPoint(readVec3(tags, "pos"), readVec3(tags, "rot"), tags.get("label"));
 				arc.addFunction(spawn);
@@ -93,6 +101,35 @@ public class ArcLoadEntities {
 				DecalEntity decal = new DecalEntity(readVec3(tags, "pos"), tags.get("tex"));
 				EntityHandler.addEntity(decal);
 				break;
+				
+			case "goal_score":
+				EntityHandler.addEntity(new ScoreGoal(readInt(tags, "difficulty"), readInt(tags, "score"), readInt(tags, "is_combo") == 1));
+				break;
+				
+			case "goal_grind_dist":
+				EntityHandler.addEntity(new GrindDistGoal(readInt(tags, "difficulty"), readFloat(tags, "dist")));
+				break;
+				
+			case "goal_trick_string":
+				EntityHandler.addEntity(new TrickStringGoal(readInt(tags, "difficulty"), tags.get("trick_str")));
+				break;
+				
+			case "goal_gap":
+				EntityHandler.addEntity(new GapGoal(readInt(tags, "difficulty"), tags.get("trick_str"), tags.get("gaps"), tags.get("text")));
+				break;
+
+			case "gap_node":
+				EntityHandler.addEntity(new GapTrigger(readVec3(tags, "min"), readVec3(tags, "max"),
+						readInt(tags, "node"), readInt(tags, "first_face"), readInt(tags, "num_faces"),
+						tags.get("name"), readInt(tags, "flags")));
+				break;
+				
+			case "gap":
+				EntityHandler.addEntity(new GapEntity(tags.get("name"), readInt(tags, "points"), tags.get("t1"), tags.get("t2")));
+				break;
+
+			default:
+				Console.warning("Unknown entity loaded: " + name);
 			}
 		}
 	}

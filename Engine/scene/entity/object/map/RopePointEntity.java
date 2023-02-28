@@ -72,7 +72,7 @@ public class RopePointEntity extends Entity {
 				
 			}
 		} else if (!nextName.equals("")) {
-			this.next = (RopePointEntity) EntityHandler.getEntity(nextName);
+			this.next = (RopePointEntity) EntityHandler.getEntityByName(nextName);
 			if (this.next != null)
 				this.swayScale = 1f / (position.distance(this.next.position) / 8f);
 			// Assumes the parent is a RopePointEntity, probably will crash if it's not so don't fuck this up

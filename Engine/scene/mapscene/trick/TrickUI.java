@@ -2,6 +2,7 @@ package scene.mapscene.trick;
 
 import gl.Window;
 import scene.entity.util.PlayerEntity;
+import ui.Font;
 import ui.UI;
 
 public class TrickUI {
@@ -14,23 +15,23 @@ public class TrickUI {
 		if (displayTimer > 0f) {
 			displayTimer = Math.max(displayTimer - Window.deltaTime, 0f);
 			
-			UI.drawString(trickString , 640, 600, .3f, true);
-			UI.drawString(trickSubstring , 640, 640, .2f, true);
+			UI.drawString(Font.vhsFont, trickString , 640, 600, .3f, 800, true);
+			UI.drawString(Font.vhsFont, trickSubstring , 640, 640, .2f, Integer.MAX_VALUE, true);
 		} else {
-			trickString = "";
+			clearTrickString();
 		}
 		
 		if (achievementTimer > 0f) {
 			achievementTimer = Math.max(achievementTimer - Window.deltaTime, 0f);
 			
-			UI.drawString(achievementString, 1000, 300, .3f, false);
+			UI.drawString(Font.vhsFont, achievementString, 1000, 300, .3f, Integer.MAX_VALUE, false);
 		} else {
 			achievementString = "";
 		}
 	}
 
 	public void drawBufferedTrick(Trick trick) {
-		UI.drawString(trick.getName(), 1000, 640, .4f, false);
+		UI.drawString(Font.vhsFont, trick.getName(), 1000, 640, .4f, Integer.MAX_VALUE, false);
 	}
 
 	public void setTimer(float time) {
@@ -44,12 +45,12 @@ public class TrickUI {
 
 		boolean isFrontside = (trick.getType() == TrickType.GRIND_TRICK) ? player.getFrontside() : false;
 		boolean isSwitch = player.isSwitch();
-		
-			if (trick.getType() == TrickType.GRIND_TRICK)
-				trickName = ((isFrontside) ? "fs " : "bs ") + trick.getName();
-			else
-				trickName = ((isSwitch) ? "switch " : "") + trick.getName();
-		
+
+		if (trick.getType() == TrickType.GRIND_TRICK)
+			trickName = ((isFrontside) ? "fs " : "bs ") + trick.getName();
+		else
+			trickName = ((isSwitch) ? "switch " : "") + trick.getName();
+
 		if (trickPoints != trick.getPoints())
 			color = (trickPoints == 0) ? "#r" : "#y";
 		
@@ -61,6 +62,17 @@ public class TrickUI {
 		
 		updateTrickSubtring(comboScore, multiplier);
 		achievementString = "";
+	}
+	
+	public void addToTrickString(String name, int trickPoints, int comboScore, float multiplier) {
+		if (trickString.isEmpty()) {
+			trickString = name;
+		} else {
+			trickString += " #wto " + name;
+		}
+		
+		updateTrickSubtring(comboScore, multiplier);
+		this.displayTimer = 3f;
 	}
 	
 	public void updateTrickSubtring(int comboScore, float multiplier) {
@@ -80,6 +92,10 @@ public class TrickUI {
 	public void addAchievement(String str) {
 		achievementString += str;
 		achievementTimer = 3f;
+	}
+
+	public String getTrickString() {
+		return this.trickString;
 	}
 	
 }

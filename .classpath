@@ -33,5 +33,7 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/horror_game_master/lib/joml-1.10.5-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/jbullet.jar"/>
+	<classpathentry kind="lib" path="lib/joml-1.10.5-javadoc.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

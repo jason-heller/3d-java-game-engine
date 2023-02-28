@@ -23,7 +23,7 @@ public class Font {
 	private static final int DESIRED_PADDING = 3;
 	public static final float defaultSize = .3f;
 	public static Font defaultFont = new Font("font/verdana");
-	public static Font consoleFont = defaultFont;//new Font("font/vcr_osd_mono");
+	public static Font vhsFont = new Font("font/vcr_osd_mono");
 
 	private final Map<Integer, Character> metaData = new HashMap<Integer, Character>();
 
@@ -31,6 +31,7 @@ public class Font {
 	private final Map<String, String> values = new HashMap<String, String>();
 
 	private int[] padding;
+	private int lineHeight;
 
 	private int paddingWidth;
 	private int paddingHeight;
@@ -67,13 +68,9 @@ public class Font {
 		}
 		return actualValues;
 	}
-
-	/*public int getPaddingWidth() {
-		return paddingWidth;
-	}*/
 	
-	public int getPaddingHeight() {
-		return paddingHeight;
+	public int getLineHeight(float fontSize) {
+		return (int)(lineHeight * fontSize);
 	}
 	
 	private void load(String path) {
@@ -89,25 +86,31 @@ public class Font {
 
 			// Line sizes
 			readLine();
-			// int lineHeightPixels = Integer.parseInt(values.get("lineHeight")) -
-			// paddingHeight;
 
 			final int imageWidth = Integer.parseInt(values.get("scaleW"));
+			this.lineHeight = Integer.parseInt(values.get("lineHeight"));
+			
 
 			// Character data
 			readLine();
 			readLine();
+			Character c = null;
 			while (readLine()) {
-				final Character c = loadCharacter(imageWidth);
-				if (c != null) {
-					metaData.put(c.getId(), c);
+				try {
+					c = loadCharacter(imageWidth);
+					if (c != null) {
+						metaData.put(c.getId(), c);
+					}
+				} catch (final Exception e) {
+					e.printStackTrace();
+					Console.severe("Bad character in font file: " + (char)c.getId() + " id: " + c.getId(), path);
 				}
 			}
 
 			reader.close();
 		} catch (final Exception e) {
 			e.printStackTrace();
-			Console.severe("Couldn't read font file!");
+			Console.severe("Couldn't read font file!", path);
 		}
 	}
 

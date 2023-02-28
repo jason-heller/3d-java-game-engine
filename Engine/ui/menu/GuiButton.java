@@ -18,7 +18,7 @@ public class GuiButton extends GuiElement {
 		this.y = y;
 		this.option = new Text(Font.defaultFont, option, 0, 0, Font.defaultSize, false);
 
-		lineHeight = Font.defaultFont.getPaddingHeight() + 20;
+		lineHeight = Font.defaultFont.getLineHeight(Font.defaultSize) + 20;
 		height = (int) this.option.getHeight();
 		width = (int) this.option.getWidth();
 	}

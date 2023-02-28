@@ -189,7 +189,7 @@ public class Text implements Component {
 				offset++;
 			} else if (c == '\n') {
 				dx = x;
-				dy += font.getCharacter('|').getyOffset() + font.getPaddingHeight();
+				dy += font.getCharacter('W').getyOffset() + font.getLineHeight(textSize);
 			} else if (c >= 32 && c <= 126) {
 				final Character character = font.getCharacter(c);
 
@@ -209,7 +209,7 @@ public class Text implements Component {
 
 				if (dx - x > lineWidth && c == ' ') {
 					dx = x;
-					dy += font.getCharacter('|').getyOffset() + font.getPaddingHeight();
+					dy += font.getCharacter('W').getyOffset() + font.getLineHeight(textSize);
 				}
 			}
 		}

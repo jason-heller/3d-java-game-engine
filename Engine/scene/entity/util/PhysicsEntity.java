@@ -8,7 +8,7 @@ import org.joml.Vector3f;
 
 import core.App;
 import dev.Debug;
-import geom.AxisAlignedBBox;
+import geom.AABB;
 import geom.BoundingBox;
 import geom.CollideUtils;
 import geom.MTV;
@@ -304,16 +304,16 @@ public abstract class PhysicsEntity extends Entity {
 		for(BspLeaf leaf : bsp.leaves) {
 			for(short clipId : leaf.clips) {
 				ArcClip clip = bsp.clips[clipId];
+				final int numPlanes = clip.planes.length;
 				
 				if (arc.getActiveTrigger(this) == clip)
 					continue;
 				
-				Plane[] planes = new Plane[clip.numPlanes];
-				for(int i = 0; i < clip.numPlanes; i++) {
-					planes[i] = bsp.planes[bsp.clipPlaneIndices[clip.firstPlane + i]];
-				}
+				Plane[] planes = new Plane[numPlanes];
 				
-				//MTV mtv = bbox.collide(clip.bbox);
+				for(int i = 0; i < numPlanes; i++)
+					planes[i] = bsp.planes[clip.planes[i]];
+				
 				MTV mtv = CollideUtils.convexHullBoxCollide(planes, bbox);
 				if (mtv != null) {
 					boolean doCollide = clip.interact(this, true);
@@ -328,7 +328,7 @@ public abstract class PhysicsEntity extends Entity {
 			}
 		}
 	}
-	
+
 	private void resolveTriCollision(MTV mtv, Polygon tri) {
 		// TODO: THIS
 		/*if (mtv.getAxis().y < .5f) {

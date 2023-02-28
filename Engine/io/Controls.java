@@ -41,8 +41,9 @@ public class Controls {
 		controls.clear();
 
 		controls.put("pause", Keyboard.KEY_ESCAPE);
+		controls.put("start", Keyboard.KEY_RETURN);
 		controls.put("use_left", Input.KEY_LMB);
-		controls.put("use_right", Input.KEY_RMB);
+		//controls.put("use_right", Input.KEY_RMB);
 		
 		controls.put("up", Keyboard.KEY_UP);
 		controls.put("left", Keyboard.KEY_LEFT);

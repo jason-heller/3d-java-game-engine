@@ -2,16 +2,22 @@ package gl.anim.render;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
+import dev.Debug;
+import geom.AABB;
 import gl.Camera;
 import gl.Render;
 import gl.anim.Animator;
+import gl.line.LineRender;
 import gl.res.Mesh;
 import gl.res.Model;
 import gl.res.Texture;
 import scene.Scene;
 import scene.entity.Entity;
+import util.Colors;
 
 // TODO: Rework shaders & animation code
 public class AnimationHandler {
@@ -57,6 +63,11 @@ public class AnimationHandler {
 			//if (Debug.showNormals) {
 				// TODO
 			//}
+			
+			if (Debug.showModelBounds) {
+				AABB aabb = model.getBoundingBox();
+				LineRender.drawBox(new Vector3f(aabb.getCenter()).add(entity.position), aabb.getBounds(), Colors.DK_VIOLET);
+			}
 			
 			GL11.glDisable(GL11.GL_CULL_FACE);
 			

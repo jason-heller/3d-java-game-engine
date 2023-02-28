@@ -3,32 +3,44 @@ package scene.mapscene;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import audio.AudioHandler;
 import core.App;
 import dev.cmd.Console;
 import gl.Camera;
+import gl.Window;
 import gl.skybox.Skybox;
 import gl.skybox.Skybox2D;
 import gl.skybox._3d.Skybox3D;
 import gl.skybox._3d.SkyboxCamera;
 import io.Input;
+import io.MusicHandler;
 import scene.MainMenu;
 import scene.PlayableScene;
-import scene.entity.DummyEntity;
 import scene.entity.EntityHandler;
 import scene.entity.util.PlayerEntity;
+import scene.entity.util.PreSessionEntity;
+import scene.entity.util.SkatePhysicsEntity;
 import scene.mapscene.trick.TrickList;
 import ui.UI;
+import util.Colors;
 
 public class MapScene extends PlayableScene {
 	
+	public static boolean preRound;
 	private Skybox skybox;
 	private ItemHandler itemHandler;
 	
 	private int score;
+	private float time = 121;
+	
+	private MusicHandler musicHandler;
 	
 	public MapScene() {
 		super();
 		App.scene = this;		// Hack to make the variable update before constructors runs
+		preRound = true;
+		
+		TrickList.init();
 		
 		player = new PlayerEntity(this);
 		camera.setControlStyle(Camera.THIRD_PERSON, player);
@@ -44,6 +56,11 @@ public class MapScene extends PlayableScene {
 		arcHandler.getArchitecture().callCommand("spawn_player");
 		// arcHandler.getArchitecture().callCommand(player, "trigger_soundscape");
 		player.getPosition().y += 5;
+		SkatePhysicsEntity.direction = -player.rotation.y;
+		player.update(this);
+		
+		//EntityHandler.addEntity(new MapOverviewEntity(this, player, arcHandler.getArchitecture().bsp));
+		EntityHandler.addEntity(new PreSessionEntity(player));
 		
 		if (arcHandler.isSkyboxEnabled()) {
 			SkyboxCamera skyCam = arcHandler.getArchitecture().getSkyCamera();
@@ -56,7 +73,10 @@ public class MapScene extends PlayableScene {
 		
 		itemHandler = new ItemHandler(this, viewModelHandler);
 		
-		TrickList.init();
+		musicHandler = new MusicHandler();
+		musicHandler.loadQueue(2);
+		
+		musicHandler.playNext();
 	}
 
 	@Override
@@ -69,6 +89,9 @@ public class MapScene extends PlayableScene {
 		super.cleanUp();
 		if (arcHandler.isSkyboxEnabled())
 			skybox.cleanUp();
+		
+		musicHandler.stopMusic();
+		musicHandler.cleanUp();
 	}
 
 	@Override
@@ -82,6 +105,7 @@ public class MapScene extends PlayableScene {
 			isLoading = false;
 		}
 
+		musicHandler.update();
 		super.update();
 		
 		itemHandler.update();
@@ -100,7 +124,25 @@ public class MapScene extends PlayableScene {
 			Console.send("map " + PlayableScene.currentMap);
 		}
 
-		UI.drawString("" + score, 50, 680);
+		if (!preRound) {
+			time -= Window.deltaTime;
+			UI.drawRect(0, 540, 200, 120, Colors.BLACK).setOpacity(.75f);
+			UI.drawString("" + score, 100, 590, .35f, false);
+			UI.drawString(formatTime(time), 100, 630, .35f, false);
+			
+		}
+		
+		if (player.isSwitch()) {
+			UI.drawString("(Switch)", 100, 510);
+		}
+	}
+
+	private String formatTime(float value) {
+		int t = (int)value;
+		int min = t / 60;
+		int sec = t % 60;
+		
+		return String.format("%02d", min) + ":" + String.format("%02d", sec);
 	}
 
 	@Override
@@ -128,6 +170,14 @@ public class MapScene extends PlayableScene {
 
 	public void addScore(int score) {
 		this.score += score;
+	}
+
+	public int getScore() {
+		return score;
+	}
+	
+	public MusicHandler getMusicHandler() {
+		return musicHandler;
 	}
 
 }
