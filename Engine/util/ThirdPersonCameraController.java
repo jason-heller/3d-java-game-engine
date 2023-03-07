@@ -38,18 +38,18 @@ public class ThirdPersonCameraController implements CameraFollowable {
 	@Override
 	public Vector3f getPosition() {
 		float yawRad = following.getViewAngle().x;
-		float pitchRad = following.getViewAngle().y;
+		float pitchRad = -MathUtil.HALFPI + following.getViewAngle().y;
 		
-		Vector3f dir = new Vector3f();
-		dir.set((float)-Math.sin(yawRad), cameraRaise - (float)Math.sin(pitchRad / 2f) , -(float)Math.cos(yawRad));
-		dir.normalize();
+		Vector3f dir = new Vector3f(0, 1, 0);
+		dir.rotateX(pitchRad + cameraRaise);
+		dir.rotateY(yawRad);
 		
 		Vector3f newTargetPos = new Vector3f(dir);
 		newTargetPos.mul(followDistance);
 		
 		// Do collision
 		Architecture arc = ((PlayableScene)App.scene).getArchitecture();
-		if (arc != null) {
+		if (following.getViewAngle().y < .9f && arc != null) {
 			BspRaycast ray = arc.raycast(following.getPosition(), dir);
 			
 			if (ray != null && ray.getDistance() < followDistance - 5f) {

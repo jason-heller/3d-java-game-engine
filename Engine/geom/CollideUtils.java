@@ -187,11 +187,13 @@ public class CollideUtils {
 			Vector3f axis = Vectors.sub(v2, v1).cross(plane.normal);
 			float dp = hit.dot(axis);
 			
-			if (dp > axis.dot(v1)) {
+			if (dp > axis.dot(v1)-2) {
 				return Float.NaN;
 			}
 		}
+
 		
+		LineRender.drawLine(rayOrigin, hit, Colors.RED);
 		return planeRay;
 	}
 

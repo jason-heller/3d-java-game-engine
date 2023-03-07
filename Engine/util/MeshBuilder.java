@@ -32,7 +32,7 @@ class Attribute {
 	}
 }
 
-public class ModelBuilder {
+public class MeshBuilder {
 
 	private int indexRel = 0;
 	private List<Attribute> attribs;
@@ -40,7 +40,7 @@ public class ModelBuilder {
 
 	private Attribute vertices, uvs, normals, colors;
 
-	public ModelBuilder(boolean hasUvs, boolean hasNormals, boolean hasColors) {
+	public MeshBuilder(boolean hasUvs, boolean hasNormals, boolean hasColors) {
 		indices = new ArrayList<Integer>();
 		attribs = new ArrayList<Attribute>();
 		

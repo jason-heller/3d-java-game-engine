@@ -105,6 +105,7 @@ public abstract class SkatePhysicsEntity extends Entity {
 	// Vert variables
 	private float vertExitSpeed = Float.NaN;
 	private float vertExitDir;
+	private float vertEntryCamDir;
 	protected Vector3f vertAxis;
 	
 	// Physics constants
@@ -118,6 +119,9 @@ public abstract class SkatePhysicsEntity extends Entity {
 	private static final float INIT_GRIND_SLIP = .01f;
 	private static final float WALL_FORGIVENESS = 2;		// If the player is BARELY over the wall by this many units, just pop them up
 	private static final float MIN_GRIND_SPEED = 10f;
+	
+	//
+	protected Vector3f viewAngle = new Vector3f();
 	
 	// Cheats
 	public static boolean perfectGrind = false;
@@ -170,6 +174,7 @@ public abstract class SkatePhysicsEntity extends Entity {
 			if (grindRail != null && distSqr >= railLengthSqr) {
 				
 				Vector3f linkPos = new Vector3f((grindOrigin == grindRail.getStart()) ? grindRail.getEnd() : grindRail.getStart());
+				linkPos.add(new Vector3f(grindNormal).mul(.25f));
 
 				Rail newRail = arc.findLinkingRail(grindRail, linkPos, bbox.getWidth());
 				
@@ -222,11 +227,19 @@ public abstract class SkatePhysicsEntity extends Entity {
 		}
 		
 		if (vertAxis != null) {
+			// Smooth turn
 			direction = vertExitDir + ((-absoluteVelocity.y + vertExitSpeed) / (vertExitSpeed * 2f)) * MathUtil.PI;
 			rotation.identity();
 			
 			rotation.rotateAxis(-MathUtil.HALFPI, vertAxis);
 			rotation.rotateY(-direction);
+			
+			// Adjust camera to match
+			if (this.viewAngle.x <= vertEntryCamDir) {
+				this.viewAngle.x += Window.deltaTime * 9f;
+			}
+			
+			
 		}
 		
 		super.update(scene);
@@ -790,6 +803,7 @@ public abstract class SkatePhysicsEntity extends Entity {
 		vertAxis = new Vector3f(arc.bsp.planes[lastFloor.planeId].normal);
 		float dx = vertAxis.x;
 		vertAxis.set(-vertAxis.z, 0f, dx);
+		vertEntryCamDir = viewAngle.x + MathUtil.PI;
 		//vertAxis.normalize();
 		
 		localVelocity.x = localVelocity.z = 0f;

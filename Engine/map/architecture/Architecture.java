@@ -31,6 +31,8 @@ import gl.light.DynamicLight;
 import gl.light.DynamicLightHandler;
 import gl.line.LineRender;
 import gl.particle.ParticleEmitter;
+import gl.res.Mesh;
+import gl.res.Model;
 import gl.res.Texture;
 import gl.skybox._3d.SkyboxCamera;
 import map.Rail;
@@ -52,7 +54,6 @@ import map.architecture.vis.Pvs;
 import scene.PlayableScene;
 import scene.Scene;
 import scene.entity.Entity;
-import scene.entity.util.PhysicsEntity;
 import scene.mapscene.MapScene;
 import util.Colors;
 import util.GeomUtil;
@@ -92,12 +93,16 @@ public class Architecture {
 	private List<ArcHeightmap> renderedHeightmaps = new ArrayList<>();
 	private Map<Integer, Texture> environmentMaps;
 	private RailList[] railList;
+	
+	public List<Model> models;
 
 	public Architecture(Scene scene) {
 		this.scene = scene;	
+		
 		funcHandler = new ArcFuncHandler();
 		lightmap = new Lightmap();
 		activeTriggers = new HashMap<>();
+		models = new ArrayList<>();
 		dynamicLightHandler = new DynamicLightHandler();
 	}
 	
@@ -255,10 +260,17 @@ public class Architecture {
 			return;
 		
 		bsp.cleanUp();
+		
 		final Texture[] textures = textureData.getTextures();
 		for(Texture texture : textures)  {
 			if (texture != Resources.DEFAULT)
 				texture.cleanUp();
+		}
+	
+		for(Model model : models) {
+			for(Mesh mesh : model.getMeshes()) {
+				mesh.cleanUp();
+			}
 		}
 		
 		if (environmentMaps != null) {

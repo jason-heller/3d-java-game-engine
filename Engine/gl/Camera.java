@@ -274,10 +274,10 @@ public class Camera {
 		effectedYaw = rawYaw + screenShake.x + flinch.x + swayDir.x;
 		effectedPitch = rawPitch + screenShake.y + flinch.y + swayDir.y;
 		effectedRoll = rawRoll + flinch.z + swayDir.z;
-		
+
+		viewMatrix.rotateZ(effectedRoll);
 		viewMatrix.rotateX(effectedPitch);
 		viewMatrix.rotateY(effectedYaw);
-		viewMatrix.rotateZ(effectedRoll);
 		viewMatrix.translate(-position.x, -position.y, -position.z);
 
 		viewDirection.x = -viewMatrix.m02();
@@ -429,7 +429,6 @@ public class Camera {
 
 	public void addYaw(float f) {
 		rawYaw += f;
-	
 	}
 	
 	public boolean isMouseGrabbed() {

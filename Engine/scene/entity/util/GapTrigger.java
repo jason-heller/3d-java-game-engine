@@ -11,20 +11,14 @@ import map.architecture.components.ArcEdge;
 import map.architecture.components.ArcFace;
 import map.architecture.vis.Bsp;
 import scene.PlayableScene;
-import scene.entity.Entity;
+import scene.entity.object.map.BrushEntity;
 import scene.mapscene.trick.TrickType;
 import util.Colors;
 import util.Vectors;
 
-public class GapTrigger extends Entity {
+public class GapTrigger extends BrushEntity {
 
-	private Vector3f center, halfSize;
-	private int leafId;
-	private int firstFace, lastFace;
-	
 	private long activationTime;
-	
-	private String name;
 	
 	private boolean requireGrounded;
 	private boolean requireAirborne;
@@ -34,18 +28,10 @@ public class GapTrigger extends Entity {
 	
 	private boolean active;
 	
-	public GapTrigger(Vector3f min, Vector3f max, int leafId, int firstFace, int numFaces, String name, int flags) {
+	public GapTrigger(String name, int flags) {
 		super(name);
-		this.center = new Vector3f(max).add(min).div(2f);
-		this.halfSize = new Vector3f(max).sub(min).div(2f);
-		
-		this.leafId = leafId;
-		
-		this.firstFace = firstFace;
-		this.lastFace = firstFace + numFaces;
-		
+
 		this.name = name;
-		position.set(center);
 		//deactivationRange = 0f;
 		
 		this.requireGrounded = (flags & 1) != 0;

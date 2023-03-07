@@ -131,12 +131,14 @@ public class ArcLoader {
 				case NAVIGATION:
 					loadInfo("Loading navigation mesh", total, 8);
 					readNavMesh(nav, in);
+					arc.setNavigation(nav);
 					break;
 					
 				case TEXTURES:
 					loadInfo("Loading texture data", total, 9);
 					readTextureInfo(bsp, texData, in, hasBakedLighting);
 					readTextureList(texData, in);
+					arc.setTextureData(texData);
 					break;
 					
 				case HEIGHTMAP:
@@ -177,8 +179,6 @@ public class ArcLoader {
 			arc.setProperties(mapName, mapVer, gameId);
 
 			arc.pvs = pvs;
-			arc.setNavigation(nav);
-			arc.setTextureData(texData);
 			
 			texData.setSkybox();
 			

@@ -21,10 +21,12 @@ import scene.entity.goal.ScoreGoal;
 import scene.entity.goal.TrickStringGoal;
 import scene.entity.object.SolidPhysProp;
 import scene.entity.object.map.AmbientSource;
+import scene.entity.object.map.BrushEntity;
 import scene.entity.object.map.DecalEntity;
 import scene.entity.object.map.LightPointEntity;
 import scene.entity.object.map.LightSpotEntity;
 import scene.entity.object.map.RopePointEntity;
+import scene.entity.object.map.VisibleBrushEntity;
 import scene.entity.util.GapEntity;
 import scene.entity.util.GapTrigger;
 import scene.entity.util.LightStyle;
@@ -33,6 +35,7 @@ import util.CounterInputStream;
 public class ArcLoadEntities {
 	static void readEntities(Architecture arc, CounterInputStream in) throws IOException {
 		int numEnts = in.readInt();
+		BrushEntity brushEntity;
 		
 		for (int i = 0; i < numEnts; i++) {
 			String name = FileUtils.readString(in);
@@ -46,6 +49,13 @@ public class ArcLoadEntities {
 			}
 			
 			switch(name) {
+			
+			case "brush":
+				brushEntity = new VisibleBrushEntity(tags.get("name"), readInt(tags, "solid"));
+				brushEntity = readModel(brushEntity, tags);
+				brushEntity.buildModel(arc);
+				EntityHandler.addEntity(brushEntity);
+				break;
 
 			case "spawn_player":
 				SpawnPoint spawn = new SpawnPoint(readVec3(tags, "pos"), readVec3(tags, "rot"), tags.get("label"));
@@ -119,9 +129,9 @@ public class ArcLoadEntities {
 				break;
 
 			case "gap_node":
-				EntityHandler.addEntity(new GapTrigger(readVec3(tags, "min"), readVec3(tags, "max"),
-						readInt(tags, "node"), readInt(tags, "first_face"), readInt(tags, "num_faces"),
-						tags.get("name"), readInt(tags, "flags")));
+				brushEntity = new GapTrigger(tags.get("name"), readInt(tags, "flags"));
+				brushEntity = readModel(brushEntity, tags);
+				EntityHandler.addEntity(brushEntity);
 				break;
 				
 			case "gap":
@@ -132,6 +142,26 @@ public class ArcLoadEntities {
 				Console.warning("Unknown entity loaded: " + name);
 			}
 		}
+	}
+	
+	private static BrushEntity readModel(BrushEntity entity, Map<String, String> tags) {
+		Vector3f min = readVec3(tags, "min");
+		Vector3f max = readVec3(tags, "max");
+		
+		Vector3f center = new Vector3f(max).add(min).div(2f);
+		Vector3f halfSize = new Vector3f(max).sub(min).div(2f);
+
+		entity.setBounds(center, halfSize);
+		
+		int node = readInt(tags, "node");
+		int firstFace = readInt(tags, "first_face");
+		int numFaces = readInt(tags, "num_faces");
+		
+		entity.position.set(center);
+		
+		entity.setModelData(node, firstFace, firstFace + numFaces);
+		
+		return entity;
 	}
 
 	private static float readFloat(Map<String, String> tags, String string) {

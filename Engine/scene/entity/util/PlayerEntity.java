@@ -53,8 +53,6 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 	
 	public static boolean enabled = false;
 	
-	private Vector3f viewAngle = new Vector3f();
-	
 	private TrickManager trickManager;
 	
 	//private boolean boardIsFacingBack = false;
@@ -206,11 +204,14 @@ public class PlayerEntity extends SkatePhysicsEntity implements CameraFollowable
 			
 			accelerate(bbox.Z, accel);
 		}
+
 		
 		if (vertAxis == null) {
-			viewAngle.set(-direction,bbox.Z.y * MathUtil.HALFPI, 0f);
+			viewAngle.x = -direction;
+			viewAngle.y = ((bbox.Z.y > 0) ? .5f : 1f) * -bbox.Z.y * MathUtil.HALFPI;
 		} else {
-			viewAngle.set(0f, 1f, 0f);
+			viewAngle.y = 1.2f;//MathUtil.HALFPI - .45f;
+			
 		}
 		
 		scale.x = stance ^ ridingSwitch ? -1f : 1f;

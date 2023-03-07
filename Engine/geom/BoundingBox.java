@@ -180,7 +180,6 @@ public class BoundingBox {
 			return true;
 		
 		float smallestOverlap = Math.min(max2 - min1, max1 - min2);
-		//float escapeDist = smallestOverlap / axis.dot(axis);
 		
 		mtv(axis, smallestOverlap);
 		
